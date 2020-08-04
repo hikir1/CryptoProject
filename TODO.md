@@ -1,10 +1,11 @@
 # TODO
 
-- implement
+- Dhruv
 	- RSA
+	- Diffie-Hellman key exchange
+- Richard
 	- DES
 	- SHA-1 HMAC
-	- Diffie-Hellman key exchange
 - lots of testing
 - memory debugging
 - more testing
