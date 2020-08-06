@@ -1,10 +1,11 @@
 # TODO
 
 - Dhruv
-	- RSA
 	- Diffie-Hellman key exchange
 - Richard
 	- DES
+- Not started
+	- RSA
 	- SHA-1 HMAC
 - lots of testing
 - memory debugging
