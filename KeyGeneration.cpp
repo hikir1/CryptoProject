@@ -113,6 +113,48 @@ double RSA(double k, double e, double msg) {
 	return c;
 }
 
+string convert_binary(string swapped, int *num){
+	//takes in a string and converts it to binary
+	string full_binary = "";
+	//loops through each character and turns its ascii value
+	//and turns it into 
+    for (unsigned int x = 0; x < swapped.length(); x++){
+        int A_value = int(swapped[x]); 
+        string part_binary = ""; 
+        //turns the ascii value into binary
+        while (A_value > -1) { 
+            (A_value % 2)? part_binary.push_back('1') : part_binary.push_back('0');
+            //catches if the first binary bit is zero
+            if (A_value == 0){
+            	break;
+            }
+            A_value /= 2; 
+        }
+        reverse(part_binary.begin(), part_binary.end());
+        //adds it to the overall binary
+        full_binary = full_binary + part_binary;
+    }
+    return full_binary;
+}
+
+string convert_plaintext(string answer){
+	string plaintext = "";
+	//creates a stringstream pointing to answer
+    stringstream sstream(answer);
+    //while there are no error states
+    while(sstream.good())
+    {
+    	//find 8 bits in the stream
+        bitset<8> bits;
+        sstream >> bits;
+        //form a char from them
+        char character = char(bits.to_ulong());
+        //adds it to plaintext
+        plaintext = plaintext + character;
+    }
+    return plaintext;
+}
+
 int main()
 {
     std::cout << "Hello World!\n"; 
