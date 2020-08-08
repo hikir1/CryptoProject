@@ -13,7 +13,7 @@ namespace aes {
 
 		public:
 
-		constexpr Poly(uint8_t coefs = 0): coefs(coefs) {}
+		constexpr Poly(uint8_t coefs): coefs(coefs) {}
 
 		constexpr operator uint8_t() {
 			return coefs;
@@ -34,7 +34,7 @@ namespace aes {
 			return (coefs << shamt) | (coefs >> (8 - shamt));
 		}
 
-		Poly operator*(Poly other);
+		constexpr Poly operator*(Poly other);
 
 		Poly inv();
 
@@ -43,35 +43,55 @@ namespace aes {
 		#endif
 
 	};
-	// calculate inverses at compile time
-	namespace {
-		uint16_t MOD = 0x11B;
-		uint8_t calcinv(uint16_t p) { // dif = p
-			uint16_t prev0 = 0, prev1 = 1, cur = 0, mult = 0, dif = 0;
-			uint16_t prevp = MOD;
-			while (p) {
-				for (mult = 1; prevp > p << (mult + 1); mult++);
-				cur = mult*prev1 + prev0;
-				prev0 = prev1;
-				prev1 = cur;
-				dif = prevp ^ (p << mult);
-				prevp = p;
-				p = dif;
-				std::cout << p << std::endl;
-			}
-			return 0;
+
+// same as normal mult?
+	// polynomial multiplication
+	constexpr Poly Poly::operator*(Poly other) {
+		// product with overflow
+		uint16_t prod = 0;
+		for (int i = 0; i < 8; i++)
+			prod ^= (coefs * ((other.coefs >> i) & 1)) << i;
+		// modulous by long division
+		constexpr uint16_t MOD = 0x11B;
+		int msig = 0, mult = 0; //initialized to 0 for constexpr
+		while (prod >> 8) {
+			// index of most significant bit
+			msig = 15;
+			while (!((prod >> msig) & 1))
+				msig--;
+			// multiply divisor by multiple, then subtract from product
+			mult = msig - 8;
+			prod ^= MOD << mult;
 		}
+		return Poly((uint8_t) prod);
+	}
+
+	// calculate inverses at compile time (if not debugging, bc very slow)
+	namespace {
 		struct InvArray {
 			uint8_t vals[1 << 8];
+			#ifdef NDEBUG
+			constexpr
+			#endif
 			InvArray() : vals() {
-				for (uint16_t i = 1; i < 1 << 8; i++)
-					vals[i] = calcinv(i);
+				vals[0] = 0;
+				uint8_t mult = 0; // initialized to 0 for constexpr
+				for (uint8_t i = 1; i != 0; i++) {
+					for (mult = 1; Poly(mult) * Poly(i) != 1; mult++);
+					vals[i] = mult;
+				}
 			}
-		} invarr;
+		}
+		#ifdef NDEBUG
+		constexpr
+		#else
+		const
+		#endif
+		INVARR;
 	}
 
 	inline Poly Poly::inv() {
-		return invarr.vals[coefs];
+		return INVARR.vals[coefs];
 	}
 
 	#ifndef NDEBUG
@@ -98,27 +118,6 @@ namespace aes {
 	}
 	#endif
 
-// same as normal mult?
-	// polynomial multiplication
-	Poly Poly::operator*(Poly other) {
-		// product with overflow
-		uint16_t prod = 0;
-		for (int i = 0; i < 8; i++)
-			prod ^= (coefs * ((other.coefs >> i) & 1)) << i;
-		// modulous by long division
-		int msig, mult;
-		while (prod >> 8) {
-			// index of most significant bit
-			msig = 15;
-			while (!((prod >> msig) & 1))
-				msig--;
-			// multiply divisor by multiple, then subtract from product
-			mult = msig - 8;
-			prod ^= MOD << mult;
-		}
-		return Poly((uint8_t) prod);
-	}
-
 };
 
 #ifdef TEST
@@ -126,14 +125,11 @@ namespace aes {
 #include <cassert>
 int main() {
 	aes::Poly a = 0x57, b = 0x83;
-	std::cout << "a: " << a << std::endl;
-	std::cout << "b: " << b << std::endl;
-	std::cout << "a*b: " << a*b << std::endl;
-	std::cout << "a*b (raw): " << aes::Poly((uint8_t)((0x57*0x83) % 0x11B)) << std::endl;
 	assert(a + b == 0xD4);
 	assert(a * b == 0xC1);
+	assert(a * a.inv() == 1);
+	assert(b * b.inv() == 1);
+	assert(a * b * a.inv() == b);
 	a.circshl(2);
-	uint8_t test = 12;
-	aes::Poly testPoly = test;
 }
 #endif
