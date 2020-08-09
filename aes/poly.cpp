@@ -1,34 +1,59 @@
 #include <cstdint>
-
-// TODO: 
-//	- make table for inverses
+#ifndef NDEBUG
+#include <iostream>
+#endif
 
 namespace aes {
+
 	class Poly {
+		uint8_t coefs;
+
 		public:
-		const uint8_t coefs;
-		Poly(uint8_t coefs): coefs(coefs) {}
+
+		constexpr Poly(uint8_t coefs = 0): coefs(coefs) {}
+
+		constexpr operator uint8_t() {
+			return coefs;
+		}
+
+		uint8_t raw() const {
+			return coefs;
+		}
+
+		// polynomial addition
+		constexpr Poly operator+(Poly other) {
+			return coefs ^ other.coefs;
+		}
+
+		// same as subtraction
+		constexpr Poly operator-(Poly other) {
+			return operator+(other);
+		}
+
+		// circular left shift
+		constexpr Poly circshl(int shamt) {
+			return (coefs << shamt) | (coefs >> (8 - shamt));
+		}
+
+		constexpr Poly operator*(Poly other);
+
+		constexpr Poly inv();
+
+		#ifndef NDEBUG
+		friend std::ostream &operator<<(std::ostream &, Poly);
+		#endif
+
 	};
 
-	// polynomial addition
-	inline Poly operator+(Poly a, Poly b) {
-		return a.coefs ^ b.coefs;
-	}
-
-	// same as subtraction
-	inline Poly operator-(Poly a, Poly b) {
-		return a + b;
-	}
-
 	// polynomial multiplication
-	Poly operator*(Poly a, Poly b) {
+	constexpr Poly Poly::operator*(Poly other) {
 		// product with overflow
 		uint16_t prod = 0;
 		for (int i = 0; i < 8; i++)
-			prod ^= (a.coefs * ((b.coefs >> i) & 1)) << i;
+			prod ^= (coefs * ((other.coefs >> i) & 1)) << i;
 		// modulous by long division
-		constexpr uint16_t mod = 0x11B;
-		int msig, mult;
+		constexpr uint16_t MOD = 0x11B;
+		int msig = 0, mult = 0; //initialized to 0 for constexpr
 		while (prod >> 8) {
 			// index of most significant bit
 			msig = 15;
@@ -36,25 +61,58 @@ namespace aes {
 				msig--;
 			// multiply divisor by multiple, then subtract from product
 			mult = msig - 8;
-			prod ^= mod << mult;
+			prod ^= MOD << mult;
 		}
 		return Poly((uint8_t) prod);
 	}
 
-	// circular left shift
-	inline Poly circshl(Poly p, int shamt) {
-		return (p.coefs << shamt) | (p.coefs >> (8 - shamt));
+	constexpr Poly Poly::inv() {
+		if (coefs == 0)
+			return 0;
+		uint8_t i = 1;
+		for (; operator*(i) != 1; i++) {
+			assert(i != 0); // No inverse found
+		}
+		return i;
 	}
+
+	#ifndef NDEBUG
+	std::ostream &operator<<(std::ostream &out, Poly p) {
+		out << '[';
+		int i;
+		for (i = 0; i < 7; i++) {
+			if ((p.coefs >> 7-i) & 1) {
+				out << "x^" << 7-i;
+				break;
+			}
+		}
+		if (i == 7) {
+			out << (p.coefs & 1) << ']';
+			return out;
+		}
+		for (i += 1; i < 7; i++)
+			if ((p.coefs >> 7-i) & 1)
+				out << " + x^" << 7-i;
+		if (p.coefs & 1)
+			out << " + 1";
+		out << ']';
+		return out;
+	}
+	#endif
 
 };
 
-#ifdef TEST
-#include <cstdio>
+#ifdef TEST_POLY
+#include <iostream>
 #include <cassert>
 int main() {
 	aes::Poly a = 0x57, b = 0x83;
-	assert((a + b).coefs == 0xD4);
-	assert((a * b).coefs == 0xC1);
-	circshl(a, 2);
+	assert(a + b == 0xD4);
+	assert(a * b == 0xC1);
+	assert(a * a.inv() == 1);
+	assert(b * b.inv() == 1);
+	assert(a * b * a.inv() == b);
+	a.circshl(2);
+	std::cout << "poly test complete" << std::endl;
 }
 #endif
