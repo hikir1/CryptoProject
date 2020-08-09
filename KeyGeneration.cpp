@@ -113,25 +113,45 @@ double RSA(double k, double e, double msg) {
 	return c;
 }
 
-string convert_binary(string swapped, int *num){
+int Bin_to_Dec(long long int given){
+	//takes in a long long int of binary converts it to decimal
+    int bin_answer = 0;
+    int count = 0;
+    int remainder = 0;
+    //changes it from base 2
+    while (given != 0){
+        remainder = given % 10;
+        given = given / 10;
+        bin_answer = bin_answer + remainder * pow(2,count);
+        count++;
+    }
+    return bin_answer;
+}
+
+
+long long int Dec_to_Bin(int given){
+	//takes in decimal converts it to binary
+    long long int num_answer = 0;
+    int remainder = 0; 
+    int count = 1;
+    //changes it into base 2
+    while (given != 0){
+        remainder = given % 2;
+        given = given / 2;
+        num_answer = num_answer + remainder * count;
+        count = count * 10;
+    }
+    return num_answer;
+}
+
+string convert_binary(string swapped){
 	//takes in a string and converts it to binary
 	string full_binary = "";
+	string part_binary = "";
 	//loops through each character and turns its ascii value
 	//and turns it into 
     for (unsigned int x = 0; x < swapped.length(); x++){
-        int A_value = int(swapped[x]); 
-        string part_binary = ""; 
-        //turns the ascii value into binary
-        while (A_value > -1) { 
-            (A_value % 2)? part_binary.push_back('1') : part_binary.push_back('0');
-            //catches if the first binary bit is zero
-            if (A_value == 0){
-            	break;
-            }
-            A_value /= 2; 
-        }
-        reverse(part_binary.begin(), part_binary.end());
-        //adds it to the overall binary
+		part_binary = bitset<8>(swapped.c_str()[x]).to_string();
         full_binary = full_binary + part_binary;
     }
     return full_binary;
