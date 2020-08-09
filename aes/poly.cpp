@@ -3,40 +3,41 @@
 #include <iostream>
 #endif
 
-// TODO: 
-
-
 namespace aes {
 
 	class Poly {
-		const uint8_t coefs;
+		uint8_t coefs;
 
 		public:
 
-		constexpr Poly(uint8_t coefs): coefs(coefs) {}
+		constexpr Poly(uint8_t coefs = 0): coefs(coefs) {}
 
 		constexpr operator uint8_t() {
 			return coefs;
 		}
 
+		uint8_t raw() const {
+			return coefs;
+		}
+
 		// polynomial addition
-		Poly operator+(Poly other) {
+		constexpr Poly operator+(Poly other) {
 			return coefs ^ other.coefs;
 		}
 
 		// same as subtraction
-		Poly operator-(Poly other) {
+		constexpr Poly operator-(Poly other) {
 			return operator+(other);
 		}
 
 		// circular left shift
-		Poly circshl(int shamt) {
+		constexpr Poly circshl(int shamt) {
 			return (coefs << shamt) | (coefs >> (8 - shamt));
 		}
 
 		constexpr Poly operator*(Poly other);
 
-		Poly inv();
+		constexpr Poly inv();
 
 		#ifndef NDEBUG
 		friend std::ostream &operator<<(std::ostream &, Poly);
@@ -44,7 +45,6 @@ namespace aes {
 
 	};
 
-// same as normal mult?
 	// polynomial multiplication
 	constexpr Poly Poly::operator*(Poly other) {
 		// product with overflow
@@ -66,32 +66,14 @@ namespace aes {
 		return Poly((uint8_t) prod);
 	}
 
-	// calculate inverses at compile time (if not debugging, bc very slow)
-	namespace {
-		struct InvArray {
-			uint8_t vals[1 << 8];
-			#ifdef NDEBUG
-			constexpr
-			#endif
-			InvArray() : vals() {
-				vals[0] = 0;
-				uint8_t mult = 0; // initialized to 0 for constexpr
-				for (uint8_t i = 1; i != 0; i++) {
-					for (mult = 1; Poly(mult) * Poly(i) != 1; mult++);
-					vals[i] = mult;
-				}
-			}
+	constexpr Poly Poly::inv() {
+		if (coefs == 0)
+			return 0;
+		uint8_t i = 1;
+		for (; operator*(i) != 1; i++) {
+			assert(i != 0); // No inverse found
 		}
-		#ifdef NDEBUG
-		constexpr
-		#else
-		const
-		#endif
-		INVARR;
-	}
-
-	inline Poly Poly::inv() {
-		return INVARR.vals[coefs];
+		return i;
 	}
 
 	#ifndef NDEBUG
@@ -120,7 +102,7 @@ namespace aes {
 
 };
 
-#ifdef TEST
+#ifdef TEST_POLY
 #include <iostream>
 #include <cassert>
 int main() {
@@ -131,5 +113,6 @@ int main() {
 	assert(b * b.inv() == 1);
 	assert(a * b * a.inv() == b);
 	a.circshl(2);
+	std::cout << "poly test complete" << std::endl;
 }
 #endif
