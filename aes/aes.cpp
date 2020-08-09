@@ -12,12 +12,11 @@ using namespace aes;
 namespace {
 
 	constexpr int BLOCK_SIZE = 4; // words (32 bytes)
-	constexpr int KEY_SIZE = 4; // words
 	constexpr int NUM_ROUNDS = 10;
 
 	struct State {
 		static constexpr int NUM_ROWS = 4, NUM_COLS = BLOCK_SIZE;
-		Poly polys[NUM_ROWS * NUM_COLS];
+		Poly * polys;
 		Poly * operator[](int idx) { 
 			assert(idx < NUM_ROWS);
 			return polys + idx * NUM_COLS;
@@ -25,7 +24,10 @@ namespace {
 	};
 
 	static_assert(State::NUM_ROWS * State::NUM_COLS * (NUM_ROUNDS + 1) % 4 == 0);
+	using subkey_t = uint8_t[State::NUM_ROWS * State::NUM_COLS];
+	// sizeof(subkey_t) * (NUM_ROUNDS + 1) / 4
 	constexpr int EXP_KEY_SIZE = State::NUM_ROWS * State::NUM_COLS * (NUM_ROUNDS + 1) / 4; // words
+	static_assert(sizeof(uint32_t[EXP_KEY_SIZE]) == sizeof(subkey_t[NUM_ROUNDS + 1]));
 
 	// calculate SBOX at compile time (if not debugging, bc very slow)
 	struct SBox_F {
@@ -122,7 +124,7 @@ namespace {
 		mixColumns(s, mults);
 	}
 
-	void addRoundKey(State &s, const uint8_t subkey[State::NUM_ROWS * State::NUM_COLS]) {
+	void addRoundKey(State &s, const subkey_t subkey) {
 		for (int i = 0; i < State::NUM_ROWS; i++)
 			for (int j = 0; j < State::NUM_COLS; j++)
 				s[i][j] = s[i][j] + Poly(subkey[i * j]);
@@ -135,15 +137,15 @@ namespace {
 		uint32_t temp, rot;
 		for (; i < EXP_KEY_SIZE; i++) {
 			temp = expanded[i-1];
+			constexpr int MASK = 0b1111'1111;
 			if (i % KEY_SIZE == 0) {
 				// rotate
 				rot = (temp << 8) | (temp >> 24);
 				// subBytes
-				constexpr int MASK = 0b1111'1111;
-				temp = uint32_t(SBOX_F.vals[temp >> 24].raw()) << 24;
-				temp |= uint32_t(SBOX_F.vals[(temp >> 16) & MASK].raw()) << 16;
-				temp |= uint32_t(SBOX_F.vals[(temp >> 8) & MASK].raw()) << 8;
-				temp |= uint32_t(SBOX_F.vals[temp & MASK].raw());
+				temp = uint32_t(SBOX_F.vals[rot >> 24].raw()) << 24;
+				temp |= uint32_t(SBOX_F.vals[(rot >> 16) & MASK].raw()) << 16;
+				temp |= uint32_t(SBOX_F.vals[(rot >> 8) & MASK].raw()) << 8;
+				temp |= uint32_t(SBOX_F.vals[rot & MASK].raw());
 				// add constant
 				assert(i/KEY_SIZE != 0);
 				assert(i/KEY_SIZE <= 8);
@@ -153,14 +155,46 @@ namespace {
 		}
 	}
 
+	void encrypt(State &s, const subkey_t subkeys[NUM_ROUNDS + 1]) {
+		for (int i = 0; i < NUM_ROUNDS; i++) {
+			subBytes_F(s);
+			shiftRows_F(s);
+			mixColumns_F(s);
+			addRoundKey(s, subkeys[i]);
+		}
+		subBytes_F(s);
+		shiftRows_F(s);
+		addRoundKey(s, subkeys[NUM_ROUNDS]);
+	}
+
+	void decrypt(State &s, const subkey_t subkeys[NUM_ROUNDS + 1]) {
+		addRoundKey(s, subkeys[NUM_ROUNDS]);
+		shiftRows_R(s);
+		subBytes_R(s);
+		for (int i = NUM_ROUNDS - 1; i >= 0; i--) {
+			addRoundKey(s, subkeys[i]);
+			mixColumns_R(s);
+			shiftRows_R(s);
+			subBytes_R(s);
+		}
+	}
+
 }
 
-void aes::encrypt(char * data, int len) {
-
+void aes::cbc_encrypt(const char * ptxt, char * ctxt, size_t len, const uint32_t key[KEY_SIZE]) {
+	subkey_t subkeys[NUM_ROUNDS + 1];
+	expandKey(key, (uint32_t *)subkeys);
+	memcpy(ctxt, ptxt, len);
+	for (; len > BLOCK_SIZE; len -= BLOCK_SIZE) {
+		
+		encrypt(State{(uint8_t)ctxt}, subkeys);
+	}
+		
 }
 
-void aes::decrypt(char * data, int len) {
-
+void aes::cbc_decrypt(const char * ptxt, char * ctxt, int len, const uint32_t key[KEY_SIZE]) {
+	uint32_t expkey[EXP_KEY_SIZE];
+	expandKey(key, expkey);
 }
 
 #ifdef TEST_AES
