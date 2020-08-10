@@ -6,6 +6,29 @@
 #include <bits/stdc++.h> 
 #include "sha1.h"
 
+std::string circle_shift(int shift, std::string shifted){
+	int len = shifted.length();
+	std::string start = "";
+	std::string end = "";
+	std::string finished = shifted;
+	while(shift > len){
+		shift = shift - shifted.length();
+	}
+	for(int x = 0; x < shift; x++){
+		if(len > 1){
+		  start = finished.substr(0, 1);
+		  //takes the rest of the string in
+		  end = finished.substr(1, len - 1);
+		  finished = end + start;
+		}
+	}
+	return finished;
+}
+
+uint32_t circle_shift_uint(int shift, uint32_t shifted){
+	return (shifted << shift) | (shifted >> (32 - shift));
+}
+
 std::string padding(std::string message, int length){
 	//gets the length of the message
 	std::string final = "" + message;
@@ -32,87 +55,95 @@ std::string padding(std::string message, int length){
 	return final + ending;
 }
 
-std::string nonlinear_funct(int t, std::string B, std::string C, std::string D){
-	B = Hex_to_Bin(B);
-	C = Hex_to_Bin(C);
-	D = Hex_to_Bin(D);
-	if (0 <= t <= 19){
-		return or_string(and_string(B,C),and_string(not_string(B),D));
-	}else if(20 <= t <= 39){
-		return xor_string(xor_string(B,C),D);
-	}else if(40 <= t <= 59){
-		return or_string(and_string(B,C), or_string(and_string(B,D),and_string(C,D)));
-	}else if(60 <= t <= 79){
-		return xor_string(xor_string(B,C),D);
+uint32_t nonlinear_funct(int t, uint32_t B, uint32_t C, uint32_t D){
+	if (0 <= t && t <= 19){
+		return (B&C)|((~B)&D);
+	}else if(20 <= t && t <= 39){
+		return B^C^D;
+	}else if(40 <= t && t <= 59){
+		return (B&C)|(B&D)|(C&D);
+	}else if(60 <= t && t <= 79){
+		return B^C^D;
+	}else{
+		return B^(D&C);
 	}
 }
 
-void iterations(std::string chunk, SHA1 *sha){
-	transformations = 0;
-	std::string W[80];
-	std::string A = sha->holder[0];
-	std::string B = sha->holder[1];
-	std::string C = sha->holder[2];
-	std::string D = sha->holder[3];
-	std::string E = sha->holder[4];
-	std::string temp = "";
+inline static void convert(std::string &strs, vector<uint32_t> &integers){
+    for (size_t i = 0; i < num_blocks; i++){
+         integers[i] = (strs[4*i+0] & 0xff)<<24
+        		   | (strs[4*i+1] & 0xff)<<16
+                   | (strs[4*i+2] & 0xff)<<8
+                   | (strs[4*i+3] & 0xff);
+    }
+}
+
+void iterations(std::string chunk){
+	std::vector<uint32_t> W(80);
+	uint32_t A = holder[0];
+	uint32_t B = holder[1];
+	uint32_t C = holder[2];
+	uint32_t D = holder[3];
+	uint32_t E = holder[4];
+	unsigned long long int temp;
 	int count = 0;
-	const std::string K[] = {"5A827999", "6ED9EBA1", "8F1BBCDC", "CA62C1D6"};
-	for (int x = 0; x < 16; x++){
-		W[x] = chunk.substr(x*4,4);
-	}
+	std::vector<uint32_t> K(4); 
+	K[0] = 0x5A827999;
+	K[1] = 0x6ED9EBA1;
+	K[2] = 0x8F1BBCDC; 
+	K[3] = 0xCA62C1D6;
+	convert(chunk, W);
 	for (int x = 16; x < 80; x++){
-		W[x] = circle_shift(1, xor_string(xor_string(xor_string(W[x-3], W[x-8]), W[x-14]), W[x-16]));
+		W[x] = circle_shift_uint(1, (W[x-3] ^ W[x-8] ^ W[x-14] ^ W[x-16]));
 	}
 	for(int x = 0; x < 80; x++){
-		if(x%20 == 0){
+		if(x%20 == 0 && x != 0){
 			count++;
 		}
-		temp = addBin(addBin(circle_shift(5, Hex_to_Bin(A)), nonlinear_funct(x, B, C, D)), Hex_to_Bin(E));
-		temp = Bin_to_Hex(addBin(addBin(temp,W[x]), K[count]));
+		temp = circle_shift_uint(5, A) + nonlinear_funct(x, B, C, D) + E + W[x] + K[count];
 		E = D;
 		D = C;
-		C = circle_shift(30, B);
+		C = circle_shift_uint(30, B);
 		B = A;
 		A = temp;
 	}
-	sha->holder[0] = Bin_to_Hex(addBin(Hex_to_Bin(sha->holder[0]), Hex_to_Bin(A)));
-	sha->holder[1] = Bin_to_Hex(addBin(Hex_to_Bin(sha->holder[1]), Hex_to_Bin(B)));
-	sha->holder[2] = Bin_to_Hex(addBin(Hex_to_Bin(sha->holder[2]), Hex_to_Bin(C)));
-	sha->holder[3] = Bin_to_Hex(addBin(Hex_to_Bin(sha->holder[3]), Hex_to_Bin(D)));
-	sha->holder[4] = Bin_to_Hex(addBin(Hex_to_Bin(sha->holder[4]), Hex_to_Bin(E)));
+	holder[0] = holder[0] + A;
+	holder[1] = holder[1] + B;
+	holder[2] = holder[2] + C;
+	holder[3] = holder[3] + D;
+	holder[4] = holder[4] + E;
 }
 
-std::string hash_string(string full_string, SHA1 *sha){
+std::string hash_string(string full_string){
 	int chucks = full_string.length()/512;
 	string full = "";
 	string chunk = "";
 	for(int x = 0; x < chucks; x++){
 		chunk = full_string.substr((x*512), 512);
-		iterations(chunk, &sha);
+		iterations(chunk);
 	}
-
+	uint32_t A = circle_shift_uint(128,holder[0]);
+	uint32_t B = circle_shift_uint(96,holder[1]);
+	uint32_t C = circle_shift_uint(64,holder[2]);
+	uint32_t D = circle_shift_uint(32,holder[3]);
+	uint32_t E = holder[4];
+	full = full + Bin_to_Hex(Dec_to_Bin(A)) + Bin_to_Hex(Dec_to_Bin(B))+Bin_to_Hex(Dec_to_Bin(C))+Bin_to_Hex(Dec_to_Bin(D))+Bin_to_Hex(Dec_to_Bin(E));
 	return full;
 }
 
-void reset_sha1(SHA1 *sha){
-	sha->holder[0] = "08de7a01";
-	sha->holder[1] = "df05e29c";
-	sha->holder[2] = "7ef1613b";
-	sha->holder[3] = "3e2999b2";
-	sha->holder[4] = "cdefa923";
-	transformations = 0;
+void reset_sha1(){
+	holder[0] = 0x08de7a01;
+	holder[1] = 0xdf05e29c;
+	holder[2] = 0x7ef1613b;
+	holder[3] = 0x3e2999b2;
+	holder[4] = 0xcdefa923;
 }
 
 std::string run_sha(std::string convert){
-	SHA1 sha;
 	std::string padded = "";
 	std::string hashed = "";
-	reset_sha1(&sha);
+	reset_sha1();
 	padded = padding(convert, convert.length());
-	hashed = hash_string(padded, &sha);
-	std::string final[150];
-	strcpy(final, hashed);
-	return final;
+	hashed = hash_string(padded);
+	return hashed;
 }
-

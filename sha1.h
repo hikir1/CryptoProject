@@ -14,12 +14,12 @@ class SHA1{
 		static const int num_h = 5;
 		static const int num_blocks = 16;
 		int transformation = 0;
-		std::string holder[5];
-		void reset_sha1(SHA1 *sha);
+		std::vector<uint32_t> holder(5);
+		void reset_sha1();
 		std::string padding(std::string message, int message_length);
-		std::string nonlinear_funct(int t, std::string B, std::string C, std::string D);
-		void iterations(std::string chunk, SHA1 *sha);
-		std::string hash_string(string full_string, SHA1 *sha);
+		std::string nonlinear_funct(int t, uint32_t B, uint32_t C, uint32_t D);
+		void iterations(std::string chunk);
+		std::string hash_string(string full_string);
 }
 
 

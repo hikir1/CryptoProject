@@ -72,53 +72,40 @@ unsigned long long getRandPrime() {
 }
 
 
-int Bin_to_Dec(long long int given){
+unsigned long long int Bin_to_Dec(unsigned long long int given){
 	//takes in a long long int of binary converts it to decimal
-    int bin_answer = 0;
-    int count = 0;
-    int remainder = 0;
-    //changes it from base 2
+    unsigned long long int bin_answer = 0;
+    unsigned long long int count = 0;
+    unsigned long long int remainder = 0;
+    //changes it from base 2 to decimal format
     while (given != 0){
         remainder = given % 10;
         given = given / 10;
         bin_answer = bin_answer + remainder * pow(2,count);
         count++;
     }
+    //returns the answer
     return bin_answer;
 }
 
+string addBin(string first, string second){ 
+	//adds two binary strings together in binary number form
+    string result = "";
+    int count = 0;
+    int x = first.size() - 1;
+    int y = second.size() - 1; 
+    //loops through
+    while (x >= 0 || y >= 0 || count == 1){ 
+        count = count + ((x >= 0)? first[x] - '0': 0); 
+        count = count + ((y >= 0)? second[y] - '0': 0); 
+        result = char(count % 2 + '0') + result; 
+        count = count/2; 
+        x--;
+        y--; 
+    } 
+    return result; 
+} 
 
-std::string Dec_to_Bin(int given){
-	//takes in decimal converts it to binary
-    long long int num_answer = 0;
-    int remainder = 0; 
-    int count = 1;
-    //changes it into base 2
-    while (given != 0){
-        remainder = given % 2;
-        given = given / 2;
-        num_answer = num_answer + remainder * count;
-        count = count * 10;
-    }
-    std::string value = to_string(num_answer);
-    if(value.length() % 4 != 0){
-    	value = "0" + value;
-    }
-    return value;
-}
-
-string convert_binary(string swapped){
-	//takes in a string and converts it to binary
-	string full_binary = "";
-	string part_binary = "";
-	//loops through each character and turns its ascii value
-	//and turns it into 
-    for (unsigned int x = 0; x < swapped.length(); x++){
-		part_binary = bitset<8>(swapped.c_str()[x]).to_string();
-        full_binary = full_binary + part_binary;
-    }
-    return full_binary;
-}
 std::string xor_string(std::string first, std::string second){
 	//takes in two strings and outputs a string based on xor
 	//(in they are equal return 0 return 1 otherwise)
@@ -173,44 +160,6 @@ std::string or_string(std::string first, std::string second){
 		}
 	}
 	return answer;
-}
-
-std::string circle_shift(int shift, std::string shifted){
-	int len = shifted.length();
-	std::string start = "";
-	std::string end = "";
-	std::string finished = shifted;
-	while(shift > len){
-		shift = shift - shifted.length();
-	}
-	for(int x = 0; x < shift; x++){
-		if(len > 1){
-		  start = finished.substr(0, 1);
-		  //takes the rest of the string in
-		  end = finished.substr(1, len - 1);
-		  finished = end + start;
-		}
-	}
-	return finished;
-}
-
-string addBin(string first, string second){ 
-    string result = "";
-    int count = 0;
-    int x = first.size() - 1;
-    int y = second.size() - 1; 
-    while (x >= 0 || y >= 0 || count == 1){ 
-        count = count + ((x >= 0)? first[x] - '0': 0); 
-        count = count + ((y >= 0)? second[y] - '0': 0); 
-        result = char(count % 2 + '0') + result; 
-        count = count/2; 
-        x--;
-        y--; 
-    }
-    while(result.length()%4 != 0){
-    	result = "0" + result;
-    }
-    return result; 
 }
 
 void conversionMap(unordered_map<std::string, char> *bth){ 
@@ -310,5 +259,50 @@ std::string Bin_to_Hex(std::string given) {
         hex = hex + hex_map[given.substr(x, 4)]; 
         x = x + 4; 
     }
+    while(hex.length() % 8 != 0){
+        hex = "0" + hex; 
+    }
+    // required hexadecimal number 
     return hex;     
 } 
+
+
+std::string Dec_to_Bin(unsigned long long int value, bool flag=false){
+	//recursive algorithm to convert decimal to binary
+    static const std::string digits [2] = {"0", "1"};
+    if (value != 0){
+        return Dec_to_Bin(value/2, true) + digits[value&1];
+    }
+    return (flag) ? "" : "0";
+}
+
+string convert_binary(string swapped){
+	//takes in a string and converts it to binary
+	string full_binary = "";
+	string part_binary = "";
+	//loops through each character and turns its ascii value
+	//and turns it into 
+    for (unsigned int x = 0; x < swapped.length(); x++){
+		part_binary = bitset<8>(swapped.c_str()[x]).to_string();
+        full_binary = full_binary + part_binary;
+    }
+    return full_binary;
+}
+
+string convert_plaintext(string answer){
+	string plaintext = "";
+	//creates a stringstream pointing to answer
+    stringstream sstream(answer);
+    //while there are no error states
+    while(sstream.good())
+    {
+    	//find 8 bits in the stream
+        bitset<8> bits;
+        sstream >> bits;
+        //form a char from them
+        char character = char(bits.to_ulong());
+        //adds it to plaintext
+        plaintext = plaintext + character;
+    }
+    return plaintext;
+}
