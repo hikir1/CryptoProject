@@ -4,6 +4,8 @@
 #include <math.h>
 #include "util.cpp"
 
+const int diffiekeyhalfsize = 128;
+
 /*
 input:	g,p - public keys 
 		pkb - private key
@@ -29,11 +31,12 @@ void sendKeyDiffieHellman(mpz_t sendingkeyhalf, mpz_t g, mpz_t p) {
 
 /*
 input:	p - public key
+		pkb - private key
 		receivedkeyhalf - key half sent by other party
 		sharedsecret - result of shared key stored here
 desc: computes shared key ( private key randomly generated )
 */
-void sharedkey(mpz_t sharedSecret, mpz_t receivedkeyhalf, mpz_t p){
+void sharedkey(mpz_t sharedSecret, mpz_t receivedkeyhalf, mpz_t p, mpz_t pkb){
 	/*remove bottom 4 lines when socket prog is added*/
 	const char * const constkey = "12345678901234567890";
 	int err = mpz_set_str(receivedkeyhalf, constkey, 10); //err == 0 if pass
@@ -42,74 +45,38 @@ void sharedkey(mpz_t sharedSecret, mpz_t receivedkeyhalf, mpz_t p){
 }
 
 /*
-input:	e - public key
-		N - also public key but computed within function
-		new_d - private key generated within function 
-desc: encrypts
+	input: sendingkeyhalf - empty initialized mpz_t 
 */
-void RSAKeyGen(mpz_t e, mpz_t N, mpz_t new_d) {
-	//Generate 2 random prime numbers
-	mpz_t p; 
-	mpz_t q;
-	mpz_init(p);
-	mpz_init(q);
-	getRandPrime(p);
-	getRandPrime(q);
-	mpz_mul(N,p,q);
-
-	mpz_t carmichaelNum;
-	mpz_init(carmichaelNum);
-	calcLCM(carmichaelNum, p - 1, q - 1);
-	
-	mpf_t ef;
-	mpf_init(ef);
-	mpf_t k;
-	mpf_init(k);
-	mpf_set_si(k,1);
-	mpf_t carmNumf;
-	mpf_init(carmNumf);
-	mpf_set_z(carmNumf,carmichaelNum);
-
-	mpf_t d;
-	mpf_init(d);
-	mpf_add(carmNumf,carmNumf,k);
-	mpf_div(d,carmNumf,ef);
-	mpf_t tmp;
-	mpf_init(tmp);
-	mpf_floor(tmp,d);
-	while (!mpf_cmp(d,tmp)) {
-		mpf_add(carmNumf,carmNumf,k);
-		mpf_div(d,carmNumf,ef);
-		mpf_floor(tmp,d);
-	}
-	mpz_set_f(new_d,d);
-	//SEND public key to server
-	//RECV public key from server
-	return;
-}
-
-void KeyExchange()
+void KeyExchange(mpz_t sendingkeyhalf)
 {
 	int alg;
 	std::cout << "Choose an algorithm\n";
-	std::cout << "Enter [1] for Static Diffie Hellman\nEnter [2] for Ephemeral Diffie Hellman\n\n";
+	std::cout << "Enter [1] to input your own private key\nEnter [2] for randomly generated private key\n\n";
 	std::cin >> alg;
 	if (alg == 1) {
 		//establish public keys
-		//this will be done by server
 		mpz_t p; 
 		mpz_t g;
 		mpz_init(p);
 		mpz_init(g);
-		getRandPrime(p);
-		getRandPrime(g);
+		//getRandPrime(p);
+		//getRandPrime(g);
+		mpz_set_ui(p,23);
+		mpz_set_ui(g,9);
+		std::cout << "P: " << p <<std::endl << "G: " << g <<std::endl;
+		//enter private key
 		std::string priv;
-		std::cout << "Enter your private key: "<<std::endl;
+		std::cout << "Enter your private key: "<< std::endl;
 		std::cin >> priv;
 		mpz_t pkb;
 		mpz_init(pkb);
-		mpz_set_str(pkb,priv,10);
-		staticdiffieHellman(sharedsecret,g,p,pkb);
+		const char* pk = priv.c_str();
+		mpz_set_str(pkb,pk,10);
+		std::cout << "Your key: "<< pkb <<std::endl;
+		sendKeyDiffieHellman(sendingkeyhalf,g,p,pkb);
+		mpz_clear(p);
+		mpz_clear(g);
+		std::cout << "Sending Key Half: " << sendingkeyhalf <<std::endl;
 	}
 	else if (alg == 2) {
 		//establish public keys
@@ -120,12 +87,10 @@ void KeyExchange()
 		mpz_init(g);
 		getRandPrime(p);
 		getRandPrime(g);
-		return 0;
+		sendKeyDiffieHellman(sendingkeyhalf,g,p);
 	}
 	else {
-		std::cout << "Error";
-		std::cerr << "Invalid Algorithm Option: " << alg;
-		return -1;
+		std::cout << "Error" <<std::endl <<std::flush;
+		std::cerr << "Invalid Algorithm Option: " << alg <<std::endl;
 	}
-
 }

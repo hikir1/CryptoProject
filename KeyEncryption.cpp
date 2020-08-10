@@ -1,5 +1,4 @@
-#include "KeyGeneration.cpp"
-
+#include "util.cpp"
 /*
 input:	c - cryptotext to be sent stored here
 		m - message to be encrypted
