@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <bits/stdc++.h> 
 #include "sha1.h"
-#include "../util.cpp"
+#include "hmac_util.hpp"
 
 std::string SHA1::circle_shift(int shift, std::string shifted){
 	int len = shifted.length();
