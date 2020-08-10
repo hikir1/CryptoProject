@@ -1,4 +1,4 @@
-#include "util.cpp"
+#include "util.hpp"
 /*
 input:	c - cryptotext to be sent stored here
 		m - message to be encrypted

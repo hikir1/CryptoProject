@@ -2,7 +2,7 @@
 //
 
 #include <math.h>
-#include "util.cpp"
+#include "util.hpp"
 
 const int diffiekeyhalfsize = 128;
 
