@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
+#include "ssh.hpp"
 
 extern "C" {
 	#include <sys/types.h>

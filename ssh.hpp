@@ -1,5 +1,6 @@
 #ifndef _SSH_HPP_
 #define _SSH_HPP_
+#include <cstring>
 
 constexpr size_t MSG_MAX = 1024; // bytes
 
