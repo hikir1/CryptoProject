@@ -6,6 +6,11 @@
 #include <cstring>
 #include "ssh.hpp"
 #include "aes/aes.hpp"
+#include "hmac/hmac.h"
+#include <cassert>
+#ifndef NDEBUG
+#include <climits>
+#endif
 
 extern "C" {
 	#include <sys/types.h>
@@ -139,7 +144,7 @@ int bank(int cd, const Keys &keys) {
 		return -1;
 	}
 	char ptxt[sizeof(ctxt)];
-	aes::decrypt(ctxt, ptxt, (size_t)ctxtlen, keys.aes_iv, keys.aes_key);
+	aes::cbc_decrypt(ctxt, ptxt, (size_t)ctxtlen, keys.aes_iv, keys.aes_key);
 	if (hmac::create_HMAC(ptxt, keys.hmac_key).compare(mac) != 0) {
 		std::cout << "Corrupt message detected. HMAC's do not match." << std::endl;
 		return -1;
@@ -158,7 +163,7 @@ int bank(int cd, const Keys &keys) {
 		ctxt[0] = 0;
 	break;
 	default:
-		
+	break;
 	}
 
 	// server's ptxt is now in ctxt
@@ -169,13 +174,19 @@ int bank(int cd, const Keys &keys) {
 		perror("ERROR: Failed to send HMAC");
 		return -1;
 	}
-	aes::encrypt(ctxt, ptxt, (size_t)ctxtlen, keys.aes_iv, keys.aes_key);
-	if (send(cd, ptxt, ctxtlen, 0) == -1) {
+	size_t newlen = (size_t)ctxtlen;
+	aes::cbc_encrypt(ctxt, ptxt, newlen, keys.aes_iv, keys.aes_key);
+	if (send(cd, ptxt, newlen, 0) == -1) {
 		perror("ERROR: Failed to send message");
 		return -1;
 	}
 	
 	
+	return 0;
+}
+
+int imtired(int cd) {
+
 	return 0;
 }
 

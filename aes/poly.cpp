@@ -1,4 +1,5 @@
 #include <cstdint>
+#include <cassert>
 #ifndef NDEBUG
 #include <iostream>
 #endif
@@ -104,7 +105,6 @@ namespace aes {
 
 #ifdef TEST_POLY
 #include <iostream>
-#include <cassert>
 int main() {
 	aes::Poly a = 0x57, b = 0x83;
 	assert(a + b == 0xD4);
