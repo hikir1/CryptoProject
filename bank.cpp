@@ -112,12 +112,6 @@ int hello(int cd) {
 	return 0;
 }
 
-struct Keys {
-	std::string hmac_key;
-	aes::Key aes_key;
-	aes::IV aes_iv;
-};
-
 int keyex(int cd, unsigned char id, Keys &keys) {
 	char buf[KEYEX_LEN + 1] = {0};
 	if (try_recv(cd, buf, KEYEX_LEN + 1) == -1)
