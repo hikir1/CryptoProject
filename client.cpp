@@ -56,27 +56,16 @@ int main(int argc, char ** argv)
 
   inet_ntop(p->ai_family, get_in_addr((struct sockaddr *)p->ai_addr),
             size_of, sizeof size_of);
-  printf("client: connecting to %s\n", size_of);
   freeaddrinfo(server_info); // all done with this structure
 
   if ((num_bytes = recv(client, buf, MAXDATASIZE-1, 0)) == -1) {
-    perror("recv");
+    perror("Error: recv failed");
     exit(1);
   }
 
     buf[num_bytes] = '\0';
 
-    printf("client: received '%s'\n",buf);
-
-    close(client);
-
-    return 0;
-}
-  int sd = socket( PF_INET, SOCK_STREAM, 0 );
-  if ( sd == -1 ){
-    perror( "socket() failed" );
-    exit(EXIT_FAILURE);
-  }
+  printf("client: received '%s'\n",buf);
   std::cout << "For depositing funds please use the format \"1 $amount\"" << std::endl;
   std::cout << "For withdrawing funds please use the format \"2 $amount\"" << std::endl;
   std::cout << "To deplay your balance please use the format \"3\"" << std::endl << std::endl;;
@@ -114,7 +103,7 @@ int main(int argc, char ** argv)
     //then compare macs
 
   }
-
-
+  sleep(5);
+  close(client);
   return EXIT_SUCCESS;
 }
