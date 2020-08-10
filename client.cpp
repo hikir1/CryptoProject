@@ -2,7 +2,7 @@
 #include <sys/socket.h> 
 #include <arpa/inet.h> 
 #include <unistd.h> 
-#include <string.h> 
+#include <string> 
 #include <sys/types.h>
 #include <stdlib.h>
 #include <netinet/in.h>
@@ -56,8 +56,14 @@ int main(int argc, char ** argv)
     perror("Error: recv failed");
     return EXIT_FAILURE;
   }
+  std::string = 
+  int fail = write( client, string.c_str(), .length()); 
+  if ( fail < strlen( msg ) ){
+    perror( "write() failed" );
+    return EXIT_FAILURE;
+  }
 
-    buf[num_bytes] = '\0';
+  buf[num_bytes] = '\0';
 
   printf("client: received '%s'\n",buf);
   std::cout << "For depositing funds please use the format \"1 $amount\"" << std::endl;

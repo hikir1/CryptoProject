@@ -5,8 +5,7 @@
 #include <algorithm>
 #include "sha1.h"
 #include "hmac.h"
-#include "../util.cpp"
-
+#include "hmac_util.cpp"
 
 void hmac::generate(){
 	ipad = "";
