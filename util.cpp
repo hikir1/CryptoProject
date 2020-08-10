@@ -5,8 +5,18 @@
 #include <sstream>
 #include <random>
 #include <gmpxx.h>
+<<<<<<< HEAD
 #include <unordered_map>
 #include <unistd.h>
+=======
+#include <bits/stdc++.h>
+#include <algorithm>
+#include <stdio.h>
+#include <tgmath.h>
+#include <cstdint>
+#include <fstream>
+#include <iomanip>
+>>>>>>> f147529f0407026c1da6976c92180aafd640d7fb
 
 //set static global so doesn't reinitialize on random calls
 static std::random_device rd;
@@ -264,6 +274,10 @@ std::string convert_binary(std::string swapped){
 		part_binary = std::bitset<8>(swapped.c_str()[x]).to_string();
         full_binary = full_binary + part_binary;
     }
+    //makes sure the length is correct
+    while(full_binary.length()%8 != 0){
+    	full_binary = "0" + full_binary;
+    }
     return full_binary;
 }
 
@@ -281,6 +295,10 @@ std::string convert_plaintext(std::string answer){
         char character = char(bits.to_ulong());
         //adds it to plaintext
         plaintext = plaintext + character;
+    }
+    //fixes any trailing spaces
+    if(plaintext.length() > (answer.length()/8)){
+    	plaintext = plaintext.substr(0, answer.length()/8);
     }
     return plaintext;
 }
