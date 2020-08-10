@@ -264,6 +264,10 @@ string convert_binary(string swapped){
 		part_binary = bitset<8>(swapped.c_str()[x]).to_string();
         full_binary = full_binary + part_binary;
     }
+    //makes sure the length is correct
+    while(full_binary.length()%8 != 0){
+    	full_binary = "0" + full_binary;
+    }
     return full_binary;
 }
 
@@ -281,6 +285,10 @@ string convert_plaintext(string answer){
         char character = char(bits.to_ulong());
         //adds it to plaintext
         plaintext = plaintext + character;
+    }
+    //fixes any trailing spaces
+    if(plaintext.length() > (answer.length()/8)){
+    	plaintext = plaintext.substr(0, answer.length()/8);
     }
     return plaintext;
 }

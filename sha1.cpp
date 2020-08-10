@@ -141,6 +141,10 @@ void sha1::reset_sha1(){
 }
 
 std::string sha1::run_sha(std::string convert){
+	if(convert.length() > pow(2,64)){
+		perror("Error: Length of string exceeds capabilities");
+		return "Error";
+	}
 	std::string padded = "";
 	std::string hashed = "";
 	reset_sha1();
