@@ -94,22 +94,3 @@ void KeyExchange(mpz_t sendingkeyhalf)
 		std::cerr << "Invalid Algorithm Option: " << alg <<std::endl;
 	}
 }
-
-int main(){
-	//test diffie hellman
-	mpz_t k;
-	mpz_init(k);
-	KeyExchange(k);
-	mpz_t rkey;
-	mpz_set_ui(rkey,16);
-	mpz_t sharedsecret;
-	std::cout<<"here"<<std::endl<<std::flush;
-	mpz_t p;
-	mpz_init(p);
-	mpz_set_ui(p,23);
-	mpz_init(sharedsecret);
-	mpz_t pkb;
-	mpz_init(pkb);
-	mpz_set_ui(pkb,4);
-	sharedkey(sharedsecret,rkey,p,pkb);
-}
