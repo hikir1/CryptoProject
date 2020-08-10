@@ -6,6 +6,13 @@
 #include <chrono>
 #include <random>
 #include <gmpxx.h>
+#include <bits/stdc++.h>
+#include <algorithm>
+#include <stdio.h>
+#include <tgmath.h>
+#include <cstdint>
+#include <fstream>
+#include <iomanip>
 
 //set static global so doesn't reinitialize on random calls
 static std::random_device rd;
@@ -67,9 +74,9 @@ unsigned long long int Bin_to_Dec(unsigned long long int given){
     return bin_answer;
 }
 
-string addBin(string first, string second){ 
+std::string addBin(std::string first, std::string second){ 
 	//adds two binary strings together in binary number form
-    string result = "";
+    std::string result = "";
     int count = 0;
     int x = first.size() - 1;
     int y = second.size() - 1; 
@@ -141,7 +148,7 @@ std::string or_string(std::string first, std::string second){
 	return answer;
 }
 
-void conversionMap(unordered_map<std::string, char> *bth){ 
+void conversionMap(std::unordered_map<std::string, char> *bth){ 
     (*bth)["0000"] = '0'; 
     (*bth)["0001"] = '1'; 
     (*bth)["0010"] = '2'; 
@@ -220,7 +227,7 @@ std::string Hex_to_Bin(std::string given){
             answer = answer + "1111"; 
             break; 
         default: 
-            cout << "\nIncorrect digit "<< given[x] << endl; 
+            std::cout << "\nIncorrect digit "<< given[x] << std::endl; 
         } 
         x++; 
     } 
@@ -231,7 +238,7 @@ std::string Bin_to_Hex(std::string given) {
     while(given.length() % 4 != 0){
         given = "0" + given; 
     }
-    unordered_map<string, char> hex_map; 
+    std::unordered_map<std::string, char> hex_map; 
     conversionMap(&hex_map);
     std::string hex = ""; 
     for(unsigned int x = 0; x < given.length();){ 
@@ -254,14 +261,14 @@ std::string Dec_to_Bin(unsigned long long int value, bool flag=false){
     return (flag) ? "" : "0";
 }
 
-string convert_binary(string swapped){
+std::string convert_binary(std::string swapped){
 	//takes in a string and converts it to binary
-	string full_binary = "";
-	string part_binary = "";
+	std::string full_binary = "";
+	std::string part_binary = "";
 	//loops through each character and turns its ascii value
 	//and turns it into 
     for (unsigned int x = 0; x < swapped.length(); x++){
-		part_binary = bitset<8>(swapped.c_str()[x]).to_string();
+		part_binary = std::bitset<8>(swapped.c_str()[x]).to_string();
         full_binary = full_binary + part_binary;
     }
     //makes sure the length is correct
@@ -271,15 +278,15 @@ string convert_binary(string swapped){
     return full_binary;
 }
 
-string convert_plaintext(string answer){
-	string plaintext = "";
+std::string convert_plaintext(std::string answer){
+	std::string plaintext = "";
 	//creates a stringstream pointing to answer
-    stringstream sstream(answer);
+    std::stringstream sstream(answer);
     //while there are no error states
     while(sstream.good())
     {
     	//find 8 bits in the stream
-        bitset<8> bits;
+        std::bitset<8> bits;
         sstream >> bits;
         //form a char from them
         char character = char(bits.to_ulong());
