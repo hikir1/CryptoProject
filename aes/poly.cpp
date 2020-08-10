@@ -10,6 +10,7 @@ namespace aes {
 
 		public:
 
+		static constexpr uint16_t MOD = 0x11B;
 		constexpr Poly(uint8_t coefs = 0): coefs(coefs) {}
 
 		constexpr operator uint8_t() {
@@ -52,7 +53,6 @@ namespace aes {
 		for (int i = 0; i < 8; i++)
 			prod ^= (coefs * ((other.coefs >> i) & 1)) << i;
 		// modulous by long division
-		constexpr uint16_t MOD = 0x11B;
 		int msig = 0, mult = 0; //initialized to 0 for constexpr
 		while (prod >> 8) {
 			// index of most significant bit
@@ -81,7 +81,7 @@ namespace aes {
 		out << '[';
 		int i;
 		for (i = 0; i < 7; i++) {
-			if ((p.coefs >> 7-i) & 1) {
+			if ((p.coefs >> (7-i)) & 1) {
 				out << "x^" << 7-i;
 				break;
 			}
@@ -91,7 +91,7 @@ namespace aes {
 			return out;
 		}
 		for (i += 1; i < 7; i++)
-			if ((p.coefs >> 7-i) & 1)
+			if ((p.coefs >> (7-i)) & 1)
 				out << " + x^" << 7-i;
 		if (p.coefs & 1)
 			out << " + 1";
