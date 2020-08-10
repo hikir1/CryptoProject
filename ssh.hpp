@@ -15,9 +15,9 @@ struct Keys {
 };
 
 enum BankMsg {
-	DEPOSIT = 1;
-	WITHDRAW = 2;
-	BALANCE = 3;
+	DEPOSIT = '1';
+	WITHDRAW = '2';
+	BALANCE = '3';
 };
 
 #endif
