@@ -5,10 +5,8 @@
 #include <sstream>
 #include <random>
 #include <gmpxx.h>
-<<<<<<< HEAD
 #include <unordered_map>
 #include <unistd.h>
-=======
 #include <bits/stdc++.h>
 #include <algorithm>
 #include <stdio.h>
@@ -16,7 +14,6 @@
 #include <cstdint>
 #include <fstream>
 #include <iomanip>
->>>>>>> f147529f0407026c1da6976c92180aafd640d7fb
 
 //set static global so doesn't reinitialize on random calls
 static std::random_device rd;

@@ -1,3 +1,5 @@
+#ifdef BANK
+
 #include <iostream>
 #include <cstdlib>
 #include <cerrno>
@@ -244,3 +246,5 @@ int main(int argc, char ** argv) {
 	
 
 }
+
+#endif
