@@ -1,161 +1,85 @@
 // KeyGeneration.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
 
-#include "pch.h"
-#include <iostream>
-#include <vector>
+#include <math.h>
+#include "util.cpp"
 
-// Power function to return value of a ^ b mod P 
-long long int pow(long long int a, long long int b,
-	long long int P)
-{
-	if (b == 1)
-		return a;
-
-	else
-		return (((long long int)pow(a, b)) % P);
-}
-
-//calculate gcd of a and b
-long long int calcGCD(long long int a, long long int h) {
-	int tmp;
-	while (1) {
-		tmp = a % h;
-		if (tmp == 0) {
-			return h;
-		}
-		a = h;
-		h = tmp;
-	}
-}
-
-//calculate lcm of a and b
-long long int calcLCM(long long int a, long long int b) {
-	// maximum value between a and b is stored in max
-	long long int max = (a > b) ? a : b;
-	do
-	{
-		if (max % a == 0 && max % b == 0)
-		{
-			return max;
-		}
-		else
-			++max;
-	} while (true);
-
-	return 0;
-}
-
-//check if N is prime
-int isPrime(int N) {
-	if (N < 2 || (!(N & 1) && N != 2))
-		return 0;
-	for (int i = 3; i*i <= N; i += 2) {
-		if (!(N%i))
-			return 0;
-	}
-	return 1;
-}
-
-double getRandPrime() {
-	while (true) {
-		double r = rand();
-		if (isPrime(r)) {
-			return r;
-		}
-	}
-}
-
-//diffie hellman approach
+//diffie hellman approach with predefined key values
 //both users run this to get shared secret
-int diffieHellman(long long int g, long long int p,
-	long long int pk) {
-
-	//generate keys to send
-	long long int genKey = pow(g, pk, p);
-
+unsigned long long staticdiffieHellman(unsigned long long g, unsigned long long p, unsigned long long pkb) {
 	//CODE TO SEND KEY HERE
 	//CODE TO RECEIVE GENERATED KEY HERE
-	//send pka
-	//received pkb
-	long long int pkb;
+	unsigned long long receivedkey = 14901228261374;
 
 	//generate secret keys upon receiving
-	long long int sharedSecret = pow(pkb, pk, p);
+	unsigned long long sharedSecret = pow(receivedkey, pkb, p);
 
 	return sharedSecret;
 }
 
-double RSA(double k, double e, double msg) {
+//diffie hellman approach with changing key values with each message
+//both users run this to get shared secret
+int ephemeralDiffieHellman(unsigned long long g, unsigned long long p) {
+
+	//predefined key to send
+	//GENERATE RANDOM 256 BIT NUM
+	unsigned long long pkb = 24708522251123;
+
+	//CODE TO SEND KEY HERE
+	//CODE TO RECEIVE GENERATED KEY HERE
+	unsigned long long receivedkey = 14901228261374;
+
+	//generate secret keys upon receiving
+	unsigned long long sharedSecret = pow(receivedkey, pkb, p);
+
+	return sharedSecret;
+}
+
+
+//e is the public key
+//
+double RSAKeyGen(double e) {
 	//Generate 2 random prime numbers
-	double p = getRandPrime();
-	double q = getRandPrime();
+	unsigned long long p = getRandPrime();
+	unsigned long long q = getRandPrime();
 
-	double N = p * q;
-	double phi = (p - 1)*(q - 1);
-
-	//e needs to be coprime and less than phi
-	while (e < phi) {
-		if (calcGCD(e, phi) == 1) {
-			break;
-		}
-		else {
-			e++;
-		}
+	unsigned long long N = p * q;
+	unsigned long long carmichaelNum = calcLCM(p - 1, q - 1);
+	int k = 1;
+	double d = double(k + carmichaelNum) / e;
+	while (d != floor(d)) {
+		k += 1;
+		d = double(k*carmichaelNum) / e;
 	}
+	d = unsigned long long(d);
+	//SEND e to server
+	//Receive new e from server
+	//SEND N to server
+	//Receive new N (N2) from server
+	unsigned long long N2;
 
-	//Private Key d
-	double d = (1 + (k *phi)) / e;
-	 
-	//cryptotext
-	double c = pow(msg, e);
-	c = fmod(c, N);
-	return c;
+	return d, N2, e, N;
 }
 
-string convert_binary(string swapped, int *num){
-	//takes in a string and converts it to binary
-	string full_binary = "";
-	//loops through each character and turns its ascii value
-	//and turns it into 
-    for (unsigned int x = 0; x < swapped.length(); x++){
-        int A_value = int(swapped[x]); 
-        string part_binary = ""; 
-        //turns the ascii value into binary
-        while (A_value > -1) { 
-            (A_value % 2)? part_binary.push_back('1') : part_binary.push_back('0');
-            //catches if the first binary bit is zero
-            if (A_value == 0){
-            	break;
-            }
-            A_value /= 2; 
-        }
-        reverse(part_binary.begin(), part_binary.end());
-        //adds it to the overall binary
-        full_binary = full_binary + part_binary;
-    }
-    return full_binary;
-}
-
-string convert_plaintext(string answer){
-	string plaintext = "";
-	//creates a stringstream pointing to answer
-    stringstream sstream(answer);
-    //while there are no error states
-    while(sstream.good())
-    {
-    	//find 8 bits in the stream
-        bitset<8> bits;
-        sstream >> bits;
-        //form a char from them
-        char character = char(bits.to_ulong());
-        //adds it to plaintext
-        plaintext = plaintext + character;
-    }
-    return plaintext;
-}
 
 int main()
 {
-    std::cout << "Hello World!\n"; 
+
+	/*
+	int alg;
+	std::cout << "Choose an algorithm\n";
+	std::cout << "Enter [1] for Static Diffie Hellman\nEnter [2] for Ephemeral Diffie Hellman\n\n";
+	std::cin >> alg;
+	if (alg == 1) {
+		return 0;
+	}
+	else if (alg == 2) {
+		return 0;
+	}
+	else {
+		std::cout << "Error";
+		std::cerr << "Invalid Algorithm Option: " << alg;
+		return -1;
+	}
+	*/
 }
