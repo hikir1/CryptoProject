@@ -1,76 +1,55 @@
 #include <iostream>
-#include <bitset>
 #include <vector>
 #include <string>
 #include <bitset>
 #include <sstream>
 #include <chrono>
 #include <random>
+#include <gmpxx.h>
 
-// Power function to return value of a ^ b mod P 
-unsigned long long pow(unsigned long long a, unsigned long long b,
-	unsigned long long P)
-{
-	if (b == 1)
-		return a;
+//set static global so doesn't reinitialize on random calls
+static std::random_device rd;
 
-	else
-		return (((unsigned long long)pow(a, b)) % P);
-}
-
-//calculate gcd of a and b
-unsigned long long calcGCD(unsigned long long a, unsigned long long h) {
-	unsigned long long tmp;
-	while (1) {
-		tmp = a % h;
-		if (tmp == 0) {
-			return h;
-		}
-		a = h;
-		h = tmp;
-	}
+// Modular Exponentation 
+void pow(mpz_t result, mpz_t x, mpz_t y, mpz_t p)  
+{  
+    mpz_powm(result,x,y,p); 
 }
 
 //calculate lcm of a and b
-unsigned long long calcLCM(unsigned long long a, unsigned long long b) {
-	// maximum value between a and b is stored in max
-	unsigned long long max = (a > b) ? a : b;
-	do
-	{
-		if (max % a == 0 && max % b == 0)
-		{
-			return max;
-		}
-		else
-			++max;
-	} while (true);
-
-	return 0;
+void calcLCM(mpz_t result, mpz_t a, mpz_t b) {
+	mpz_lcm(result,a,b);
 }
 
 //check if N is prime
-int isPrime(unsigned long long N) {
-	if (N < 2 || (!(N & 1) && N != 2))
-		return 0;
-	for (int i = 3; i*i <= N; i += 2) {
-		if (!(N%i))
-			return 0;
-	}
-	return 1;
+int isPrime(mpz_t N) {
+	return mpz_probab_prime_p (N,50);
 }
 
-unsigned long long getRandPrime() {
-	while (true) {
-		unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+void getRandPrime(mpz_t result) {
 
-		std::mt19937 generator(seed);  // mt19937 is a standard mersenne_twister_engine
-		unsigned long long r = generator();
-		if (isPrime(r)) {
-			return r;
-		}
+	unsigned min_digits = 6;
+    unsigned max_digits = 9;
+    mpz_t rmin;
+    mpz_init(rmin);
+    mpz_ui_pow_ui(rmin, 10, min_digits-1);
+
+    mpz_t rmax;
+    mpz_init(rmax);
+    mpz_ui_pow_ui(rmax, 10, max_digits);
+
+    gmp_randstate_t rstate;
+    gmp_randinit_mt(rstate);
+	gmp_randseed_ui(rstate,rd());
+    mpz_init(result);
+    while(1){
+		do{
+	        mpz_urandomm(result, rstate, rmax);
+	    }while(mpz_cmp(result, rmin) < 0);
+	    if (mpz_probab_prime_p(result, 50))
+          break;
 	}
 }
-
 
 unsigned long long int Bin_to_Dec(unsigned long long int given){
 	//takes in a long long int of binary converts it to decimal
@@ -266,7 +245,6 @@ std::string Bin_to_Hex(std::string given) {
     return hex;     
 } 
 
-
 std::string Dec_to_Bin(unsigned long long int value, bool flag=false){
 	//recursive algorithm to convert decimal to binary
     static const std::string digits [2] = {"0", "1"};
@@ -306,3 +284,13 @@ string convert_plaintext(string answer){
     }
     return plaintext;
 }
+
+/*
+int main(){
+	mpz_t rando;
+	getRandPrime(rando);
+	std::cout << "Your Random Prime: " << rando << std::endl; 
+	return 0;
+}
+*/
+
