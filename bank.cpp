@@ -1,3 +1,5 @@
+#ifdef BANK
+
 #include <iostream>
 #include <cstdlib>
 #include <cerrno>
@@ -152,7 +154,7 @@ int bank(int cd, const Keys &keys) {
 
 	// put server's ptxt in ctxt
 
-	switch ((int)ptxt[0]) {
+	switch (ptxt[0]) {
 	case BankMsg::DEPOSIT:
 		ctxt[0] = 0;
 	break;
@@ -244,3 +246,5 @@ int main(int argc, char ** argv) {
 	
 
 }
+
+#endif

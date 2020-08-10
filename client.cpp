@@ -26,10 +26,8 @@ int main(int argc, char ** argv)
   //key
   int client, num_bytes;
   char buf[MSG_MAX];
-  struct addrinfo information, *server_info, *p;
+  struct addrinfo information{0}, *server_info, *p;
   int value;
-  char size_of[INET6_ADDRSTRLEN];
-  memset(&information, 0, sizeof information);
   information.ai_family = AF_UNSPEC;
   //set to TCP
   information.ai_socktype = SOCK_STREAM;
@@ -49,19 +47,14 @@ int main(int argc, char ** argv)
     }
     break;
   }
+  freeaddrinfo(server_info); // all done with this structure
   if (p == NULL) {
     perror("Error: client failed to connect\n");
     return EXIT_FAILURE;
   }
-
-  inet_ntop(p->ai_family, get_in_addr((struct sockaddr *)p->ai_addr),
-            size_of, sizeof size_of);
-  freeaddrinfo(server_info); // all done with this structure
-
-  //TODO Send message then get message ie create keys
   if ((num_bytes = recv(client, buf, MAXDATASIZE-1, 0)) == -1) {
     perror("Error: recv failed");
-    exit(1);
+    return EXIT_FAILURE;
   }
 
     buf[num_bytes] = '\0';
