@@ -5,7 +5,7 @@
 #include <algorithm>
 #include "sha1.h"
 #include "hmac.h"
-#include "hmac_util.cpp"
+#include "hmac_util.hpp"
 
 void hmac::generate(){
 	ipad = "";
@@ -30,17 +30,17 @@ std::string hmac::create_HMAC(std::string message, std::string c){
 		}
 		refurbished = refurbished.substr(0, byte_length);
 	}
-	bin = convert_binary(refurbished);
+	bin = hmac_util::convert_binary(refurbished);
 	if(refurbished.length() < byte_length){
 		while(bin.length() < byte_length*8){
 			bin = bin + "0";	
 		}
 	}
 	refurbished = bin;
-	o_key = xor_string(refurbished, opad);
-	i_key = xor_string(refurbished, ipad);
-	i_key = i_key + convert_binary(message);
-	i_key = Hex_to_Bin(SHA1::run_sha(i_key));
+	o_key = hmac_util::xor_string(refurbished, opad);
+	i_key = hmac_util::xor_string(refurbished, ipad);
+	i_key = i_key + hmac_util::convert_binary(message);
+	i_key = hmac_util::Hex_to_Bin(SHA1::run_sha(i_key));
 	o_key = o_key + i_key;
 	return SHA1::run_sha(o_key);
 }
