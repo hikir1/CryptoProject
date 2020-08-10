@@ -5,6 +5,7 @@
 #include <algorithm>
 #include "sha1.h"
 #include "hmac.h"
+#include "../util.cpp"
 
 
 void hmac::generate(){
@@ -24,9 +25,9 @@ std::string hmac::create_HMAC(std::string message, std::string c){
 	std::string o_key = "";
 	std::string i_key = "";
 	if(c.length() > byte_length){
-		refurbished = sha1::run_sha(c);
+		refurbished = SHA1::run_sha(c);
 		while(refurbished.length() < byte_length){
-			refurbished = refurbished + sha1::run_sha(refurbished + c);
+			refurbished = refurbished + SHA1::run_sha(refurbished + c);
 		}
 		refurbished = refurbished.substr(0, byte_length);
 	}
@@ -40,7 +41,7 @@ std::string hmac::create_HMAC(std::string message, std::string c){
 	o_key = xor_string(refurbished, opad);
 	i_key = xor_string(refurbished, ipad);
 	i_key = i_key + convert_binary(message);
-	i_key = Hex_to_Bin(sha1::run_sha(i_key));
+	i_key = Hex_to_Bin(SHA1::run_sha(i_key));
 	o_key = o_key + i_key;
-	return sha1::run_sha(o_key);
+	return SHA1::run_sha(o_key);
 }
