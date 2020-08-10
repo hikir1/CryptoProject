@@ -192,7 +192,8 @@ namespace {
 
 #include <cstring>
 
-void aes::cbc_encrypt(const char * ptxt, char * ctxt, size_t len, 
+// ctxt needs at least BLOCK_BYTES extra space (for padding)
+void aes::cbc_encrypt(const char * ptxt, char * ctxt, size_t &len,  
 		const uint32_t iv[BLOCK_SIZE], const uint32_t key[KEY_SIZE]) {
 	subkey_t subkeys[NUM_ROUNDS + 1];
 	expandKey(key, (uint32_t *)subkeys);
@@ -210,8 +211,10 @@ void aes::cbc_encrypt(const char * ptxt, char * ctxt, size_t len,
 	}
 }
 
-void aes::cbc_decrypt(const char * ctxt, char * ptxt, size_t len, // len must be multiple of BLOCK_SIZE
+// len must be multiple of BLOCK_BYTES
+void aes::cbc_decrypt(const char * ctxt, char * ptxt, size_t len, 
 		const uint32_t iv[BLOCK_SIZE], const uint32_t key[KEY_SIZE]) {
+	assert(len % BLOCK_BYTES == 0);
 	subkey_t subkeys[NUM_ROUNDS + 1];
 	expandKey(key, (uint32_t *)subkeys);
 	memcpy(ptxt, ctxt, len);

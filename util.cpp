@@ -3,9 +3,12 @@
 #include <string>
 #include <bitset>
 #include <sstream>
-#include <chrono>
 #include <random>
 #include <gmpxx.h>
+<<<<<<< HEAD
+#include <unordered_map>
+#include <unistd.h>
+=======
 #include <bits/stdc++.h>
 #include <algorithm>
 #include <stdio.h>
@@ -13,6 +16,7 @@
 #include <cstdint>
 #include <fstream>
 #include <iomanip>
+>>>>>>> f147529f0407026c1da6976c92180aafd640d7fb
 
 //set static global so doesn't reinitialize on random calls
 static std::random_device rd;
@@ -34,7 +38,6 @@ int isPrime(mpz_t N) {
 }
 
 void getRandPrime(mpz_t result) {
-
 	unsigned min_digits = 6;
     unsigned max_digits = 9;
     mpz_t rmin;
@@ -299,13 +302,4 @@ std::string convert_plaintext(std::string answer){
     }
     return plaintext;
 }
-
-/*
-int main(){
-	mpz_t rando;
-	getRandPrime(rando);
-	std::cout << "Your Random Prime: " << rando << std::endl; 
-	return 0;
-}
-*/
 

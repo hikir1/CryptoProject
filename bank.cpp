@@ -5,6 +5,12 @@
 #include <cstdio>
 #include <cstring>
 #include "ssh.hpp"
+#include "aes/aes.hpp"
+#include "hmac/hmac.h"
+#include <cassert>
+#ifndef NDEBUG
+#include <climits>
+#endif
 
 extern "C" {
 	#include <sys/types.h>
@@ -63,9 +69,7 @@ int make_and_bind_sd(char * host, char * port) {
 static bool gtimeout = false;
 void timeout(int signum) { gtimeout = true; }
 
-constexpr size_t HMAC_LEN = 1; // TODO
-
-int try_recv(int cd, char * buf, size_t buflen) {
+ssize_t try_recv(int cd, char * buf, size_t buflen) {
 	assert(buflen < INT_MAX);
 	constexpr unsigned int TIMEOUT = 3; // seconds
 	gtimeout = false;
@@ -85,7 +89,7 @@ int try_recv(int cd, char * buf, size_t buflen) {
 		return -1;
 	}
 	buf[len] = '\0';
-	return 0;
+	return len;
 }
 
 int hello(int cd) {
@@ -129,7 +133,61 @@ int keyex(int cd, unsigned char id, Keys &keys) {
 }
 
 int bank(int cd, const Keys &keys) {
+	char mac[hmac::output_length + 1];
+	char ctxt[MSG_MAX + aes::BLOCK_BYTES + 1];
+	ssize_t ctxtlen;
+	if (try_recv(cd, mac, hmac::output_length + 1) == -1
+			|| (ctxtlen = try_recv(cd, ctxt, MSG_MAX + 1)) == -1)
+		return -1;
+	if (ctxtlen % aes::BLOCK_BYTES != 0) {
+		std::cout << "Invalid message format." << std::endl;
+		return -1;
+	}
+	char ptxt[sizeof(ctxt)];
+	aes::cbc_decrypt(ctxt, ptxt, (size_t)ctxtlen, keys.aes_iv, keys.aes_key);
+	if (hmac::create_HMAC(ptxt, keys.hmac_key).compare(mac) != 0) {
+		std::cout << "Corrupt message detected. HMAC's do not match." << std::endl;
+		return -1;
+	}
+
+	// put server's ptxt in ctxt
+
+	switch ((int)ptxt[0]) {
+	case BankMsg::DEPOSIT:
+		ctxt[0] = 0;
+	break;
+	case BankMsg::WITHDRAW:
+		ctxt[0] = 0;
+	break;
+	case BankMsg::BALANCE:
+		ctxt[0] = 0;
+	break;
+	default:
+	break;
+	}
+
+	// server's ptxt is now in ctxt
+	// server's ctxt will be put in ptxt
+
+	if (send(cd, hmac::create_HMAC(ctxt, keys.hmac_key).c_str(),
+			hmac::output_length, MSG_MORE) == -1) {
+		perror("ERROR: Failed to send HMAC");
+		return -1;
+	}
+	size_t newlen = (size_t)ctxtlen;
+	aes::cbc_encrypt(ctxt, ptxt, newlen, keys.aes_iv, keys.aes_key);
+	if (send(cd, ptxt, newlen, 0) == -1) {
+		perror("ERROR: Failed to send message");
+		return -1;
+	}
 	
+	
+	return 0;
+}
+
+int imtired(int cd) {
+
+	return 0;
 }
 
 int main(int argc, char ** argv) {
