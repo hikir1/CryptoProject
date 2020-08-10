@@ -6,6 +6,7 @@
 #include <random>
 #include <gmpxx.h>
 #include <unordered_map>
+#include <unistd.h>
 #include <bits/stdc++.h>
 #include <algorithm>
 #include <stdio.h>
