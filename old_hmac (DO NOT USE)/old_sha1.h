@@ -20,8 +20,6 @@ class SHA1{
 		std::string nonlinear_funct(int t, uint32_t B, uint32_t C, uint32_t D);
 		void iterations(std::string chunk);
 		std::string hash_string(string full_string);
-		std::string circle_shift(int shift, std::string shifted);
-		uint32_t circle_shift_uint(int shift, uint32_t shifted);
 }
 
 

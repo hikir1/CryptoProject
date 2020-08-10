@@ -5,8 +5,9 @@
 #include <algorithm>
 #include <bits/stdc++.h> 
 #include "sha1.h"
+#include "util.cpp"
 
-std::string circle_shift(int shift, std::string shifted){
+std::string sha1::circle_shift(int shift, std::string shifted){
 	int len = shifted.length();
 	std::string start = "";
 	std::string end = "";
@@ -25,11 +26,11 @@ std::string circle_shift(int shift, std::string shifted){
 	return finished;
 }
 
-uint32_t circle_shift_uint(int shift, uint32_t shifted){
+uint32_t sha1::circle_shift_uint(int shift, uint32_t shifted){
 	return (shifted << shift) | (shifted >> (32 - shift));
 }
 
-std::string padding(std::string message, int length){
+std::string sha1::padding(std::string message, int length){
 	//gets the length of the message
 	std::string final = "" + message;
 	int pad_size = length % 512;
@@ -55,7 +56,7 @@ std::string padding(std::string message, int length){
 	return final + ending;
 }
 
-uint32_t nonlinear_funct(int t, uint32_t B, uint32_t C, uint32_t D){
+uint32_t sha1::nonlinear_funct(int t, uint32_t B, uint32_t C, uint32_t D){
 	if (0 <= t && t <= 19){
 		return (B&C)|((~B)&D);
 	}else if(20 <= t && t <= 39){
@@ -69,7 +70,7 @@ uint32_t nonlinear_funct(int t, uint32_t B, uint32_t C, uint32_t D){
 	}
 }
 
-inline static void convert(std::string &strs, vector<uint32_t> &integers){
+inline static void sha1::convert(std::string &strs, vector<uint32_t> &integers){
     for (size_t i = 0; i < num_blocks; i++){
          integers[i] = (strs[4*i+0] & 0xff)<<24
         		   | (strs[4*i+1] & 0xff)<<16
@@ -78,7 +79,7 @@ inline static void convert(std::string &strs, vector<uint32_t> &integers){
     }
 }
 
-void iterations(std::string chunk){
+void sha1::iterations(std::string chunk){
 	std::vector<uint32_t> W(80);
 	uint32_t A = holder[0];
 	uint32_t B = holder[1];
@@ -114,7 +115,7 @@ void iterations(std::string chunk){
 	holder[4] = holder[4] + E;
 }
 
-std::string hash_string(string full_string){
+std::string sha1::hash_string(string full_string){
 	int chucks = full_string.length()/512;
 	string full = "";
 	string chunk = "";
@@ -131,7 +132,7 @@ std::string hash_string(string full_string){
 	return full;
 }
 
-void reset_sha1(){
+void sha1::reset_sha1(){
 	holder[0] = 0x08de7a01;
 	holder[1] = 0xdf05e29c;
 	holder[2] = 0x7ef1613b;
@@ -139,7 +140,11 @@ void reset_sha1(){
 	holder[4] = 0xcdefa923;
 }
 
-std::string run_sha(std::string convert){
+std::string sha1::run_sha(std::string convert){
+	if(convert.length() > pow(2,64)){
+		perror("Error: Length of string exceeds capabilities");
+		return "Error";
+	}
 	std::string padded = "";
 	std::string hashed = "";
 	reset_sha1();
