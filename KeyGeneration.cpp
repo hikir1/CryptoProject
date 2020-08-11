@@ -47,6 +47,8 @@ void sharedkey(mpz_t sharedSecret, mpz_t receivedkeyhalf, mpz_t p, mpz_t pkb){
 /*
 	input: sendingkeyhalf - empty initialized mpz_t 
 */
+
+/* testing code for diffie hellman
 void KeyExchange(mpz_t sendingkeyhalf)
 {
 	int alg;
@@ -94,3 +96,4 @@ void KeyExchange(mpz_t sendingkeyhalf)
 		std::cerr << "Invalid Algorithm Option: " << alg <<std::endl;
 	}
 }
+*/
