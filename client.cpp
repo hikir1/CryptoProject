@@ -12,8 +12,8 @@
 #include "aes/aes.hpp"
 #include "hmac/hmac.h"
 #include "ssh.hpp"
-#include "RSA/RSA.cpp"
-#include "KeyGeneration.cpp"
+#include "RSA/RSA.h"
+#include "KeyGen.hpp"
 
 
 int main(int argc, char ** argv)
@@ -56,7 +56,7 @@ int main(int argc, char ** argv)
   }
 
   // RSA Encrypt
-  RSA my_rsa();
+  RSA my_rsa;
   std::string msg(HELLO_MSG,sizeof(HELLO_MSG));
   my_rsa.RSAEncrypt(msg);
   std::string encrypted_msg = my_rsa.RSAgetcryptotext();
@@ -76,14 +76,15 @@ int main(int argc, char ** argv)
   std::string received_msg(buf,sizeof(buf));
   my_rsa.RSADecrypt(received_msg);
   received_msg = my_rsa.RSAgetmessage();
-  if (strcmp(msg, received_msg) != 0){
+  if (msg.compare(received_msg) != 0){
     perror( "Hacker detected\n" );
     return EXIT_FAILURE;
   }
-  mpz_t shared_key;
-  mpz_init(shared_key);
+  
   int broken = 0;
   for(int x = 0; x < 3; x++){
+    mpz_t shared_key;
+    mpz_init(shared_key);
     char hold[MSG_MAX];
     mpz_t keyhalf;
     mpz_init(keyhalf);
@@ -91,9 +92,9 @@ int main(int argc, char ** argv)
     mpz_init(p);
     mpz_t pkb;
     mpz_init(pkb);
-    mpz_t other_keyhalf;
-    mpz_init(other_keyhalf);
-    KeyExchange(keyhalf, p, pkb); //keyhalf has proper values after this
+    mpz_t other_key_half;
+    mpz_init(other_key_half);
+    KeyGen::KeyExchange(keyhalf, p, pkb); //keyhalf has proper values after this
     mpz_class ctxt(keyhalf);
     std::string cryptotext = ctxt.get_str();
     //send keyhalf here
@@ -108,20 +109,20 @@ int main(int argc, char ** argv)
     }
     hold[num_bytes] = '\0';
     //receive key as char*
-    mpz_set_str(hold, other_key_half, 10); // this converts char* to key half
-    sharedkey(shared_key, other_key, p, pkb); //stores shared key in shared_key after this
+    mpz_set_str(other_key_half, hold, strlen(hold)); // this converts char* to key half
+    KeyGen::sharedkey(shared_key, other_key_half, p, pkb); //stores shared key in shared_key after this
     if(x == 0){
       mpz_class var(shared_key);
       cryptotext = var.get_str();
       all_keys.hmac_key = cryptotext;
     }else if(x == 1){
-      broken = aes::fill_key(all_keys.aes_key, sharedkey);
+      broken = aes::fill_key(all_keys.aes_key, shared_key);
       if(broken != 0){
         perror("Error: fill_key failed\n");
         return EXIT_FAILURE;
       }
     }else if(x == 2){
-      broken = aes::fill_iv(all_keys.aes_iv, sharedkey);
+      broken = aes::fill_iv(all_keys.aes_iv, shared_key);
       if(broken != 0){
         perror("Error: fill_key failed\n");
         return EXIT_FAILURE;
@@ -163,7 +164,7 @@ int main(int argc, char ** argv)
     // 2 = withdraw (ssh)
     // 3 = balance (ssh)
     //ignore if message doesn't start with one of these 3
-    else if (message[0] != BankMsg::DEPOSIT && message[0] != BankMsg::WITHDRAW && message[0] != BankMsg::BALANCE){
+    else if (message[0] != ATMMsg::DEPOSIT && message[0] != ATMMsg::WITHDRAW && message[0] != ATMMsg::BALANCE){
         std::cout << "Message Aborted: Message had improper start" << std::endl;
         continue;
     }
@@ -187,7 +188,8 @@ int main(int argc, char ** argv)
     }
     const char *cstr = message.c_str();
     char holder[strlen(cstr) + aes::BLOCK_BYTES];
-    aes::cbc_encrypt(cstr, holder);
+    size_t s_mess = strlen(cstr);
+    aes::cbc_encrypt(cstr, holder, s_mess, all_keys.aes_iv, all_keys.aes_key);
     std::string encrypted(holder, strlen(holder));
     fail = write( client, encrypted.c_str(), encrypted.length()); 
     if ( fail < encrypted.length()){
@@ -211,10 +213,11 @@ int main(int argc, char ** argv)
       perror( "Hacker detected: incorrect length\n" );
       return EXIT_FAILURE;
     }
-    aes::cbc_decrypt(last, holder2);
+    s_mess = strlen(last);
+    aes::cbc_decrypt(last, holder2, s_mess, all_keys.aes_iv, all_keys.aes_key);
     std::string gn_msg(holder2,sizeof(holder2));
     std::string check = hmac::create_HMAC(gn_msg, all_keys.hmac_key);
-    if(strcmp(en_msg,check) != 0){
+    if(en_msg.compare(check) != 0){
       perror( "Hacker detected: incorrect HMAC\n" );
       return EXIT_FAILURE;
     }else{

@@ -3,8 +3,10 @@
 
 #include <math.h>
 #include "util.hpp"
+#include "KeyGen.hpp"
 
-const int diffiekeyhalfsize = 128;
+int KeyGen::diffiekeyhalfsize = 128;
+
 
 /*
 input:	g,p - public keys 
@@ -12,7 +14,7 @@ input:	g,p - public keys
 		sendingkeyhalf - result of key to be sent stored here
 desc: sends first key half of diffie hellman 
 */
-void sendKeyDiffieHellman(mpz_t sendingkeyhalf, mpz_t g, mpz_t p, mpz_t pkb) {
+void KeyGen::sendKeyDiffieHellman(mpz_t sendingkeyhalf, mpz_t g, mpz_t p, mpz_t pkb) {
 	pow(sendingkeyhalf, g, pkb, p);
 }
 
@@ -21,7 +23,7 @@ input:	g,p - public keys
 		sendingkeyhalf - result of key to be sent stored here
 desc: sends first key half ( private key randomly generated )
 */
-void sendKeyDiffieHellman(mpz_t sendingkeyhalf, mpz_t g, mpz_t p) {
+void KeyGen::sendKeyDiffieHellman(mpz_t sendingkeyhalf, mpz_t g, mpz_t p) {
 	//generate random key to send
 	mpz_t pkb;
 	mpz_init(pkb);
@@ -36,7 +38,7 @@ input:	p - public key
 		sharedsecret - result of shared key stored here
 desc: computes shared key ( private key randomly generated )
 */
-void sharedkey(mpz_t sharedSecret, mpz_t receivedkeyhalf, mpz_t p, mpz_t pkb){
+void KeyGen::sharedkey(mpz_t sharedSecret, mpz_t receivedkeyhalf, mpz_t p, mpz_t pkb){
 	/*remove bottom 4 lines when socket prog is added*/
 	const char * const constkey = "12345678901234567890";
 	int err = mpz_set_str(receivedkeyhalf, constkey, 10); //err == 0 if pass
@@ -47,7 +49,7 @@ void sharedkey(mpz_t sharedSecret, mpz_t receivedkeyhalf, mpz_t p, mpz_t pkb){
 /*
 	input: sendingkeyhalf - empty initialized mpz_t 
 */
-void KeyExchange(mpz_t sendingkeyhalf, mpz_t p, mpz_t pkb)
+void KeyGen::KeyExchange(mpz_t sendingkeyhalf, mpz_t p, mpz_t pkb)
 {
 	int alg;
 	//establish public keys

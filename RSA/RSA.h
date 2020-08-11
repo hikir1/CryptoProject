@@ -6,8 +6,6 @@ class RSA
     RSA();
     std::string RSAgetmessage();
     std::string RSAgetcryptotext();
-    
-    private: 
    	//your public key
     mpz_t e;
     mpz_t N;
