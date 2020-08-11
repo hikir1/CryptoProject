@@ -116,13 +116,13 @@ int main(int argc, char ** argv)
       cryptotext = var.get_str();
       all_keys.hmac_key = cryptotext;
     }else if(x == 1){
-      broken = aes::fill_key(all_keys.aes_key, sharedkey);
+      broken = aes::fill_key(all_keys.aes_key, shared_key);
       if(broken != 0){
         perror("Error: fill_key failed\n");
         return EXIT_FAILURE;
       }
     }else if(x == 2){
-      broken = aes::fill_iv(all_keys.aes_iv, sharedkey);
+      broken = aes::fill_iv(all_keys.aes_iv, shared_key);
       if(broken != 0){
         perror("Error: fill_key failed\n");
         return EXIT_FAILURE;
