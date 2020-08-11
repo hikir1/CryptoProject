@@ -92,4 +92,4 @@ mpz_set_str(received char*, other_key_half, 10) // this converts char* to key ha
 sharedkey(shared_key, other_key, p, pkb) //stores shared key in shared_key after this
 
 //mpz_t is a pointer, run mpz_clear(mpt_t variablename) to free the memory
-/
+*/

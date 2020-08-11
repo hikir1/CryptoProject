@@ -58,11 +58,11 @@ int main(int argc, char ** argv)
   // RSA Encrypt
   RSA my_rsa();
   std::string msg(HELLO_MSG,sizeof(HELLO_MSG));
-  my_rsa.Encrypt(msg);
+  my_rsa.RSAEncrypt(msg);
   std::string encrypted_msg = my_rsa.RSAgetcryptotext();
   //send message
   int fail = write( client, encrypted_msg.c_str(), encrypted_msg.length()); 
-  if ( fail < strlen( msg ) ){
+  if ( fail < msg.length() ){
     perror( "write() failed\n" );
     return EXIT_FAILURE;
   }
@@ -74,7 +74,7 @@ int main(int argc, char ** argv)
   buf[num_bytes] = '\0';
   // RSA Decrypt
   std::string received_msg(buf,sizeof(buf));
-  my_rsa.Decrypt(received_msg);
+  my_rsa.RSADecrypt(received_msg);
   received_msg = my_rsa.RSAgetmessage();
   if (strcmp(msg, received_msg) != 0){
     perror( "Hacker detected\n" );
@@ -82,6 +82,7 @@ int main(int argc, char ** argv)
   }
   mpz_t shared_key;
   mpz_init(shared_key);
+  int broken = 0;
   for(int x = 0; x < 3; x++){
     char hold[MSG_MAX];
     mpz_t keyhalf;
@@ -97,7 +98,7 @@ int main(int argc, char ** argv)
     std::string cryptotext = ctxt.get_str();
     //send keyhalf here
     fail = write( client, cryptotext.c_str(), cryptotext.length()); 
-    if ( fail < strlen( msg ) ){
+    if ( fail < cryptotext.length() ){
       perror( "write() failed\n" );
       return EXIT_FAILURE;
     }
@@ -107,16 +108,24 @@ int main(int argc, char ** argv)
     }
     hold[num_bytes] = '\0';
     //receive key as char*
-    mpz_set_str(hold, other_key_half, 10) // this converts char* to key half
-    sharedkey(shared_key, other_key, p, pkb) //stores shared key in shared_key after this
+    mpz_set_str(hold, other_key_half, 10); // this converts char* to key half
+    sharedkey(shared_key, other_key, p, pkb); //stores shared key in shared_key after this
     if(x == 0){
       mpz_class var(shared_key);
       cryptotext = var.get_str();
       all_keys.hmac_key = cryptotext;
     }else if(x == 1){
-
+      broken = aes::fill_key(all_keys.aes_key, sharedkey);
+      if(broken != 0){
+        perror("Error: fill_key failed\n");
+        return EXIT_FAILURE;
+      }
     }else if(x == 2){
-
+      broken = aes::fill_iv(all_keys.aes_iv, sharedkey);
+      if(broken != 0){
+        perror("Error: fill_key failed\n");
+        return EXIT_FAILURE;
+      }
     }
   }
   //send public keys
@@ -172,16 +181,16 @@ int main(int argc, char ** argv)
     std::string mac = hmac::create_HMAC(message, all_keys.hmac_key);
     //send keyhalf here
     fail = write( client, mac.c_str(), mac.length()); 
-    if ( fail < strlen( msg ) ){
+    if ( fail <  mac.length() ){
       perror( "write() failed\n" );
       return EXIT_FAILURE;
     }
-    char *cstr = message.c_str();
+    const char *cstr = message.c_str();
     char holder[strlen(cstr) + aes::BLOCK_BYTES];
-    aes::encrypt(cstr, holder);
-    std::string encrypted(cstr, strlen(cstr));
+    aes::cbc_encrypt(cstr, holder);
+    std::string encrypted(holder, strlen(holder));
     fail = write( client, encrypted.c_str(), encrypted.length()); 
-    if ( fail < strlen( msg ) ){
+    if ( fail < encrypted.length()){
       perror( "write() failed\n" );
       return EXIT_FAILURE;
     }
@@ -197,19 +206,19 @@ int main(int argc, char ** argv)
     }
     last[num_bytes] = '\0';
     // AES Decrypt
-    char holder2[strlen(cstr) + aes::BLOCK_BYTES];
+    char holder2[strlen(last) + aes::BLOCK_BYTES];
     if(en_msg.length()%aes::BLOCK_BYTES != 0){
       perror( "Hacker detected: incorrect length\n" );
       return EXIT_FAILURE;
     }
-    aes::decrypt(last, holder2);
-    std::string gn_msg(last,sizeof(last));
+    aes::cbc_decrypt(last, holder2);
+    std::string gn_msg(holder2,sizeof(holder2));
     std::string check = hmac::create_HMAC(gn_msg, all_keys.hmac_key);
     if(strcmp(en_msg,check) != 0){
       perror( "Hacker detected: incorrect HMAC\n" );
       return EXIT_FAILURE;
     }else{
-      cout << gn_msg << endl;
+      std::cout << gn_msg << std::endl;
     }
   }
   sleep(5);
