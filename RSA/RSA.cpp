@@ -137,7 +137,7 @@ void RSA::SaveKeys(std::string filename){
 }
 
 //gets public key
-void getPublicKeys(mpz_t pub1, mpz_t pub2){
+void RSA::getPublicKeys(mpz_t pub1, mpz_t pub2){
 	mpz_set(pub1,e);
 	mpz_set(pub2,N);
 }
