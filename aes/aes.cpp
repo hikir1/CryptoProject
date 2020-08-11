@@ -2,7 +2,7 @@
 
 #include <cassert>
 #include "aes.hpp"
-#include "poly.cpp"
+#include "poly.hpp"
 #ifndef NDEBUG
 #include <iostream>
 #endif
