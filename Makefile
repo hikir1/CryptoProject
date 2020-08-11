@@ -16,3 +16,7 @@ testatm : **.[ch]pp **/**.[ch]pp **/**.h
 testbank : **.[ch]pp **/**.[ch]pp **/**.h
 	g++ KeyGeneration.cpp KeyEncryption.cpp bank.cpp aes/**.cpp RSA/**.cpp \
 		hmac/**.cpp util.cpp -D BANK -o bank.out -lgmp -g
+
+tserver : **.[ch]pp **/**.[ch]pp **/**.h
+	g++ KeyGeneration.cpp KeyEncryption.cpp bank.cpp aes/**.cpp RSA/**.cpp \
+		hmac/**.cpp util.cpp -D BANK -D NENCRYPT -o bank.out -lgmp -g

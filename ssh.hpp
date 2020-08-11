@@ -14,13 +14,14 @@ constexpr size_t PARKEY_LEN = 16;
 
 constexpr size_t KEYEX_LEN = 3 * PARKEY_LEN;
 
-constexpr size_t DEPOSIT_LEN = sizeof(char) + sizeof(uint64_t) + sizeof(char);
-constexpr size_t WITHDRAW_LEN = sizeof(char) + sizeof(uint64_t) + sizeof(char);
-constexpr size_t BALANCE_LEN = sizeof(char[2]);
+constexpr size_t DEPOSIT_LEN = sizeof(char) + sizeof(uint64_t);
+constexpr size_t WITHDRAW_LEN = sizeof(char) + sizeof(uint64_t);
+constexpr size_t BALANCE_LEN = sizeof(char);
+constexpr size_t BAD_FORMAT_LEN = sizeof(char);
 
-constexpr size_t DEP_RES_LEN = sizeof(char[2]);
-constexpr size_t WD_RES_LEN = sizeof(char[2]);
-constexpr size_t BAL_RES_LEN = sizeof(char) + sizeof(uint64_t) + sizeof(char);
+constexpr size_t DEP_RES_LEN = sizeof(char);
+constexpr size_t WD_RES_LEN = sizeof(char);
+constexpr size_t BAL_RES_LEN = sizeof(char) + sizeof(uint64_t);
 
 struct Keys {
 	std::string hmac_key;

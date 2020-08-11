@@ -75,7 +75,9 @@ ssize_t try_recv(int cd, char * buf, size_t buflen) {
 	assert(buflen < INT_MAX);
 	constexpr unsigned int TIMEOUT = 3; // seconds
 	gtimeout = false;
+	#ifndef NENCRYPT
 	alarm(TIMEOUT);
+	#endif
 	ssize_t len = recv(cd, buf, buflen - 1, 0);
 	alarm(0);
 	if (gtimeout) {
@@ -90,6 +92,7 @@ ssize_t try_recv(int cd, char * buf, size_t buflen) {
 		std::cout << "Client closed connection early." << std::endl;
 		return -1;
 	}
+	std::cout << "recvd len: " << len << std::endl;
 	buf[len] = '\0';
 	return len;
 }
@@ -118,11 +121,11 @@ int hello(int cd) {
 	return 0;
 }
 
-int keyex(int cd, unsigned char id, Keys &keys) {
+int keyex(int cd, Keys &keys) {
 	char buf[KEYEX_LEN + 1] = {0};
 	if (try_recv(cd, buf, KEYEX_LEN + 1) == -1)
 		return -1;
-
+	std::cout << "recvd keyex" << std::endl;
 	// TODO: RSA Decrypt
 
 	// TODO: Parse client key parts
@@ -142,15 +145,21 @@ int bank(int cd, const Keys &keys) {
 			|| (ctxtlen = try_recv(cd, ctxt, MSG_MAX + 1)) == -1)
 		return -1;
 	if (ctxtlen % aes::BLOCK_BYTES != 0) {
+		#ifdef NDEBUG
 		std::cout << "Invalid message format." << std::endl;
+		#else
+		std::cout << "Invalid message length. Must be multiple of block size." << std::endl;
+		#endif
 		return -1;
 	}
 	char ptxt[sizeof(ctxt)];
 	aes::cbc_decrypt(ctxt, ptxt, (size_t)ctxtlen, keys.aes_iv, keys.aes_key);
+	#ifdef NDEBUG
 	if (hmac::create_HMAC(ptxt, keys.hmac_key).compare(mac) != 0) {
 		std::cout << "Corrupt message detected. HMAC's do not match." << std::endl;
 		return -1;
 	}
+	#endif
 
 	static uint64_t safe[UCHAR_MAX] = {0};
 
@@ -159,12 +168,19 @@ int bank(int cd, const Keys &keys) {
 	switch (ptxt[0]) {
 	case ATMMsg::DEPOSIT: {
 		if (ctxtlen < DEPOSIT_LEN) {
+			ctxtlen = BAD_FORMAT_LEN;
+			#ifdef NDEBUG
 			std::cout << "Invalid message format." << std::endl;
+			#else
+			std::cout << "Invalid message length. Deposit length must be " << DEPOSIT_LEN << std::endl;
+			#endif
 			ctxt[0] = BankMsg::BAD_FORMAT;
 			ctxt[1] = 0;
 			return -1;
 		}
+		ctxtlen = DEP_RES_LEN;
 		unsigned char uid = ptxt[1];
+		// TODO: ensure endianess is consistent
 		uint64_t dep = *((uint64_t *)(ptxt + 2));
 		if (dep > UINT64_MAX - safe[uid]) {
 			std::cout << "Client attempted to deposit more than maximum." << std::endl;
@@ -173,16 +189,25 @@ int bank(int cd, const Keys &keys) {
 			break;
 		}
 		safe[uid] += dep;
+		#ifndef NDEBUG
+		std::cout << "New Balance for " << (unsigned int) uid << " is " << safe[uid] << std::endl;
+		#endif
 		ctxt[0] = BankMsg::OK;
 		ctxt[1] = 0;
 	} break;
 	case ATMMsg::WITHDRAW: {
 		if (ctxtlen < WITHDRAW_LEN) {
+			ctxtlen = BAD_FORMAT_LEN;
+			#ifdef NDEBUG
 			std::cout << "Invalid message format." << std::endl;
+			#else
+			std::cout << "Invalid message length. Withdraw length must be " << WITHDRAW_LEN << std::endl;
+			#endif
 			ctxt[0] = BankMsg::BAD_FORMAT;
 			ctxt[1] = 0;
 			break;
 		}
+		ctxtlen = WD_RES_LEN;
 		unsigned char uid = ptxt[1];
 		uint64_t wd = *((uint64_t *)(ptxt + 2));
 		if (wd > safe[uid]) {
@@ -192,25 +217,42 @@ int bank(int cd, const Keys &keys) {
 			break;
 		}
 		safe[uid] -= wd;
+		#ifndef NDEBUG
+		std::cout << "New Balance for " << (unsigned int) uid << " is " << safe[uid] << std::endl;
+		#endif
 		ctxt[0] = BankMsg::OK;
 		ctxt[1] = 0;
 	} break;
 	case ATMMsg::BALANCE: {
 		if (ctxtlen < BALANCE_LEN) {
+			ctxtlen = BAD_FORMAT_LEN;
+			#ifdef NDEBUG
 			std::cout << "Invalid message format." << std::endl;
+			#else
+			std::cout << "Invalid message length. Balance length must be " << BALANCE_LEN << std::endl;
+			#endif
 			ctxt[0] = BankMsg::BAD_FORMAT;
 			ctxt[1] = 0;
 			break;
 		}
+		ctxtlen = BAL_RES_LEN;
 		unsigned char uid = ptxt[1];
 		uint64_t bal = safe[uid];
+		#ifndef NDEBUG
+		std::cout << "Current balance for " << (unsigned int) uid << " is " << bal << std::endl;
+		#endif
 		ctxt[0] = BankMsg::OK;
 		uint64_t * balp = (uint64_t *)(ctxt + 1);
 		*balp = bal;
 		ctxt[1 + sizeof(uint64_t)] = 0;
 	} break;
 	default: {
-		std::cout << "Unknown message class." << std::endl;
+		ctxtlen = BAD_FORMAT_LEN;
+		#ifdef NDEBUG
+		std::cout << "Invalid message format" << std::endl;
+		#else
+		std::cout << "Unknown message class " << ptxt[0] << std::endl;
+		#endif
 		ctxt[0] = BankMsg::BAD_FORMAT;
 		ctxt[1] = 0;
 	}
@@ -235,9 +277,17 @@ int bank(int cd, const Keys &keys) {
 	return 0;
 }
 
-int imtired(int cd) {
-
+int serve(int cd) {
+	Keys keys;
+	if (hello(cd) == -1 
+			|| keyex(cd, keys) == -1 
+			|| bank(cd, keys) == -1)
+		return -1;
 	return 0;
+}
+
+inline int imtired(int cd) {
+	return serve(cd);
 }
 
 int main(int argc, char ** argv) {
@@ -273,12 +323,7 @@ int main(int argc, char ** argv) {
 			close(sd);
 			return EXIT_FAILURE;
 		}
-		if (imtired(cd) == -1) {
-			shutdown(cd, SHUT_RDWR);
-			close(cd);
-			close(sd);
-			return EXIT_FAILURE;
-		}
+		imtired(cd);
 		if (shutdown(cd, SHUT_RDWR) == -1) {
 			perror("ERROR: Failed to shutdown server side of connection");
 			close(cd);
