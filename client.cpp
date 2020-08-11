@@ -8,6 +8,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <gmpxx.h>
 #include "aes/aes.hpp"
 #include "hmac/hmac.h"
 #include "ssh.hpp"
@@ -109,11 +110,11 @@ int main(int argc, char ** argv)
     mpz_set_str(hold, other_key_half, 10) // this converts char* to key half
     sharedkey(shared_key, other_key, p, pkb) //stores shared key in shared_key after this
     if(x == 0){
-      mpz_class ctxt(shared_key);
-      cryptotext = ctxt.get_str();
+      mpz_class var(shared_key);
+      cryptotext = var.get_str();
       all_keys.hmac_key = cryptotext;
     }else if(x == 1){
-      
+
     }else if(x == 2){
 
     }
@@ -126,6 +127,7 @@ int main(int argc, char ** argv)
   std::cout << "To deplay your balance please use the format \"3\"" << std::endl << std::endl;;
   std::string message;
   while(1){
+    char last[MSG_MAX];
     std::cout << "Enter your transaction below:" << std::endl;
     if (!std::getline(std::cin, message)) {
       perror("Error: getline failed");
@@ -156,6 +158,23 @@ int main(int argc, char ** argv)
     //if not abort
     //when message is recreved check it by decrypting message
     //then compare macs
+    std::string mac = hmac::create_HMAC(message, all_keys.hmac_key);
+    //send keyhalf here
+    fail = write( client, mac.c_str(), mac.length()); 
+    if ( fail < strlen( msg ) ){
+      perror( "write() failed\n" );
+      return EXIT_FAILURE;
+    }
+
+
+    
+    if ((num_bytes = recv(client, hold, MSG_MAX-1, 0)) == -1) {
+      perror("Error: recv failed\n");
+      return EXIT_FAILURE;
+    }
+    hold[num_bytes] = '\0';
+
+
 
   }
   sleep(5);
