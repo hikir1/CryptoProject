@@ -9,10 +9,10 @@
 
 namespace SHA1{
 	std::string run_sha(std::string convert);
-	extern static const int num_h = 5;
-	extern static const int num_blocks = 16;
-	extern int transformation = 0;
-	std::vector<uint32_t> holder = std::vector<uint32_t>(5);
+	extern const int num_h;
+	extern const int num_blocks;
+	extern int transformation;
+	extern std::vector<uint32_t> holder;
 	void reset_sha1();
 	std::string padding(std::string message, int message_length);
 	uint32_t nonlinear_funct(int t, uint32_t B, uint32_t C, uint32_t D);

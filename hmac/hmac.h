@@ -10,8 +10,8 @@
 namespace hmac{
 	std::string create_HMAC(std::string message, std::string c);
 	void generate();
-	extern static const int byte_length = 64;
-	extern static const int output_length = 20;
+	extern const int byte_length;
+	extern const int output_length;
 	extern std::string ipad;
 	extern std::string opad;
 }

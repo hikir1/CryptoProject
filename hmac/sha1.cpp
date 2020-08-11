@@ -139,6 +139,10 @@ void SHA1::reset_sha1(){
 	holder[2] = 0x7ef1613b;
 	holder[3] = 0x3e2999b2;
 	holder[4] = 0xcdefa923;
+	num_h = 5;
+	num_blocks = 16;
+	transformation = 0;
+	holder = std::vector<uint32_t>(5)
 }
 
 std::string SHA1::run_sha(std::string convert){
