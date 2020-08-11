@@ -1,20 +1,13 @@
 # TODO
-
-- Dhruv
-	- Diffie-Hellman key exchange
+- Complete
+	- Diffie-Helman
 	- RSA
-- Richard
-	- AES [check]
-	- Server
-- Nathan
+	- AES
 	- SHA-1 HMAC
-- Not started
-	- client
-	- writeup
-
-- lots of testing
-- memory debugging
-- fuzzing
-- more testing
-- put it all together
-- incremental improvements
+	- Server interaction
+- Remaining
+	- Encrypt server
+	- Client
+	- Test
+	- Fuzz
+	- (integrity protection for RSA if time)
