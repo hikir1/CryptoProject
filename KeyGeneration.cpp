@@ -56,11 +56,7 @@ void KeyExchange(mpz_t sendingkeyhalf, mpz_t p, mpz_t pkb)
 	getRandPrime(p);
 	getRandPrime(g);
 	std::string priv;
-	std::cout << "Enter your private key: "<< std::endl;
-	std::cin >> priv;
-	const char* pk = priv.c_str();
-	mpz_set_str(pkb,pk,10);
-	std::cout << "Your key: "<< pkb <<std::endl;
+	getRandPrime(pkb);
 	sendKeyDiffieHellman(sendingkeyhalf,g,p,pkb);
 	mpz_clear(g);
 }
