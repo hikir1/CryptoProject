@@ -55,39 +55,21 @@ int make_client(char * host, char * port) {
   return client;
 }
 
-
-
-int main(int argc, char ** argv)
-{
-  if (argc != 3) {
-    std::cerr << "Usage: " << argv[0] << " <HOST> <PORT>" << std::endl;
-    return EXIT_FAILURE;
-  }
-  Keys all_keys;
-  //set connection
-  //confirm connection
-  //key
+int estab_con(int client, Keys all_keys, RSA my_rsa){
   int num_bytes;
   char buf[MSG_MAX];
-  int client = make_client(argv[1], argv[2]);
-  if (client == -1)
-    return EXIT_FAILURE;
-  std::cout << "NEVER" << std::endl;
-  // RSA Encrypt
-  RSA my_rsa;
-  void LoadKeys("keys.txt");
   std::string msg(HELLO_MSG,sizeof(HELLO_MSG));
   std::string encrypted_msg = my_rsa.RSAgetcryptotext(msg);
   //send message
   int fail = write( client, encrypted_msg.c_str(), encrypted_msg.length()); 
   if ( fail < msg.length() ){
     perror( "write() failed" );
-    return EXIT_FAILURE;
+    return -1;
   }
   //get message
   if ((num_bytes = recv(client, buf, MSG_MAX-1, 0)) == -1) {
     perror("Error: recv failed");
-    return EXIT_FAILURE;
+    return -1;
   }
   buf[num_bytes] = '\0';
   // RSA Decrypt
@@ -95,7 +77,7 @@ int main(int argc, char ** argv)
   std::string decrypted_msg = my_rsa.RSAgetmessage(received_msg);
   if (msg.compare(received_msg) != 0){
     perror( "Hacker detected" );
-    return EXIT_FAILURE;
+    return -1;
   }
   
   int broken = 0;
@@ -118,11 +100,11 @@ int main(int argc, char ** argv)
     fail = write( client, cryptotext.c_str(), cryptotext.length()); 
     if ( fail < cryptotext.length() ){
       perror( "write() failed" );
-      return EXIT_FAILURE;
+      return -1;
     }
     if ((num_bytes = recv(client, hold, MSG_MAX-1, 0)) == -1) {
       perror("Error: recv failed");
-      return EXIT_FAILURE;
+      return -1;
     }
     hold[num_bytes] = '\0';
     //receive key as char*
@@ -136,25 +118,52 @@ int main(int argc, char ** argv)
       broken = aes::fill_key(all_keys.aes_key, shared_key);
       if(broken != 0){
         perror("Error: fill_key failed");
-        return EXIT_FAILURE;
+        return -1;
       }
     }else if(x == 2){
       broken = aes::fill_iv(all_keys.aes_iv, shared_key);
       if(broken != 0){
         perror("Error: fill_key failed");
-        return EXIT_FAILURE;
+        return -1;
       }
     }
   }
+  return client;
+}
+
+
+
+int main(int argc, char ** argv)
+{
+  if (argc != 3) {
+    std::cerr << "Usage: " << argv[0] << " <HOST> <PORT>" << std::endl;
+    return EXIT_FAILURE;
+  }
+  Keys all_keys;
+  //set connection
+  //confirm connection
+  //key
+  int num_bytes, fail;
+  char buf[MSG_MAX];
+  int client = make_client(argv[1], argv[2]);
+  if (client == -1)
+    return EXIT_FAILURE;
+  // RSA Encrypt
+  RSA my_rsa;
+  my_rsa.LoadKeys("keys.txt");
   //send public keys
   //receive keys
   //make keys
-  std::cout << "For depositing funds please use the format \"1 $amount\"" << std::endl;
-  std::cout << "For withdrawing funds please use the format \"2 $amount\"" << std::endl;
-  std::cout << "To deplay your balance please use the format \"3\"" << std::endl;
-  std::cout << "To leave please uses \"q\"" << std::endl << std::endl;
   std::string message;
   while(1){
+    int test = estab_con(client, all_keys, my_rsa);
+    if(test == -1){
+      return EXIT_FAILURE;
+    }
+    std::cout << "For depositing funds please use the format \"1 $amount\"" << std::endl;
+    std::cout << "For withdrawing funds please use the format \"2 $amount\"" << std::endl;
+    std::cout << "To deplay your balance please use the format \"3\"" << std::endl;
+    std::cout << "To leave please uses \"q\"" << std::endl << std::endl;
     char first[MSG_MAX];
     char last[MSG_MAX];
     std::cout << "Enter your transaction below:" << std::endl;
