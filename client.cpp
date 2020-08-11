@@ -12,7 +12,7 @@
 #include "aes/aes.hpp"
 #include "hmac/hmac.h"
 #include "ssh.hpp"
-#include "RSA.cpp"
+#include "RSA/RSA.cpp"
 #include "KeyGeneration.cpp"
 
 

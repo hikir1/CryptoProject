@@ -230,6 +230,42 @@ void aes::cbc_decrypt(const char * ctxt, char * ptxt, size_t len,
 
 }
 
+#include <gmpxx.h>
+
+int aes::fill_key(Key aes_key, const mpz_t mpz_key) {
+	size_t count;
+	char * bytes = (char *) mpz_export(nullptr, &count, 1, sizeof(char), 1, 0, mpz_key);
+	if (!bytes) {
+		perror("ERROR: failed to export MPZ");
+		return -1;
+	}
+	if (count < sizeof(Key)) {
+		perror("ERROR: aes key is too small :(");
+		free(bytes);
+		return -1;
+	}
+	memcpy(aes_key, bytes, sizeof(Key));
+	free(bytes);
+	return 0;
+}
+
+int aes::fill_iv(IV aes_iv, const mpz_t mpz_iv) {
+	size_t count;
+	char * bytes = (char *) mpz_export(nullptr, &count, 1, sizeof(char), 1, 0, mpz_iv);
+	if (!bytes) {
+		perror("ERROR: failed to export MPZ");
+		return -1;
+	}
+	if (count < sizeof(IV)) {
+		perror("ERROR: aes key is too small :(");
+		free(bytes);
+		return -1;
+	}
+	memcpy(aes_iv, bytes, sizeof(IV));
+	free(bytes);
+	return 0;
+}
+
 #ifdef TEST_AES
 #include <iostream>
 #include <cstdlib>
