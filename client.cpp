@@ -34,7 +34,7 @@ int main(int argc, char ** argv)
   //set to TCP
   information.ai_socktype = SOCK_STREAM;
   if ((value = getaddrinfo(argv[1], argv[2], &information, &server_info)) != 0) {
-    perror("Error: getaddrinfo failed\n");
+    perror("Error: getaddrinfo failed");
     return EXIT_FAILURE;
   }
   //loop through every socket and connect to the first one
@@ -51,7 +51,7 @@ int main(int argc, char ** argv)
   }
   freeaddrinfo(server_info); // all done with this structure
   if (p == NULL) {
-    perror("Error: client failed to connect\n");
+    perror("Error: client failed to connect");
     return EXIT_FAILURE;
   }
 
@@ -63,12 +63,12 @@ int main(int argc, char ** argv)
   //send message
   int fail = write( client, encrypted_msg.c_str(), encrypted_msg.length()); 
   if ( fail < msg.length() ){
-    perror( "write() failed\n" );
+    perror( "write() failed" );
     return EXIT_FAILURE;
   }
   //get message
   if ((num_bytes = recv(client, buf, MSG_MAX-1, 0)) == -1) {
-    perror("Error: recv failed\n");
+    perror("Error: recv failed");
     return EXIT_FAILURE;
   }
   buf[num_bytes] = '\0';
@@ -77,7 +77,7 @@ int main(int argc, char ** argv)
   my_rsa.RSADecrypt(received_msg);
   received_msg = my_rsa.RSAgetmessage();
   if (msg.compare(received_msg) != 0){
-    perror( "Hacker detected\n" );
+    perror( "Hacker detected" );
     return EXIT_FAILURE;
   }
   
@@ -100,11 +100,11 @@ int main(int argc, char ** argv)
     //send keyhalf here
     fail = write( client, cryptotext.c_str(), cryptotext.length()); 
     if ( fail < cryptotext.length() ){
-      perror( "write() failed\n" );
+      perror( "write() failed" );
       return EXIT_FAILURE;
     }
     if ((num_bytes = recv(client, hold, MSG_MAX-1, 0)) == -1) {
-      perror("Error: recv failed\n");
+      perror("Error: recv failed");
       return EXIT_FAILURE;
     }
     hold[num_bytes] = '\0';
@@ -118,13 +118,13 @@ int main(int argc, char ** argv)
     }else if(x == 1){
       broken = aes::fill_key(all_keys.aes_key, shared_key);
       if(broken != 0){
-        perror("Error: fill_key failed\n");
+        perror("Error: fill_key failed");
         return EXIT_FAILURE;
       }
     }else if(x == 2){
       broken = aes::fill_iv(all_keys.aes_iv, shared_key);
       if(broken != 0){
-        perror("Error: fill_key failed\n");
+        perror("Error: fill_key failed");
         return EXIT_FAILURE;
       }
     }
@@ -183,7 +183,7 @@ int main(int argc, char ** argv)
     //send keyhalf here
     fail = write( client, mac.c_str(), mac.length()); 
     if ( fail <  mac.length() ){
-      perror( "write() failed\n" );
+      perror( "write() failed" );
       return EXIT_FAILURE;
     }
     const char *cstr = message.c_str();
@@ -193,24 +193,24 @@ int main(int argc, char ** argv)
     std::string encrypted(holder, strlen(holder));
     fail = write( client, encrypted.c_str(), encrypted.length()); 
     if ( fail < encrypted.length()){
-      perror( "write() failed\n" );
+      perror( "write() failed" );
       return EXIT_FAILURE;
     }
     if ((num_bytes = recv(client, first, MSG_MAX-1, 0)) == -1) {
-      perror("Error: recv failed\n");
+      perror("Error: recv failed");
       return EXIT_FAILURE;
     }
     first[num_bytes] = '\0';
     std::string en_msg(first,sizeof(first));
     if ((num_bytes = recv(client, last, MSG_MAX-1, 0)) == -1) {
-      perror("Error: recv failed\n");
+      perror("Error: recv failed");
       return EXIT_FAILURE;
     }
     last[num_bytes] = '\0';
     // AES Decrypt
     char holder2[strlen(last) + aes::BLOCK_BYTES];
     if(en_msg.length()%aes::BLOCK_BYTES != 0){
-      perror( "Hacker detected: incorrect length\n" );
+      perror( "Hacker detected: incorrect length" );
       return EXIT_FAILURE;
     }
     s_mess = strlen(last);
@@ -218,7 +218,7 @@ int main(int argc, char ** argv)
     std::string gn_msg(holder2,sizeof(holder2));
     std::string check = hmac::create_HMAC(gn_msg, all_keys.hmac_key);
     if(en_msg.compare(check) != 0){
-      perror( "Hacker detected: incorrect HMAC\n" );
+      perror( "Hacker detected: incorrect HMAC" );
       return EXIT_FAILURE;
     }else{
       std::cout << gn_msg << std::endl;
