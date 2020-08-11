@@ -75,6 +75,7 @@ int main(int argc, char ** argv)
   std::cout << "NEVER" << std::endl;
   // RSA Encrypt
   RSA my_rsa;
+  void LoadKeys("keys.txt");
   std::string msg(HELLO_MSG,sizeof(HELLO_MSG));
   std::string encrypted_msg = my_rsa.RSAgetcryptotext(msg);
   //send message
@@ -91,7 +92,6 @@ int main(int argc, char ** argv)
   buf[num_bytes] = '\0';
   // RSA Decrypt
   std::string received_msg(buf,sizeof(buf));
-  my_rsa.RSADecrypt(received_msg);
   std::string decrypted_msg = my_rsa.RSAgetmessage(received_msg);
   if (msg.compare(received_msg) != 0){
     perror( "Hacker detected" );
