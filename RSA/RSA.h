@@ -10,12 +10,12 @@ class RSA
     void SaveKeys(std::string filename);
     void LoadKeys(std::string filename);
     void SetKeys(std::string e2_, std::string N2_);
-
-    private: 
-   	//your public key
+    
+    //your public key
     mpz_t e;
     mpz_t N;
-
+    
+    private: 
     //other party's public key
     mpz_t e2;
     mpz_t N2;
