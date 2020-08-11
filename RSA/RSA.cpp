@@ -52,6 +52,15 @@ void RSA::RSAKeyGen() {
 		mpf_floor(tmp,d);
 	}
 	mpz_set_f(new_d,d);
+	
+	//free memory
+	mpz_clear(carmichaelNum);
+	mpf_clear(carmNumf);
+	mpz_clear(p);
+	mpz_clear(q);
+	mpf_clear(ef);
+	mpf_clear(k);
+	mpf_clear(tmp);
 	return;
 }
 

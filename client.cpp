@@ -11,7 +11,7 @@
 #include "aes/aes.hpp"
 #include "hmac/hmac.h"
 #include "ssh.hpp"
-#include "KeyEncryption.cpp"
+#include "RSA.cpp"
 #include "KeyGeneration.cpp"
 
 
@@ -52,20 +52,27 @@ int main(int argc, char ** argv)
     perror("Error: client failed to connect\n");
     return EXIT_FAILURE;
   }
-  if ((num_bytes = recv(client, buf, MSG_MAX-1, 0)) == -1) {
-    perror("Error: recv failed");
-    return EXIT_FAILURE;
-  }
+
   // TODO: RSA Encrypt
-  //std::string answer = 
-  int fail = write( client, string.c_str(), .length()); 
+  RSA my_rsa();
+  std::string msg = "Hello";
+  my_rsa.Encrypt(msg);
+  std::string encrypted_msg = my_rsa.RSAgetcryptotext();
+  int fail = write( client, encrypted_msg.c_str(), .length()); 
   if ( fail < strlen( msg ) ){
     perror( "write() failed" );
     return EXIT_FAILURE;
   }
+
+  if ((num_bytes = recv(client, buf, MSG_MAX-1, 0)) == -1) {
+    perror("Error: recv failed");
+    return EXIT_FAILURE;
+  }
   //read
   // TODO: RSA Decrypt
-
+  std::string received_msg(buf,sizeof(buf));
+  my_rsa.Decrypt(received_msg);
+  received_msg = my_rsa.RSAgetmessage();
 
   buf[num_bytes] = '\0';
 
