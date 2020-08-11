@@ -4,7 +4,7 @@ atm : **.[ch]pp **/**.[ch]pp **/**.h
 
 bank : **.[ch]pp **/**.[ch]pp **/**.h
 	g++ KeyGeneration.cpp KeyEncryption.cpp bank.cpp aes/**.cpp RSA/**.cpp \
-		hmac/**.cpp util.cpp -D NDEBUG -D BANK -o atm.out -lgmp
+		hmac/**.cpp util.cpp -D NDEBUG -D BANK -o bank.out -lgmp
 
 testatm : **.[ch]pp **/**.[ch]pp **/**.h
 	g++ KeyGeneration.cpp KeyEncryption.cpp client.cpp aes/**.cpp RSA/**.cpp \
@@ -12,4 +12,4 @@ testatm : **.[ch]pp **/**.[ch]pp **/**.h
 
 testbank : **.[ch]pp **/**.[ch]pp **/**.h
 	g++ KeyGeneration.cpp KeyEncryption.cpp bank.cpp aes/**.cpp RSA/**.cpp \
-		hmac/**.cpp util.cpp -D BANK -o atm.out -lgmp -g
+		hmac/**.cpp util.cpp -D BANK -o bank.out -lgmp -g

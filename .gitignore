@@ -1,4 +1,11 @@
 **.out
+**/**.out
 **.o
+**/**.o
 local/**
 **.swp
+**/**.swp
+**.exe
+**/**.exe
+**.gch
+**/**.gch
