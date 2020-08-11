@@ -15,6 +15,8 @@
 #include <fstream>
 #include <iomanip>
 
+namespace hmac_util {
+
 unsigned long long int Bin_to_Dec(unsigned long long int given){
 	//takes in a long long int of binary converts it to decimal
     unsigned long long int bin_answer = 0;
@@ -255,4 +257,6 @@ std::string convert_plaintext(std::string answer){
     	plaintext = plaintext.substr(0, answer.length()/8);
     }
     return plaintext;
+}
+
 }

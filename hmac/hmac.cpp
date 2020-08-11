@@ -8,6 +8,8 @@
 #include "hmac_util.hpp"
 
 void hmac::generate(){
+	byte_length = 64;
+	output_length = 20;
 	ipad = "";
 	opad = "";
 	for(int x = 0; x < byte_length; x++){
