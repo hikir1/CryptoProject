@@ -32,7 +32,7 @@ int main(int argc, char ** argv)
   //set to TCP
   information.ai_socktype = SOCK_STREAM;
   if ((value = getaddrinfo(argv[1], argv[2], &information, &server_info)) != 0) {
-    perror("Error: getaddrinfo failed");
+    perror("Error: getaddrinfo failed\n");
     return EXIT_FAILURE;
   }
   //loop through every socket and connect to the first one
@@ -53,30 +53,35 @@ int main(int argc, char ** argv)
     return EXIT_FAILURE;
   }
 
-  // TODO: RSA Encrypt
+  // RSA Encrypt
   RSA my_rsa();
   std::string msg(HELLO_MSG,sizeof(HELLO_MSG));
   my_rsa.Encrypt(msg);
   std::string encrypted_msg = my_rsa.RSAgetcryptotext();
+  //send message
   int fail = write( client, encrypted_msg.c_str(), encrypted_msg.length()); 
   if ( fail < strlen( msg ) ){
-    perror( "write() failed" );
+    perror( "write() failed\n" );
     return EXIT_FAILURE;
   }
-
+  //get message
   if ((num_bytes = recv(client, buf, MSG_MAX-1, 0)) == -1) {
-    perror("Error: recv failed");
+    perror("Error: recv failed\n");
     return EXIT_FAILURE;
   }
-  //read
-  // TODO: RSA Decrypt
+  buf[num_bytes] = '\0';
+  // RSA Decrypt
   std::string received_msg(buf,sizeof(buf));
   my_rsa.Decrypt(received_msg);
   received_msg = my_rsa.RSAgetmessage();
+  if (strcmp(msg, received_msg) != 0){
+    perror( "Hacker detected\n" );
+    return EXIT_FAILURE;
+  }
 
-  buf[num_bytes] = '\0';
-
-  printf("client: received '%s'\n",buf);
+  //send public keys
+  //receive keys
+  //make keys
   std::cout << "For depositing funds please use the format \"1 $amount\"" << std::endl;
   std::cout << "For withdrawing funds please use the format \"2 $amount\"" << std::endl;
   std::cout << "To deplay your balance please use the format \"3\"" << std::endl << std::endl;;
