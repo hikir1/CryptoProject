@@ -52,11 +52,11 @@ int main(int argc, char ** argv)
     perror("Error: client failed to connect\n");
     return EXIT_FAILURE;
   }
-  if ((num_bytes = recv(client, buf, MAXDATASIZE-1, 0)) == -1) {
+  if ((num_bytes = recv(client, buf, MSG_MAX-1, 0)) == -1) {
     perror("Error: recv failed");
     return EXIT_FAILURE;
   }
-  std::string = 
+  //std::string answer = 
   int fail = write( client, string.c_str(), .length()); 
   if ( fail < strlen( msg ) ){
     perror( "write() failed" );
