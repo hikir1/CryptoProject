@@ -7,11 +7,16 @@
 #include "hmac.h"
 #include "hmac_util.hpp"
 
+hmac::int byte_length = 64;
+hmac::int output_length = 20;
+hmac::std::string ipad = "";
+hmac::std::string opad = "";
+
 void hmac::generate(){
-	int byte_length = 64;
-	int output_length = 20;
-	std::string ipad = "";
-	std::string opad = "";
+	byte_length = 64;
+    output_length = 20;
+	ipad = "";
+	opad = "";
 	for(int x = 0; x < byte_length; x++){
 		ipad = ipad + "00110110";
 		opad = opad + "01011100";
