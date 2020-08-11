@@ -121,9 +121,6 @@ void RSA::SaveKeys(std::string filename){
     	mpz_class priv(new_d);
     	mpz_class pub1(N);
     	mpz_class pub2(e);
-    	std::cout<< new_d << std::endl;
-    	std::cout<< N2 << std::endl;
-    	std::cout<< e2 << std::endl << std::endl;
     	std::string privatekey = priv.get_str();
     	std::string publickey1 = pub1.get_str();
     	std::string publickey2 = pub2.get_str(); 
@@ -139,6 +136,11 @@ void RSA::SaveKeys(std::string filename){
 	return;
 }
 
+//gets public key
+void getPublicKeys(mpz_t pub1, mpz_t pub2){
+	mpz_set(pub1,e);
+	mpz_set(pub2,N);
+}
 
 //loads on other's public key from file
 void RSA::LoadKeys(std::string filename){
