@@ -15,6 +15,44 @@
 #include "RSA/RSA.h"
 #include "KeyGen.hpp"
 
+int make_client(char * host, char * port) {
+  // try to find HOST and PORT
+  errno = 0;
+  int client, value;
+  struct addrinfo hints = {0};
+  memset(&hints, 0, sizeof hints);
+  hints.ai_family = AF_UNSPEC;
+  //set to TCP
+  hints.ai_socktype = SOCK_STREAM;
+  struct addrinfo * res, * itr;
+  if ((value = getaddrinfo(host, port, &hints, &res)) != 0) {
+    perror("Error: getaddrinfo failed");
+    return -1;
+  }
+  itr = res;
+  int sd;
+  //loop through every socket and connect to the first one
+  while(itr) {
+    if ((client = socket(res->ai_family, res->ai_socktype,
+        0)) == -1) {
+        continue;
+    }
+    if (connect(client, res->ai_addr, res->ai_addrlen) == -1) {
+        close(client);
+        continue;
+    }
+    itr = itr->ai_next;
+    break;
+  }
+  freeaddrinfo(res); // all done with this structure
+  if (itr == NULL) {
+    perror("Error: client failed to connect");
+    return -1;
+  }
+  return client;
+}
+
+
 
 int main(int argc, char ** argv)
 {
@@ -26,35 +64,12 @@ int main(int argc, char ** argv)
   //set connection
   //confirm connection
   //key
-  int client, num_bytes;
+  int num_bytes;
   char buf[MSG_MAX];
-  struct addrinfo information{0}, *server_info, *p;
-  int value;
-  information.ai_family = AF_UNSPEC;
-  //set to TCP
-  information.ai_socktype = SOCK_STREAM;
-  if ((value = getaddrinfo(argv[1], argv[2], &information, &server_info)) != 0) {
-    perror("Error: getaddrinfo failed");
+  int client = make_client(argv[1], argv[2]);
+  if (client == -1)
     return EXIT_FAILURE;
-  }
-  //loop through every socket and connect to the first one
-  for(p = server_info; p != NULL; p = p->ai_next) {
-    if ((client = socket(p->ai_family, p->ai_socktype,
-        p->ai_protocol)) == -1) {
-        continue;
-    }
-    if (connect(client, p->ai_addr, p->ai_addrlen) == -1) {
-        close(client);
-        continue;
-    }
-    break;
-  }
-  freeaddrinfo(server_info); // all done with this structure
-  if (p == NULL) {
-    perror("Error: client failed to connect");
-    return EXIT_FAILURE;
-  }
-
+  std::cout << "NEVER" << std::endl;
   // RSA Encrypt
   RSA my_rsa;
   std::string msg(HELLO_MSG,sizeof(HELLO_MSG));
