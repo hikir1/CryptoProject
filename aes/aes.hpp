@@ -3,6 +3,7 @@
 #define _AES_H_
 #include <cstdint>
 #include <cstdlib>
+#include <gmpxx.h>
 
 namespace aes {
 	constexpr int BLOCK_SIZE = 4; // words (32 bytes)
@@ -14,6 +15,8 @@ namespace aes {
 	void cbc_encrypt(const char * ptxt, char * ctxt, size_t &len, const IV, const Key);
 	// len must be exact multiple of BLOCK_BYTES
 	void cbc_decrypt(const char * ctxt, char * ptxt, size_t len, const IV, const Key);
+	int fill_key(Key aes_key, const mpz_t mpz_key);
+	int fill_iv(IV aes_iv, const mpz_t mpz_iv);
 }
 
 #endif

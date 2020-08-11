@@ -152,16 +152,30 @@ int bank(int cd, const Keys &keys) {
 		return -1;
 	}
 
+	static uint64_t safe[UCHAR_MAX] = {0};
+
 	// put server's ptxt in ctxt
 
 	switch (ptxt[0]) {
-	case BankMsg::DEPOSIT:
+	case ATMMsg::DEPOSIT:
+		if (ctxtlen < DEPOSIT_LEN) {
+			std::cout << "Invalid message format." << std::endl;
+			return -1;
+		}
+		unsigned char uid = ptxt[1];
+		uint64_t dep = *((uint64_t *)(ptxt + 2));
+		if (dep > UINT64_MAX - safe[uid]) {
+			ctxt[0] = BankMsg::TOO_MUCH_BANK;
+			ctxt[1] = 0;
+			break;
+		}
+		safe[uid] += dep;
+		ctxt[0] = BankMsg::;
+	break;
+	case ATMMsg::WITHDRAW:
 		ctxt[0] = 0;
 	break;
-	case BankMsg::WITHDRAW:
-		ctxt[0] = 0;
-	break;
-	case BankMsg::BALANCE:
+	case ATMMsg::BALANCE:
 		ctxt[0] = 0;
 	break;
 	default:
