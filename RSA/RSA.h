@@ -1,11 +1,17 @@
-#include "../util.hpp"
+#include "../util.cpp"
+#include <fstream>
 
 class RSA 
 {   
     public: 
     RSA();
-    std::string RSAgetmessage();
-    std::string RSAgetcryptotext();
+    std::string RSAgetmessage(std::string cryptotext);
+    std::string RSAgetcryptotext(std::string message);
+    void SaveKeys(std::string filename);
+    void LoadKeys(std::string filename);
+    void SetKeys(std::string e2_, std::string N2_);
+
+    private: 
    	//your public key
     mpz_t e;
     mpz_t N;

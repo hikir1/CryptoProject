@@ -58,8 +58,7 @@ int main(int argc, char ** argv)
   // RSA Encrypt
   RSA my_rsa;
   std::string msg(HELLO_MSG,sizeof(HELLO_MSG));
-  my_rsa.RSAEncrypt(msg);
-  std::string encrypted_msg = my_rsa.RSAgetcryptotext();
+  std::string encrypted_msg = my_rsa.RSAgetcryptotext(msg);
   //send message
   int fail = write( client, encrypted_msg.c_str(), encrypted_msg.length()); 
   if ( fail < msg.length() ){
@@ -75,7 +74,7 @@ int main(int argc, char ** argv)
   // RSA Decrypt
   std::string received_msg(buf,sizeof(buf));
   my_rsa.RSADecrypt(received_msg);
-  received_msg = my_rsa.RSAgetmessage();
+  std::string decrypted_msg = my_rsa.RSAgetmessage(received_msg);
   if (msg.compare(received_msg) != 0){
     perror( "Hacker detected\n" );
     return EXIT_FAILURE;

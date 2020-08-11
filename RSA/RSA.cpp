@@ -25,24 +25,32 @@ void RSA::RSAKeyGen() {
 	getRandPrime(p);
 	getRandPrime(q);
 	mpz_mul(N,p,q);
-
+	mpz_sub_ui(p,p,1);
+	mpz_sub_ui(q,q,1);
 	mpz_t carmichaelNum;
 	mpz_init(carmichaelNum);
-	calcLCM(carmichaelNum, p - 1, q - 1);
-	
+	calcLCM(carmichaelNum, p , q);
+	mpz_clear(p);
+	mpz_clear(q);
+
+	mpz_init(e);
+	getRandPrime(e);
 	mpf_t ef;
 	mpf_init(ef);
+	mpf_set_z(ef,e);
 	mpf_t k;
 	mpf_init(k);
 	mpf_set_si(k,1);
 	mpf_t carmNumf;
 	mpf_init(carmNumf);
 	mpf_set_z(carmNumf,carmichaelNum);
+	mpz_clear(carmichaelNum);
 
-	mpf_t d;
 	mpf_init(d);
+
 	mpf_add(carmNumf,carmNumf,k);
 	mpf_div(d,carmNumf,ef);
+
 	mpf_t tmp;
 	mpf_init(tmp);
 	mpf_floor(tmp,d);
@@ -51,16 +59,12 @@ void RSA::RSAKeyGen() {
 		mpf_div(d,carmNumf,ef);
 		mpf_floor(tmp,d);
 	}
-	mpz_set_f(new_d,d);
-	
-	//free memory
-	mpz_clear(carmichaelNum);
+	mpf_clear(tmp);
 	mpf_clear(carmNumf);
-	mpz_clear(p);
-	mpz_clear(q);
 	mpf_clear(ef);
 	mpf_clear(k);
-	mpf_clear(tmp);
+	mpz_set_f(new_d,d);
+	mpf_clear(d);
 	return;
 }
 
@@ -84,10 +88,7 @@ void RSA::RSADecrypt(std::string cryptotext) {
 }
 
 //returns decrypted message
-std::string RSA::RSAgetmessage(){
-	//convert c2 to string
-	mpz_class ctxt(c2);
-	std::string cryptotext = ctxt.get_str();
+std::string RSA::RSAgetmessage(std::string cryptotext){
 	RSADecrypt(cryptotext);
 	//convert m2 to string
 	mpz_class msg(m2);
@@ -96,13 +97,71 @@ std::string RSA::RSAgetmessage(){
 }
 
 //returns encrypted message
-std::string RSA::RSAgetcryptotext(){
-	//convert m to string
-	mpz_class msg(m);
-	std::string message = msg.get_str();
+std::string RSA::RSAgetcryptotext(std::string message){
 	RSAEncrypt(message);
 	//convert c to string
 	mpz_class ctxt(c);
 	std::string cryptotext = ctxt.get_str();
 	return cryptotext;
+}
+
+//set other party's public key
+void RSA::SetKeys(std::string e2_, std::string N2_){
+	const char* new_e2 = e2_.c_str();
+	const char* new_n2 = N2_.c_str();
+	mpz_set_str(e2,new_e2,10);
+	mpz_set_str(N2,new_n2,10);
+}
+
+void RSA::SaveKeys(std::string filename){
+	std::ofstream of(filename);
+	 if(of.is_open())
+    {	
+    	mpz_class pub1(N);
+    	mpz_class pub2(e);
+    	std::cout<< N << std::endl;
+    	std::cout<< e << std::endl << std::endl;
+    	std::string publickey1 = pub1.get_str();
+    	std::string publickey2 = pub2.get_str(); 
+        of<< privatekey << std::endl << publickey1 << std::endl << publickey2 <<std::endl;
+        of.flush();
+        of.close();
+    }
+    else
+    {
+        std::cerr <<"Failed to open file : "<<std::endl;
+        return;
+    }
+	return;
+}
+
+void RSA::LoadKeys(std::string filename){
+	std::string x;
+	std::ifstream inFile(filename);
+    
+    if (!inFile) {
+        std::cerr << "Unable to open file";
+        exit(1); // terminate with error
+    }
+    mpz_clear(N2);
+    mpz_clear(e2);
+   	inFile >> x;
+    mpz_set_str(N2,x.c_str(),10);
+   	inFile >> x;
+    mpz_set_str(e2,x.c_str(),10);
+    inFile.close();
+	return;
+}
+
+int main(int argc, char ** argv){
+	std::cout<<"Testing RSA Key Writing" <<std::endl;
+	RSA myRSA;
+	myRSA.SetKeys("1231424", "2354264523");
+	std::string test = myRSA.RSAgetcryptotext("143252213");
+	myRSA.SaveKeys("keys.txt");
+	RSA myRSA2;
+	myRSA2.SetKeys("12313643463", "124235");
+	myRSA2.LoadKeys("keys.txt");
+	myRSA2.SaveKeys("keys2.txt");
+	return 0;
 }
