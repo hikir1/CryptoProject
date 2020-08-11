@@ -56,12 +56,16 @@ int main(int argc, char ** argv)
     perror("Error: recv failed");
     return EXIT_FAILURE;
   }
+  // TODO: RSA Encrypt
   //std::string answer = 
   int fail = write( client, string.c_str(), .length()); 
   if ( fail < strlen( msg ) ){
     perror( "write() failed" );
     return EXIT_FAILURE;
   }
+  //read
+  // TODO: RSA Decrypt
+
 
   buf[num_bytes] = '\0';
 
