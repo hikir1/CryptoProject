@@ -13,7 +13,7 @@
 #include "hmac/hmac.h"
 #include "ssh.hpp"
 #include "RSA/RSA.h"
-#include "KeyGeneration.cpp"
+#include "KeyGen.hpp"
 
 
 int main(int argc, char ** argv)
@@ -94,7 +94,7 @@ int main(int argc, char ** argv)
     mpz_init(pkb);
     mpz_t other_key_half;
     mpz_init(other_key_half);
-    KeyExchange(keyhalf, p, pkb); //keyhalf has proper values after this
+    KeyGen::KeyExchange(keyhalf, p, pkb); //keyhalf has proper values after this
     mpz_class ctxt(keyhalf);
     std::string cryptotext = ctxt.get_str();
     //send keyhalf here
@@ -110,7 +110,7 @@ int main(int argc, char ** argv)
     hold[num_bytes] = '\0';
     //receive key as char*
     mpz_set_str(other_key_half, hold, strlen(hold)); // this converts char* to key half
-    sharedkey(shared_key, other_key_half, p, pkb); //stores shared key in shared_key after this
+    KeyGen::sharedkey(shared_key, other_key_half, p, pkb); //stores shared key in shared_key after this
     if(x == 0){
       mpz_class var(shared_key);
       cryptotext = var.get_str();

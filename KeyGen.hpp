@@ -5,7 +5,7 @@
 #include "util.hpp"
 
 namespace KeyGen {
-    const int diffiekeyhalfsize;
+    extern int diffiekeyhalfsize;
     void sendKeyDiffieHellman(mpz_t sendingkeyhalf, mpz_t g, mpz_t p, mpz_t pkb);
     void sendKeyDiffieHellman(mpz_t sendingkeyhalf, mpz_t g, mpz_t p);
     void sharedkey(mpz_t sharedSecret, mpz_t receivedkeyhalf, mpz_t p, mpz_t pkb);
