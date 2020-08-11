@@ -35,13 +35,16 @@ int make_client(char * host, char * port) {
   while(itr) {
     if ((client = socket(res->ai_family, res->ai_socktype,
         0)) == -1) {
+	  itr = itr->ai_next; // <<<<<<<<<<<<<<< added here
         continue;
     }
     if (connect(client, res->ai_addr, res->ai_addrlen) == -1) {
         close(client);
+	  itr = itr->ai_next; // <<<<<<<<<<<<<< and here
         continue;
     }
-    itr = itr->ai_next;
+    // <<<<< removed `itr = itr->ai_next` from here
+    //	(this would make itr NULL on success, causing failure below)
     break;
   }
   freeaddrinfo(res); // all done with this structure
