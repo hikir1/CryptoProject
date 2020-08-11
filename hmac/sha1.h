@@ -9,9 +9,9 @@
 
 namespace SHA1{
 	std::string run_sha(std::string convert);
-	static const int num_h = 5;
-	static const int num_blocks = 16;
-	int transformation = 0;
+	extern static const int num_h = 5;
+	extern static const int num_blocks = 16;
+	extern int transformation = 0;
 	std::vector<uint32_t> holder = std::vector<uint32_t>(5);
 	void reset_sha1();
 	std::string padding(std::string message, int message_length);
