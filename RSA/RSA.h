@@ -1,4 +1,4 @@
-#include "../util.hpp"
+#include "../util.cpp"
 #include <fstream>
 
 class RSA 
@@ -10,7 +10,7 @@ class RSA
     void SaveKeys(std::string filename);
     void LoadKeys(std::string filename);
     void SetKeys(std::string e2_, std::string N2_);
-    void getpublicKeys(mpz_t pub1, mpz_t pub2);
+    void getPublicKeys(mpz_t pub1, mpz_t pub2);
     //your public key
     mpz_t e;
     mpz_t N;
