@@ -21,6 +21,7 @@ int main(int argc, char ** argv)
     std::cerr << "Usage: " << argv[0] << " <HOST> <PORT>" << std::endl;
     return EXIT_FAILURE;
   }
+  Keys all_keys;
   //set connection
   //confirm connection
   //key
@@ -78,7 +79,45 @@ int main(int argc, char ** argv)
     perror( "Hacker detected\n" );
     return EXIT_FAILURE;
   }
+  mpz_t shared_key;
+  mpz_init(shared_key);
+  for(int x = 0; x < 3; x++){
+    char hold[MSG_MAX];
+    mpz_t keyhalf;
+    mpz_init(keyhalf);
+    mpz_t p;
+    mpz_init(p);
+    mpz_t pkb;
+    mpz_init(pkb);
+    mpz_t other_keyhalf;
+    mpz_init(other_keyhalf);
+    KeyExchange(keyhalf, p, pkb); //keyhalf has proper values after this
+    mpz_class ctxt(keyhalf);
+    std::string cryptotext = ctxt.get_str();
+    //send keyhalf here
+    fail = write( client, cryptotext.c_str(), cryptotext.length()); 
+    if ( fail < strlen( msg ) ){
+      perror( "write() failed\n" );
+      return EXIT_FAILURE;
+    }
+    if ((num_bytes = recv(client, hold, MSG_MAX-1, 0)) == -1) {
+      perror("Error: recv failed\n");
+      return EXIT_FAILURE;
+    }
+    hold[num_bytes] = '\0';
+    //receive key as char*
+    mpz_set_str(hold, other_key_half, 10) // this converts char* to key half
+    sharedkey(shared_key, other_key, p, pkb) //stores shared key in shared_key after this
+    if(x == 0){
+      mpz_class ctxt(shared_key);
+      cryptotext = ctxt.get_str();
+      all_keys.hmac_key = cryptotext;
+    }else if(x == 1){
+      
+    }else if(x == 2){
 
+    }
+  }
   //send public keys
   //receive keys
   //make keys
@@ -120,6 +159,9 @@ int main(int argc, char ** argv)
 
   }
   sleep(5);
-  close(client);
+  if (close(client) == -1) {
+      perror("ERROR: Failed to close socket");
+      return EXIT_FAILURE;
+  }
   return EXIT_SUCCESS;
 }
