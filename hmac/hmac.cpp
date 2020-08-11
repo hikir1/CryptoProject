@@ -8,10 +8,10 @@
 #include "hmac_util.hpp"
 
 void hmac::generate(){
-	byte_length = 64;
-	output_length = 20;
-	ipad = "";
-	opad = "";
+	int byte_length = 64;
+	int output_length = 20;
+	std::string ipad = "";
+	std::string opad = "";
 	for(int x = 0; x < byte_length; x++){
 		ipad = ipad + "00110110";
 		opad = opad + "01011100";

@@ -134,15 +134,15 @@ std::string SHA1::hash_string(std::string full_string){
 }
 
 void SHA1::reset_sha1(){
+	int num_h = 5;
+	int num_blocks = 16;
+	int transformation = 0;
+	std::vector<uint32_t> holder = std::vector<uint32_t>(5);
 	holder[0] = 0x08de7a01;
 	holder[1] = 0xdf05e29c;
 	holder[2] = 0x7ef1613b;
 	holder[3] = 0x3e2999b2;
 	holder[4] = 0xcdefa923;
-	num_h = 5;
-	num_blocks = 16;
-	transformation = 0;
-	holder = std::vector<uint32_t>(5);
 }
 
 std::string SHA1::run_sha(std::string convert){
