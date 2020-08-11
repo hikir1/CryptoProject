@@ -113,14 +113,18 @@ void RSA::SetKeys(std::string e2_, std::string N2_){
 	mpz_set_str(N2,new_n2,10);
 }
 
+//writes file containing own private key and other's public key
 void RSA::SaveKeys(std::string filename){
 	std::ofstream of(filename);
 	 if(of.is_open())
     {	
+    	mpz_class priv(new_d);
     	mpz_class pub1(N);
     	mpz_class pub2(e);
-    	std::cout<< N << std::endl;
-    	std::cout<< e << std::endl << std::endl;
+    	std::cout<< new_d << std::endl;
+    	std::cout<< N2 << std::endl;
+    	std::cout<< e2 << std::endl << std::endl;
+    	std::string privatekey = priv.get_str();
     	std::string publickey1 = pub1.get_str();
     	std::string publickey2 = pub2.get_str(); 
         of<< privatekey << std::endl << publickey1 << std::endl << publickey2 <<std::endl;
@@ -135,6 +139,8 @@ void RSA::SaveKeys(std::string filename){
 	return;
 }
 
+
+//loads on other's public key from file
 void RSA::LoadKeys(std::string filename){
 	std::string x;
 	std::ifstream inFile(filename);
@@ -143,8 +149,11 @@ void RSA::LoadKeys(std::string filename){
         std::cerr << "Unable to open file";
         exit(1); // terminate with error
     }
+    mpz_clear(new_d);
     mpz_clear(N2);
     mpz_clear(e2);
+   	inFile >> x;
+    mpz_set_str(new_d,x.c_str(),10);
    	inFile >> x;
     mpz_set_str(N2,x.c_str(),10);
    	inFile >> x;
@@ -153,6 +162,7 @@ void RSA::LoadKeys(std::string filename){
 	return;
 }
 
+/*
 int main(int argc, char ** argv){
 	std::cout<<"Testing RSA Key Writing" <<std::endl;
 	RSA myRSA;
@@ -165,3 +175,4 @@ int main(int argc, char ** argv){
 	myRSA2.SaveKeys("keys2.txt");
 	return 0;
 }
+*/
