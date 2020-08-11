@@ -157,29 +157,63 @@ int bank(int cd, const Keys &keys) {
 	// put server's ptxt in ctxt
 
 	switch (ptxt[0]) {
-	case ATMMsg::DEPOSIT:
+	case ATMMsg::DEPOSIT: {
 		if (ctxtlen < DEPOSIT_LEN) {
 			std::cout << "Invalid message format." << std::endl;
+			ctxt[0] = BankMsg::BAD_FORMAT;
+			ctxt[1] = 0;
 			return -1;
 		}
 		unsigned char uid = ptxt[1];
 		uint64_t dep = *((uint64_t *)(ptxt + 2));
 		if (dep > UINT64_MAX - safe[uid]) {
+			std::cout << "Client attempted to deposit more than maximum." << std::endl;
 			ctxt[0] = BankMsg::TOO_MUCH_BANK;
 			ctxt[1] = 0;
 			break;
 		}
 		safe[uid] += dep;
-		ctxt[0] = BankMsg::;
-	break;
-	case ATMMsg::WITHDRAW:
-		ctxt[0] = 0;
-	break;
-	case ATMMsg::BALANCE:
-		ctxt[0] = 0;
-	break;
-	default:
-	break;
+		ctxt[0] = BankMsg::OK;
+		ctxt[1] = 0;
+	} break;
+	case ATMMsg::WITHDRAW: {
+		if (ctxtlen < WITHDRAW_LEN) {
+			std::cout << "Invalid message format." << std::endl;
+			ctxt[0] = BankMsg::BAD_FORMAT;
+			ctxt[1] = 0;
+			break;
+		}
+		unsigned char uid = ptxt[1];
+		uint64_t wd = *((uint64_t *)(ptxt + 2));
+		if (wd > safe[uid]) {
+			std::cout << "Client attempted to withdraw more than they had." << std::endl;
+			ctxt[0] = BankMsg::NOT_ENOUGH_DOUGH;
+			ctxt[1] = 0;
+			break;
+		}
+		safe[uid] -= wd;
+		ctxt[0] = BankMsg::OK;
+		ctxt[1] = 0;
+	} break;
+	case ATMMsg::BALANCE: {
+		if (ctxtlen < BALANCE_LEN) {
+			std::cout << "Invalid message format." << std::endl;
+			ctxt[0] = BankMsg::BAD_FORMAT;
+			ctxt[1] = 0;
+			break;
+		}
+		unsigned char uid = ptxt[1];
+		uint64_t bal = safe[uid];
+		ctxt[0] = BankMsg::OK;
+		uint64_t * balp = (uint64_t *)(ctxt + 1);
+		*balp = bal;
+		ctxt[1 + sizeof(uint64_t)] = 0;
+	} break;
+	default: {
+		std::cout << "Unknown message class." << std::endl;
+		ctxt[0] = BankMsg::BAD_FORMAT;
+		ctxt[1] = 0;
+	}
 	}
 
 	// server's ptxt is now in ctxt

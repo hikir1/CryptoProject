@@ -1,3 +1,6 @@
+a.out : hello.cpp
+	g++ hello.cpp -D NDEBUG
+
 atm : **.[ch]pp **/**.[ch]pp **/**.h
 	g++ KeyGeneration.cpp KeyEncryption.cpp client.cpp aes/**.cpp RSA/**.cpp \
 		hmac/**.cpp util.cpp -D NDEBUG -D ATM -o atm.out -lgmp

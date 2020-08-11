@@ -14,16 +14,35 @@ constexpr size_t PARKEY_LEN = 16;
 
 constexpr size_t KEYEX_LEN = 3 * PARKEY_LEN;
 
+constexpr size_t DEPOSIT_LEN = sizeof(char) + sizeof(uint64_t) + sizeof(char);
+constexpr size_t WITHDRAW_LEN = sizeof(char) + sizeof(uint64_t) + sizeof(char);
+constexpr size_t BALANCE_LEN = sizeof(char[2]);
+
+constexpr size_t DEP_RES_LEN = sizeof(char[2]);
+constexpr size_t WD_RES_LEN = sizeof(char[2]);
+constexpr size_t BAL_RES_LEN = sizeof(char) + sizeof(uint64_t) + sizeof(char);
+
 struct Keys {
 	std::string hmac_key;
 	aes::Key aes_key;
 	aes::IV aes_iv;
 };
 
-enum BankMsg {
-	DEPOSIT = '1',
-	WITHDRAW = '2',
-	BALANCE = '3'
-};
+namespace ATMMsg {
+	enum Msg {
+		DEPOSIT = '1',
+		WITHDRAW = '2',
+		BALANCE = '3'
+	};
+}
+
+namespace BankMsg {
+	enum Msg {
+		OK,
+		BAD_FORMAT,
+		TOO_MUCH_BANK,
+		NOT_ENOUGH_DOUGH
+	};
+}
 
 #endif
