@@ -55,10 +55,10 @@ int main(int argc, char ** argv)
 
   // TODO: RSA Encrypt
   RSA my_rsa();
-  std::string msg = "Hello";
+  std::string msg(HELLO_MSG,sizeof(HELLO_MSG));
   my_rsa.Encrypt(msg);
   std::string encrypted_msg = my_rsa.RSAgetcryptotext();
-  int fail = write( client, encrypted_msg.c_str(), .length()); 
+  int fail = write( client, encrypted_msg.c_str(), encrypted_msg.length()); 
   if ( fail < strlen( msg ) ){
     perror( "write() failed" );
     return EXIT_FAILURE;
