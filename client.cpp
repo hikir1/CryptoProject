@@ -124,15 +124,26 @@ int main(int argc, char ** argv)
   //make keys
   std::cout << "For depositing funds please use the format \"1 $amount\"" << std::endl;
   std::cout << "For withdrawing funds please use the format \"2 $amount\"" << std::endl;
-  std::cout << "To deplay your balance please use the format \"3\"" << std::endl << std::endl;;
+  std::cout << "To deplay your balance please use the format \"3\"" << std::endl;
+  std::cout << "To leave please uses \"q\"" << std::endl << std::endl;
   std::string message;
   while(1){
+    char first[MSG_MAX];
     char last[MSG_MAX];
     std::cout << "Enter your transaction below:" << std::endl;
     if (!std::getline(std::cin, message)) {
       perror("Error: getline failed");
       return EXIT_FAILURE;
     }
+    if(message.length() == 0){
+      std::cout << "Message Aborted: Message was too short" << std::endl;
+      continue;
+    }
+    else if(message[0] == 'q'){
+      std::cout << "Bye" << std::endl;
+      break;
+    }
+
     // if length (ssh) msg_max is exceeded abort
     if (message.length() > MSG_MAX){
         std::cout << "Message Aborted: Message was too long" << std::endl;
@@ -143,12 +154,12 @@ int main(int argc, char ** argv)
     // 2 = withdraw (ssh)
     // 3 = balance (ssh)
     //ignore if message doesn't start with one of these 3
-    if (message[0] != BankMsg::DEPOSIT && message[0] != BankMsg::WITHDRAW && message[0] != BankMsg::BALANCE){
+    else if (message[0] != BankMsg::DEPOSIT && message[0] != BankMsg::WITHDRAW && message[0] != BankMsg::BALANCE){
         std::cout << "Message Aborted: Message had improper start" << std::endl;
         continue;
     }
     // checks for $
-    if (message[2] != '$'){
+    else if (message[2] != '$'){
         std::cout << "Message Aborted: No $ detected" << std::endl;
         continue;
     }
@@ -165,17 +176,41 @@ int main(int argc, char ** argv)
       perror( "write() failed\n" );
       return EXIT_FAILURE;
     }
-
-
-    
-    if ((num_bytes = recv(client, hold, MSG_MAX-1, 0)) == -1) {
+    char *cstr = message.c_str();
+    char holder[strlen(cstr) + aes::BLOCK_BYTES];
+    aes::encrypt(cstr, holder);
+    std::string encrypted(cstr, strlen(cstr));
+    fail = write( client, encrypted.c_str(), encrypted.length()); 
+    if ( fail < strlen( msg ) ){
+      perror( "write() failed\n" );
+      return EXIT_FAILURE;
+    }
+    if ((num_bytes = recv(client, first, MSG_MAX-1, 0)) == -1) {
       perror("Error: recv failed\n");
       return EXIT_FAILURE;
     }
-    hold[num_bytes] = '\0';
-
-
-
+    first[num_bytes] = '\0';
+    std::string en_msg(first,sizeof(first));
+    if ((num_bytes = recv(client, last, MSG_MAX-1, 0)) == -1) {
+      perror("Error: recv failed\n");
+      return EXIT_FAILURE;
+    }
+    last[num_bytes] = '\0';
+    // AES Decrypt
+    char holder2[strlen(cstr) + aes::BLOCK_BYTES];
+    if(en_msg.length()%aes::BLOCK_BYTES != 0){
+      perror( "Hacker detected: incorrect length\n" );
+      return EXIT_FAILURE;
+    }
+    aes::decrypt(last, holder2);
+    std::string gn_msg(last,sizeof(last));
+    std::string check = hmac::create_HMAC(gn_msg, all_keys.hmac_key);
+    if(strcmp(en_msg,check) != 0){
+      perror( "Hacker detected: incorrect HMAC\n" );
+      return EXIT_FAILURE;
+    }else{
+      cout << gn_msg << endl;
+    }
   }
   sleep(5);
   if (close(client) == -1) {
