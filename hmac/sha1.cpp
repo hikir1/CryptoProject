@@ -7,10 +7,10 @@
 #include "sha1.h"
 #include "hmac_util.hpp"
 
-SHA1::int num_h = 5;
-SHA1::int num_blocks = 16;
-SHA1::int transformation = 0;
-SHA1::std::vector<uint32_t> holder = std::vector<uint32_t>(5);
+int SHA1::num_h = 5;
+int SHA1::num_blocks = 16;
+int SHA1::transformation = 0;
+std::vector<uint32_t> SHA1::holder = std::vector<uint32_t>(5);
 
 
 std::string SHA1::circle_shift(int shift, std::string shifted){
