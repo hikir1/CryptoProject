@@ -76,7 +76,7 @@ int main(int argc, char ** argv)
   std::string received_msg(buf,sizeof(buf));
   my_rsa.RSADecrypt(received_msg);
   received_msg = my_rsa.RSAgetmessage();
-  if (strcmp(msg, received_msg) != 0){
+  if (msg.compare(received_msg) != 0){
     perror( "Hacker detected\n" );
     return EXIT_FAILURE;
   }
@@ -91,8 +91,8 @@ int main(int argc, char ** argv)
     mpz_init(p);
     mpz_t pkb;
     mpz_init(pkb);
-    mpz_t other_keyhalf;
-    mpz_init(other_keyhalf);
+    mpz_t other_key_half;
+    mpz_init(other_key_half);
     KeyExchange(keyhalf, p, pkb); //keyhalf has proper values after this
     mpz_class ctxt(keyhalf);
     std::string cryptotext = ctxt.get_str();
@@ -109,7 +109,7 @@ int main(int argc, char ** argv)
     hold[num_bytes] = '\0';
     //receive key as char*
     mpz_set_str(hold, other_key_half, 10); // this converts char* to key half
-    sharedkey(shared_key, other_key, p, pkb); //stores shared key in shared_key after this
+    sharedkey(shared_key, other_key_half, p, pkb); //stores shared key in shared_key after this
     if(x == 0){
       mpz_class var(shared_key);
       cryptotext = var.get_str();
@@ -163,7 +163,7 @@ int main(int argc, char ** argv)
     // 2 = withdraw (ssh)
     // 3 = balance (ssh)
     //ignore if message doesn't start with one of these 3
-    else if (message[0] != BankMsg::DEPOSIT && message[0] != BankMsg::WITHDRAW && message[0] != BankMsg::BALANCE){
+    else if (message[0] != ATMMsg::DEPOSIT && message[0] != ATMMsg::WITHDRAW && message[0] != ATMMsg::BALANCE){
         std::cout << "Message Aborted: Message had improper start" << std::endl;
         continue;
     }
@@ -214,7 +214,7 @@ int main(int argc, char ** argv)
     aes::cbc_decrypt(last, holder2);
     std::string gn_msg(holder2,sizeof(holder2));
     std::string check = hmac::create_HMAC(gn_msg, all_keys.hmac_key);
-    if(strcmp(en_msg,check) != 0){
+    if(en_msg.compare(check) != 0){
       perror( "Hacker detected: incorrect HMAC\n" );
       return EXIT_FAILURE;
     }else{
