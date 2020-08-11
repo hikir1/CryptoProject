@@ -17,6 +17,7 @@ void hmac::generate(){
     output_length = 20;
 	ipad = "";
 	opad = "";
+>>>>>>> 670507835a5870eec99203eedf0dccdb6f3f0f44
 	for(int x = 0; x < byte_length; x++){
 		ipad = ipad + "00110110";
 		opad = opad + "01011100";
