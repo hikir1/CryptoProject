@@ -49,7 +49,7 @@ std::string SHA1::padding(std::string message, int length){
 			final = final + "0";
 		}
 	}
-	std::string ending = Dec_to_Bin(length);
+	std::string ending = hmac_util::Dec_to_Bin(length);
 	while(ending.length() < 64){
 		ending = "0" + ending;
 	}
@@ -128,7 +128,8 @@ std::string SHA1::hash_string(std::string full_string){
 	uint32_t C = circle_shift_uint(64,holder[2]);
 	uint32_t D = circle_shift_uint(32,holder[3]);
 	uint32_t E = holder[4];
-	full = full + Bin_to_Hex(Dec_to_Bin(A)) + Bin_to_Hex(Dec_to_Bin(B))+Bin_to_Hex(Dec_to_Bin(C))+Bin_to_Hex(Dec_to_Bin(D))+Bin_to_Hex(Dec_to_Bin(E));
+	full = full + hmac_util::Bin_to_Hex(hmac_util::Dec_to_Bin(A)) + hmac_util::Bin_to_Hex(hmac_util::Dec_to_Bin(B))
+		+hmac_util::Bin_to_Hex(hmac_util::Dec_to_Bin(C))+hmac_util::Bin_to_Hex(hmac_util::Dec_to_Bin(D))+hmac_util::Bin_to_Hex(hmac_util::Dec_to_Bin(E));
 	return full;
 }
 
