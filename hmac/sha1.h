@@ -9,8 +9,8 @@
 
 namespace SHA1{
 	std::string run_sha(std::string convert);
-	extern const int num_h;
-	extern const int num_blocks;
+	extern int num_h;
+	extern int num_blocks;
 	extern int transformation;
 	extern std::vector<uint32_t> holder;
 	void reset_sha1();

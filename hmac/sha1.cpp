@@ -142,7 +142,7 @@ void SHA1::reset_sha1(){
 	num_h = 5;
 	num_blocks = 16;
 	transformation = 0;
-	holder = std::vector<uint32_t>(5)
+	holder = std::vector<uint32_t>(5);
 }
 
 std::string SHA1::run_sha(std::string convert){
