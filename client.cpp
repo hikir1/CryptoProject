@@ -58,10 +58,12 @@ int make_client(char * host, char * port) {
 int estab_con(int client, Keys all_keys, RSA my_rsa){
   int num_bytes;
   char buf[MSG_MAX];
-  std::string msg(HELLO_MSG,sizeof(HELLO_MSG));
+  std::string msg(HELLO_MSG,strlen(HELLO_MSG));
+  std::cout << "check" << std::endl;
   std::string encrypted_msg = my_rsa.RSAgetcryptotext(msg);
+   std::cout << "check" << std::endl;
   //send message
-  int fail = write( client, encrypted_msg.c_str(), encrypted_msg.length()); 
+  int fail = write( client, msg.c_str(), msg.length()); 
   if ( fail < msg.length() ){
     perror( "write() failed" );
     return -1;
@@ -73,9 +75,9 @@ int estab_con(int client, Keys all_keys, RSA my_rsa){
   }
   buf[num_bytes] = '\0';
   // RSA Decrypt
-  std::string received_msg(buf,sizeof(buf));
+  std::string received_msg(buf,strlen(buf));
   std::string decrypted_msg = my_rsa.RSAgetmessage(received_msg);
-  if (msg.compare(received_msg) != 0){
+  if (msg.compare(decrypted_msg) != 0){
     perror( "Hacker detected" );
     return -1;
   }
@@ -150,7 +152,7 @@ int main(int argc, char ** argv)
     return EXIT_FAILURE;
   // RSA Encrypt
   RSA my_rsa;
-  my_rsa.LoadKeys("keys.txt");
+  my_rsa.LoadKeys("clientKeys");
   //send public keys
   //receive keys
   //make keys
@@ -227,7 +229,7 @@ int main(int argc, char ** argv)
       return EXIT_FAILURE;
     }
     first[num_bytes] = '\0';
-    std::string en_msg(first,sizeof(first));
+    std::string en_msg(first,strlen(first));
     if ((num_bytes = recv(client, last, MSG_MAX-1, 0)) == -1) {
       perror("Error: recv failed");
       return EXIT_FAILURE;
@@ -241,7 +243,7 @@ int main(int argc, char ** argv)
     }
     s_mess = strlen(last);
     aes::cbc_decrypt(last, holder2, s_mess, all_keys.aes_iv, all_keys.aes_key);
-    std::string gn_msg(holder2,sizeof(holder2));
+    std::string gn_msg(holder2,strlen(holder2));
     std::string check = hmac::create_HMAC(gn_msg, all_keys.hmac_key);
     if(en_msg.compare(check) != 0){
       perror( "Hacker detected: incorrect HMAC" );
