@@ -181,7 +181,7 @@ int main(int argc, char ** argv)
       perror("Error: getline failed");
       return EXIT_FAILURE;
     }
-    int i_d = id;
+    int i_d = stoi(id);
     if(i_d < 0 || i_d > 255){
       std::cerr << "Unsupported ID" << std::endl;
       continue;
@@ -227,11 +227,12 @@ int main(int argc, char ** argv)
         continue;
     }
     std::string checker = "";
+    unsigned long long int money = 0;
     for(int x = 3; x < message.length(); x++){
       checker = checker+message[x];
     }
     try{
-      unsigned long long int money = stoull(checker);
+      money = stoull(checker);
     }catch(const std::invalid_argument& ia){
        std::cerr << "Invalid arguments: " << ia.what() << std::endl;
        std::cerr << "Message Aborted: Cannot be converted" << std::endl;
@@ -277,9 +278,9 @@ int main(int argc, char ** argv)
       std::cout << msg.error << std::endl;
       msg.type = ssh::MsgType::INVALID;
     }
-    switch(msg.Type){
+    switch(msg.type){
       case(ssh::MsgType::OK):{
-        switch(MsgType){
+        switch(msgType){
           case ssh::MsgType::DEPOSIT: {
             std::cout << "A deposit of " << checker << " was accepted, the balance is now " << msg.amt << std::endl;
           } break;
@@ -292,7 +293,7 @@ int main(int argc, char ** argv)
         }
       }break;
       case(ssh::MsgType::BAD_FORMAT):{
-        switch(MsgType){
+        switch(msgType){
           case ssh::MsgType::DEPOSIT: {
             std::cout << "A deposit of " << checker << " was denied due to a bad format" << std::endl;
           } break;
