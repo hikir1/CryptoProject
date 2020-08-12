@@ -99,7 +99,7 @@ int estab_con(int client, ssh::Keys all_keys, RSA my_rsa){
    decrypted_msg = my_rsa.RSAgetmessage(received_msg);
   #else
     decrypted_msg = received_msg;
-    std::cout << decrypted_msg << endl;
+    std::cout << decrypted_msg << std::endl;
   #endif
   if (msg.compare(decrypted_msg) != 0){
     perror( "Hacker detected" );
@@ -108,10 +108,10 @@ int estab_con(int client, ssh::Keys all_keys, RSA my_rsa){
   int broken = 0;
   for(int x = 0; x < 3; x++){
     std::string cryptotext;
+    char hold[ssh::RECV_MAX];
     #ifndef NENCRYPT
       mpz_t shared_key;
       mpz_init(shared_key);
-      char hold[ssh::RECV_MAX];
       mpz_t keyhalf;
       mpz_init(keyhalf);
       mpz_t p;
@@ -276,7 +276,7 @@ int main(int argc, char ** argv)
         #ifdef NDEBUG
         std::cout << "Invalid message format" << std::endl;
         #else
-        std::cout << "Unknown message class " << ptxt[0] << std::endl;
+        std::cout << "Unknown message class" << std::endl;
         #endif
         msgType = ssh::MsgType::BAD_FORMAT;
       }
