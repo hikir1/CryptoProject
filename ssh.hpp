@@ -38,14 +38,14 @@ struct Keys {
 
 namespace MsgType {
 	enum Type {
-		DEPOSIT,
-		WITHDRAW,
-		BALANCE,
-		OK,
-		BAD_FORMAT,
-		TOO_MUCH_BANK,
-		NOT_ENOUGH_DOUGH,
-		INVALID
+		DEPOSIT, //0
+		WITHDRAW, //1
+		BALANCE, //2
+		OK, //3
+		BAD_FORMAT, //4
+		TOO_MUCH_BANK, //5
+		NOT_ENOUGH_DOUGH, //6
+		INVALID //7
 	};
 }
 

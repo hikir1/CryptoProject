@@ -53,6 +53,22 @@ int make_client(char * host, char * port) {
   return client;
 }
 
+ssize_t try_recv(int cd, char * buf, size_t buflen) {
+  assert(buflen < INT_MAX);
+  ssize_t len = recv(cd, buf, buflen - 1, MSG_WAITALL);
+  if (len == -1) {
+    perror("ERROR: Failed to recv message");
+    return -1;
+  }
+  if (len == 0) {
+    std::cout << "Client closed connection early." << std::endl;
+    return -1;
+  }
+  std::cout << "recvd len: " << len << std::endl;
+  buf[len] = '\0';
+  return len;
+}
+
 int estab_con(int client, ssh::Keys all_keys, RSA my_rsa){
   int num_bytes;
   char buf[ssh::RECV_MAX];
@@ -153,14 +169,27 @@ int main(int argc, char ** argv)
   //receive keys
   //make keys
   std::string message;
+  std::string id;
+  unsigned char u_id;
   while(1){
     int test = estab_con(client, all_keys, my_rsa);
     if(test == -1){
       return EXIT_FAILURE;
     }
+    std::cout << "What user are you (0, 255):" << std::endl;
+    if (!std::getline(std::cin, id)) {
+      perror("Error: getline failed");
+      return EXIT_FAILURE;
+    }
+    int i_d = stoi(id);
+    if(i_d < 0 || i_d > 255){
+      std::cerr << "Unsupported ID" << std::endl;
+      continue;
+    }
+    u_id = (unsigned char) i_d;
     std::cout << "For depositing funds please use the format \"1 $amount\"" << std::endl;
     std::cout << "For withdrawing funds please use the format \"2 $amount\"" << std::endl;
-    std::cout << "To deplay your balance please use the format \"3\"" << std::endl;
+    std::cout << "To deplay your balance please use the format \"$\"" << std::endl;
     std::cout << "To leave please uses \"q\"" << std::endl << std::endl;
     char first[ssh::RECV_MAX];
     char last[ssh::RECV_MAX];
@@ -198,69 +227,93 @@ int main(int argc, char ** argv)
         continue;
     }
     std::string checker = "";
-    for(int x = 2; x < message.length(); x++){
+    unsigned long long int money = 0;
+    for(int x = 3; x < message.length(); x++){
       checker = checker+message[x];
     }
     try{
-      unsigned long long int money = stoull(checker);
+      money = stoull(checker);
     }catch(const std::invalid_argument& ia){
        std::cerr << "Invalid arguments: " << ia.what() << std::endl;
        std::cerr << "Message Aborted: Cannot be converted" << std::endl;
        continue;
     }catch(const std::out_of_range& oor){
        std::cerr << "Invalid arguments: " << oor.what() << std::endl;
-       std::cerr << "Message Aborted: amount too large" << std::endl;
+       std::cerr << "Message Aborted: Amount of funds too large" << std::endl;
        continue;
     }
-    //feed buffer make sure there is at least blockbuffer extra space
-    //otherwise 
-    //check if returned message.length%block_bytes == 0
-    //if not abort
-    //when message is recreved check it by decrypting message
-    //then compare macs
-    std::string mac = hmac::create_HMAC(message, all_keys.hmac_key);
-    //send keyhalf here
-    fail = write( client, mac.c_str(), mac.length()); 
-    if ( fail <  mac.length() ){
-      perror( "write() failed" );
-      return EXIT_FAILURE;
+
+    ssh::MsgType::Type msgType;
+    switch(message[0]){
+      case (int)ssh::MsgType::DEPOSIT: {
+        msgType = ssh::MsgType::DEPOSIT;
+      } break;
+      case (int)ssh::MsgType::WITHDRAW: {
+        msgType = ssh::MsgType::WITHDRAW;
+      } break;
+      case (int)ssh::MsgType::BALANCE: {
+        msgType = ssh::MsgType::BALANCE;
+      } break;
+      default: {
+        #ifdef NDEBUG
+        std::cout << "Invalid message format" << std::endl;
+        #else
+        std::cout << "Unknown message class " << ptxt[0] << std::endl;
+        #endif
+        msgType = ssh::MsgType::BAD_FORMAT;
+      }
     }
-    const char *cstr = message.c_str();
-    char holder[strlen(cstr) + aes::BLOCK_BYTES];
-    size_t s_mess = strlen(cstr);
-    aes::cbc_encrypt(cstr, holder, s_mess, all_keys.aes_iv, all_keys.aes_key);
-    std::string encrypted(holder, strlen(holder));
-    fail = write( client, encrypted.c_str(), encrypted.length()); 
-    if ( fail < encrypted.length()){
-      perror( "write() failed" );
-      return EXIT_FAILURE;
-    }
-    if ((num_bytes = recv(client, first, ssh::RECV_MAX-1, 0)) == -1) {
-      perror("Error: recv failed");
-      return EXIT_FAILURE;
+    if (send(client, ssh::SendMsg(msgType, u_id, money, all_keys) , ssh::TOTAL_LEN, 0) == -1) {
+      perror("ERROR: Failed to send message");
+      return -1;
     }
     first[num_bytes] = '\0';
-    std::string en_msg(first,strlen(first));
-    if ((num_bytes = recv(client, last, ssh::RECV_MAX-1, 0)) == -1) {
-      perror("Error: recv failed");
-      return EXIT_FAILURE;
+    char recvbuf[ssh::TOTAL_LEN];
+    ssize_t recvlen;
+    if ((recvlen = try_recv(client, recvbuf, ssh::TOTAL_LEN)) == -1){
+      return -1;
     }
-    last[num_bytes] = '\0';
-    // AES Decrypt
-    char holder2[strlen(last) + aes::BLOCK_BYTES];
-    if(en_msg.length()%aes::BLOCK_BYTES != 0){
-      perror( "Hacker detected: incorrect length" );
-      return EXIT_FAILURE;
+    ssh::RecvMsg msg(recvbuf, recvlen, all_keys);
+    if (msg.error) {
+      std::cout << msg.error << std::endl;
+      msg.type = ssh::MsgType::INVALID;
     }
-    s_mess = strlen(last);
-    aes::cbc_decrypt(last, holder2, s_mess, all_keys.aes_iv, all_keys.aes_key);
-    std::string gn_msg(holder2,strlen(holder2));
-    std::string check = hmac::create_HMAC(gn_msg, all_keys.hmac_key);
-    if(en_msg.compare(check) != 0){
-      perror( "Hacker detected: incorrect HMAC" );
-      return EXIT_FAILURE;
-    }else{
-      std::cout << gn_msg << std::endl;
+    switch(msg.type){
+      case(ssh::MsgType::OK):{
+        switch(msgType){
+          case ssh::MsgType::DEPOSIT: {
+            std::cout << "A deposit of " << checker << " was accepted, the balance is now " << msg.amt << std::endl;
+          } break;
+          case ssh::MsgType::WITHDRAW: {
+            std::cout << "A withdrawal of " << checker << " was accepted, the balance is now " << msg.amt << std::endl;
+          } break;
+          case ssh::MsgType::BALANCE: {
+            std::cout << "The balance is " << msg.amt << std::endl;
+          } break;
+        }
+      }break;
+      case(ssh::MsgType::BAD_FORMAT):{
+        switch(msgType){
+          case ssh::MsgType::DEPOSIT: {
+            std::cout << "A deposit of " << checker << " was denied due to a bad format" << std::endl;
+          } break;
+          case ssh::MsgType::WITHDRAW: {
+            std::cout << "A withdrawal of " << checker << " was denied due to a bad format" << std::endl;
+          } break;
+          case ssh::MsgType::BALANCE: {
+            std::cout << "A check of the balance was denied due to a bad format" << std::endl;
+          } break;
+        }
+      }break;
+      case(ssh::MsgType::TOO_MUCH_BANK):{
+        std::cout << "A deposit of " << checker << " was denied due your bank account being too full" << std::endl;
+      }break;
+      case(ssh::MsgType::NOT_ENOUGH_DOUGH):{
+        std::cout << "A withdrawal of " << checker << " was denied due your bank account being too empty" << std::endl;
+      }break;
+      case(ssh::MsgType::INVALID):{
+        std::cout << "The message was invalid" << std::endl;
+      }break;
     }
   }
   sleep(5);
