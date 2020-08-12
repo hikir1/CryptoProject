@@ -92,7 +92,7 @@ int estab_con(int client, ssh::Keys all_keys, RSA my_rsa){
   }
   buf[num_bytes] = '\0';
   // RSA Decrypt
-  std::string received_msg(buf,strlen(buf));
+  std::string received_msg(buf, ssh::HELLO_LEN);
   std::string decrypted_msg;
   #ifndef NENCRYPT
    decrypted_msg = my_rsa.RSAgetmessage(received_msg);
@@ -138,7 +138,7 @@ int estab_con(int client, ssh::Keys all_keys, RSA my_rsa){
     hold[num_bytes] = '\0';
     //receive key as char*
     #ifndef NENCRYPT
-      mpz_set_str(other_key_half, hold, strlen(hold)); // this converts char* to key half
+      mpz_set_str(other_key_half, hold, ssh::KEYEX_LEN); // this converts char* to key half
       KeyGen::sharedkey(shared_key, other_key_half, p, pkb); //stores shared key in shared_key after this
       if(x == 0){
         mpz_class var(shared_key);
