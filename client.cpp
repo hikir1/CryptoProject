@@ -17,7 +17,6 @@
 
 int make_client(char * host, char * port) {
   // try to find HOST and PORT
-  errno = 0;
   int client, value;
   struct addrinfo hints = {0};
   hints.ai_family = AF_UNSPEC;
@@ -148,7 +147,6 @@ int main(int argc, char ** argv)
     return EXIT_FAILURE;
   // RSA Encrypt
   RSA my_rsa;
-  std::cout << "never" << std::endl;
   my_rsa.LoadKeys("clientKeys");
   //send public keys
   //receive keys
