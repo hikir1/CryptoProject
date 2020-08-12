@@ -73,9 +73,13 @@ int estab_con(int client, ssh::Keys all_keys, RSA my_rsa){
   int num_bytes;
   char buf[ssh::RECV_MAX];
   std::string msg(ssh::HELLO_MSG,strlen(ssh::HELLO_MSG));
-  std::cout << "check" << std::endl;
-  std::string encrypted_msg = my_rsa.RSAgetcryptotext(msg);
-   std::cout << "check" << std::endl;
+  std::string encrypted_msg;
+  #ifndef NENCRYPT
+   encrypted_msg = my_rsa.RSAgetcryptotext(msg);
+  #else
+    encrypted_msg = msg;
+  #endif
+
   //send message
   int fail = write( client, msg.c_str(), msg.length()); 
   if ( fail < msg.length() ){
@@ -90,28 +94,38 @@ int estab_con(int client, ssh::Keys all_keys, RSA my_rsa){
   buf[num_bytes] = '\0';
   // RSA Decrypt
   std::string received_msg(buf,strlen(buf));
-  std::string decrypted_msg = my_rsa.RSAgetmessage(received_msg);
+  std::string decrypted_msg;
+  #ifndef NENCRYPT
+   decrypted_msg = my_rsa.RSAgetmessage(received_msg);
+  #else
+    decrypted_msg = received_msg;
+    std::cout << decrypted_msg << endl;
+  #endif
   if (msg.compare(decrypted_msg) != 0){
     perror( "Hacker detected" );
     return -1;
   }
-  
   int broken = 0;
   for(int x = 0; x < 3; x++){
-    mpz_t shared_key;
-    mpz_init(shared_key);
-    char hold[ssh::RECV_MAX];
-    mpz_t keyhalf;
-    mpz_init(keyhalf);
-    mpz_t p;
-    mpz_init(p);
-    mpz_t pkb;
-    mpz_init(pkb);
-    mpz_t other_key_half;
-    mpz_init(other_key_half);
-    KeyGen::KeyExchange(keyhalf, p, pkb); //keyhalf has proper values after this
-    mpz_class ctxt(keyhalf);
-    std::string cryptotext = ctxt.get_str();
+    std::string cryptotext;
+    #ifndef NENCRYPT
+      mpz_t shared_key;
+      mpz_init(shared_key);
+      char hold[ssh::RECV_MAX];
+      mpz_t keyhalf;
+      mpz_init(keyhalf);
+      mpz_t p;
+      mpz_init(p);
+      mpz_t pkb;
+      mpz_init(pkb);
+      mpz_t other_key_half;
+      mpz_init(other_key_half);
+      KeyGen::KeyExchange(keyhalf, p, pkb); //keyhalf has proper values after this
+      mpz_class ctxt(keyhalf);
+      cryptotext = ctxt.get_str();
+    #else
+      cryptotext = "Check";
+    #endif
     //send keyhalf here
     fail = write( client, cryptotext.c_str(), cryptotext.length()); 
     if ( fail < cryptotext.length() ){
@@ -124,25 +138,29 @@ int estab_con(int client, ssh::Keys all_keys, RSA my_rsa){
     }
     hold[num_bytes] = '\0';
     //receive key as char*
-    mpz_set_str(other_key_half, hold, strlen(hold)); // this converts char* to key half
-    KeyGen::sharedkey(shared_key, other_key_half, p, pkb); //stores shared key in shared_key after this
-    if(x == 0){
-      mpz_class var(shared_key);
-      cryptotext = var.get_str();
-      all_keys.hmac_key = cryptotext;
-    }else if(x == 1){
-      broken = aes::fill_key(all_keys.aes_key, shared_key);
-      if(broken != 0){
-        perror("Error: fill_key failed");
-        return -1;
+    #ifndef NENCRYPT
+      mpz_set_str(other_key_half, hold, strlen(hold)); // this converts char* to key half
+      KeyGen::sharedkey(shared_key, other_key_half, p, pkb); //stores shared key in shared_key after this
+      if(x == 0){
+        mpz_class var(shared_key);
+        cryptotext = var.get_str();
+        all_keys.hmac_key = cryptotext;
+      }else if(x == 1){
+        broken = aes::fill_key(all_keys.aes_key, shared_key);
+        if(broken != 0){
+          perror("Error: fill_key failed");
+          return -1;
+        }
+      }else if(x == 2){
+        broken = aes::fill_iv(all_keys.aes_iv, shared_key);
+        if(broken != 0){
+          perror("Error: fill_key failed");
+          return -1;
+        }
       }
-    }else if(x == 2){
-      broken = aes::fill_iv(all_keys.aes_iv, shared_key);
-      if(broken != 0){
-        perror("Error: fill_key failed");
-        return -1;
-      }
-    }
+    #else
+      std::cout << hold << std::endl;
+    #endif
   }
   return client;
 }
