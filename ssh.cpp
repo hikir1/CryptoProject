@@ -29,8 +29,6 @@ ssh::RecvMsg::RecvMsg(const char msg[TOTAL_LEN], size_t recvlen, const Keys &key
 	amt = 0;
 	for (int i = 2; i < 2 + sizeof(uint64_t)/sizeof(char); i++) {
 		amt <<= 8;
-		std::cout << ptxt[i] << std::endl;
-		std::cout << (uint64_t) ptxt[i] << std::endl;
 		amt |= (uint64_t) ptxt[i];
 	}
 }
@@ -45,7 +43,6 @@ ssh::SendMsg::SendMsg(MsgType::Type type, unsigned char uid, uint64_t amt, const
 	char * ctxt = msg + hmac::output_length;
 	aes::cbc_encrypt(ptxt, ctxt, AES_BUF_LEN, keys.aes_iv, keys.aes_key);
 	std::string mac = hmac::create_HMAC(std::string(ptxt, AES_BUF_LEN), keys.hmac_key);
-	std::cout << mac.size() << std::endl;
 	assert(mac.size() == hmac::output_length);
 	memcpy(msg, mac.c_str(), hmac::output_length);
 }

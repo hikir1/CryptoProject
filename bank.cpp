@@ -135,6 +135,12 @@ int keyex(int cd, ssh::Keys &keys) {
 
 	// TODO: RSA Encrypt server key parts
 	// TODO: send server key parts
+
+	char buf2[ssh::KEYEX_LEN] = {0};
+	if (send(cd, buf, ssh::KEYEX_LEN, 0) == -1) {
+		perror("ERROR: Failed to send keys.");
+		return -1;
+	}
 	
 	return 0;
 }

@@ -16,7 +16,7 @@
 #include <iomanip>
 
 //set static global so doesn't reinitialize on random calls
-static std::random_device rd;
+std::random_device rd;
 
 //mpz_t to string
 std::string mpzt2string(mpz_t a){
