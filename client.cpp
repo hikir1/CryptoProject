@@ -72,20 +72,21 @@ ssize_t try_recv(int cd, char * buf, size_t buflen) {
 int estab_con(int client, ssh::Keys all_keys, RSA my_rsa){
   int num_bytes;
   char buf[ssh::RECV_MAX];
-  std::string msg(ssh::HELLO_MSG,strlen(ssh::HELLO_MSG));
+  std::string msg(ssh::HELLO_MSG,ssh::HELLO_LEN);
   std::string encrypted_msg;
   #ifndef NENCRYPT
    encrypted_msg = my_rsa.RSAgetcryptotext(msg);
   #else
     encrypted_msg = msg;
   #endif
-
+  std::cout << client << std::endl;
   //send message
-  int fail = write( client, msg.c_str(), ssh::HELLO_LEN); 
+  int fail = write( client, ssh::HELLO_MSG, ssh::HELLO_LEN); 
   if ( fail < msg.length() ){
     perror( "write() failed" );
     return -1;
   }
+  std::cout << client << std::endl;
   //get message
   if ((num_bytes = recv(client, buf, ssh::HELLO_LEN, 0)) == -1) {
     perror("Error: recv failed");
@@ -178,11 +179,14 @@ int main(int argc, char ** argv)
   int num_bytes, fail;
   char buf[ssh::RECV_MAX];
   int client = make_client(argv[1], argv[2]);
+  std::cout << client << std::endl;
   if (client == -1)
     return EXIT_FAILURE;
   // RSA Encrypt
   RSA my_rsa;
-  my_rsa.LoadKeys("clientKeys");
+  #ifndef NENCRYPT
+    my_rsa.LoadKeys("clientKeys");
+  #endif
   //send public keys
   //receive keys
   //make keys
