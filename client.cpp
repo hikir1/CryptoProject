@@ -17,10 +17,8 @@
 
 int make_client(char * host, char * port) {
   // try to find HOST and PORT
-  errno = 0;
   int client, value;
   struct addrinfo hints = {0};
-  memset(&hints, 0, sizeof(hints));
   hints.ai_family = AF_UNSPEC;
   //set to TCP
   hints.ai_socktype = SOCK_STREAM;
@@ -150,7 +148,6 @@ int main(int argc, char ** argv)
     return EXIT_FAILURE;
   // RSA Encrypt
   RSA my_rsa;
-  std::cout << "never" << std::endl;
   my_rsa.LoadKeys("clientKeys");
   //send public keys
   //receive keys
