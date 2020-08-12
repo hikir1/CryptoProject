@@ -79,14 +79,12 @@ int estab_con(int client, ssh::Keys all_keys, RSA my_rsa){
   #else
     encrypted_msg = msg;
   #endif
-  std::cout << client << std::endl;
   //send message
   int fail = write( client, ssh::HELLO_MSG, ssh::HELLO_LEN); 
   if ( fail < msg.length() ){
     perror( "write() failed" );
     return -1;
   }
-  std::cout << client << std::endl;
   //get message
   if ((num_bytes = recv(client, buf, ssh::HELLO_LEN, 0)) == -1) {
     perror("Error: recv failed");
@@ -179,7 +177,6 @@ int main(int argc, char ** argv)
   int num_bytes, fail;
   char buf[ssh::RECV_MAX];
   int client = make_client(argv[1], argv[2]);
-  std::cout << client << std::endl;
   if (client == -1)
     return EXIT_FAILURE;
   // RSA Encrypt
