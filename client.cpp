@@ -122,15 +122,20 @@ int estab_con(int client, ssh::Keys all_keys, RSA my_rsa){
       KeyGen::KeyExchange(keyhalf, p, pkb); //keyhalf has proper values after this
       mpz_class ctxt(keyhalf);
       cryptotext = ctxt.get_str();
+      fail = write( client, cryptotext.c_str(), ssh::KEYEX_LEN); 
+      if ( fail < cryptotext.length() ){
+        perror( "write() failed" );
+        return -1;
+      }
     #else
-      cryptotext = "Check";
+      char chook[ssh::KEYEX_LEN] = {0};
+      fail = write( client, chook, ssh::KEYEX_LEN); 
+      if ( fail < cryptotext.length() ){
+        perror( "write() failed" );
+        return -1;
+      }
     #endif
     //send keyhalf here
-    fail = write( client, cryptotext.c_str(), ssh::KEYEX_LEN); 
-    if ( fail < cryptotext.length() ){
-      perror( "write() failed" );
-      return -1;
-    }
     if ((num_bytes = recv(client, hold, ssh::KEYEX_LEN, 0)) == -1) {
       perror("Error: recv failed");
       return -1;
