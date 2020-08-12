@@ -13,10 +13,12 @@ ssh::RecvMsg::RecvMsg(const char msg[TOTAL_LEN], size_t recvlen, const Keys &key
 	const char * ctxt = msg + hmac::output_length;
 	char ptxt[AES_BUF_LEN];
 	aes::cbc_decrypt(ctxt, ptxt, AES_BUF_LEN, keys.aes_iv, keys.aes_key);
+	#ifndef NENCRYPT
 	if (hmac::create_HMAC(std::string(ptxt, AES_BUF_LEN), keys.hmac_key).compare(mac) != 0) {
 		error = "Corrupt message: Macs do not match";
 		return;
 	}
+	#endif
 	if ((unsigned int)ptxt[0] >= (unsigned int)MsgType::INVALID) {
 		type = MsgType::INVALID;
 		error = "Bad message format: Unknown message type";
@@ -41,6 +43,7 @@ ssh::SendMsg::SendMsg(MsgType::Type type, unsigned char uid, uint64_t amt, const
 	char * ctxt = msg + hmac::output_length;
 	aes::cbc_encrypt(ptxt, ctxt, AES_BUF_LEN, keys.aes_iv, keys.aes_key);
 	std::string mac = hmac::create_HMAC(std::string(ptxt, AES_BUF_LEN), keys.hmac_key);
+	std::cout << mac.size() << std::endl;
 	assert(mac.size() == hmac::output_length);
 	memcpy(msg, mac.c_str(), hmac::output_length);
 }
