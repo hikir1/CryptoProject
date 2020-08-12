@@ -49,8 +49,8 @@ int isPrime(mpz_t N) {
 }
 
 void getRandPrime(mpz_t result) {
-    unsigned min_digits = 16;
-    unsigned max_digits = 16;
+    unsigned min_digits = 256;
+    unsigned max_digits = 256;
     mpz_t rmin;
     mpz_init(rmin);
     mpz_ui_pow_ui(rmin, 10, min_digits-1);
