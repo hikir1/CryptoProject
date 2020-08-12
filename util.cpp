@@ -17,6 +17,8 @@
 
 //set static global so doesn't reinitialize on random calls
 static std::random_device rd;
+gmp_randstate_t rstate;
+gmp_randinit_mt(rstate);
 
 // Modular Exponentation 
 void pow(mpz_t result, mpz_t x, mpz_t y, mpz_t p)  
@@ -35,27 +37,13 @@ int isPrime(mpz_t N) {
 }
 
 void getRandPrime(mpz_t result) {
-	unsigned min_digits = 6;
-    unsigned max_digits = 9;
-    mpz_t rmin;
-    mpz_init(rmin);
-    mpz_ui_pow_ui(rmin, 10, min_digits-1);
-
-    mpz_t rmax;
-    mpz_init(rmax);
-    mpz_ui_pow_ui(rmax, 10, max_digits);
-
-    gmp_randstate_t rstate;
-    gmp_randinit_mt(rstate);
 	gmp_randseed_ui(rstate,rd());
     mpz_init(result);
     while(1){
 		do{
-	        mpz_urandomm(result, rstate, rmax);
+	        mpz_urandomb(result, rstate, 128);
 	    }while(mpz_cmp(result, rmin) < 0);
 	    if (mpz_probab_prime_p(result, 50))
           break;
-	}
-    mpz_clear(rmax);
-    mpz_clear(rmin);
+	}y
 }

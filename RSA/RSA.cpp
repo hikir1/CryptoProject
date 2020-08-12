@@ -47,7 +47,6 @@ void RSA::RSAKeyGen() {
 	mpz_clear(p);
 	mpz_clear(q);
 
-	mpz_init(e);
 	getRandPrime(e);
 	mpf_t ef;
 	mpf_init(ef);
@@ -172,6 +171,9 @@ void RSA::LoadKeys(std::string filename){
     mpz_clear(new_d);
     mpz_clear(N2);
     mpz_clear(e2);
+    mpz_init(new_d);
+    mpz_init(N2);
+    mpz_init(e2);
    	inFile >> x;
     mpz_set_str(new_d,x.c_str(),10);
    	inFile >> x;
