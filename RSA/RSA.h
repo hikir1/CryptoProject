@@ -1,4 +1,4 @@
-#include "../util.hpp"
+#include "../util.cpp"
 #include <fstream>
 
 class RSA 
@@ -12,14 +12,18 @@ class RSA
     void LoadKeys(std::string filename);
     void SetKeys(std::string e2_, std::string N2_);
     void getPublicKeys(mpz_t pub1, mpz_t pub2);
+    void getOtherPublicKeys(mpz_t pub1, mpz_t pub2);
+    void RSAKeyGen();  
+
     //your public key
     mpz_t e;
     mpz_t N;
-    
-    private: 
+
     //other party's public key
     mpz_t e2;
-    mpz_t N2;
+    mpz_t N2;    
+    
+    private: 
     
     //private key (both the same key different types for operations)
     mpf_t d; //float 
@@ -35,6 +39,6 @@ class RSA
 
     void RSAEncrypt(std::string message);
     void RSADecrypt(std::string cryptotext);
-    void RSAKeyGen();    
+  
 
 }; 

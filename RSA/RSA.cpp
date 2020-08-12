@@ -12,7 +12,6 @@ RSA::RSA(){
 	mpz_init(m2);
 	mpz_init(c);
 	mpz_init(c2);
-	RSAKeyGen();
 }
 
 //destructor
@@ -42,41 +41,78 @@ void RSA::RSAKeyGen() {
 	mpz_sub_ui(p,p,1);
 	mpz_sub_ui(q,q,1);
 	mpz_t carmichaelNum;
+	mpz_t toitent;
+	mpz_init(toitent);
 	mpz_init(carmichaelNum);
+	mpz_mul(toitent,p,q);
 	calcLCM(carmichaelNum, p , q);
 	mpz_clear(p);
 	mpz_clear(q);
 
-	getRandPrime(e);
+
+	//getRandPrime(e);
+    //e stands for encrypt
+    mpz_set_ui(e,2);
+ 	mpz_t count;
+ 	mpz_init(count);
+    //for checking co-prime which satisfies e>1
+    while(mpz_cmp(e,toitent) <= 0){
+    
+	    mpz_gcd(count,e,toitent);
+	    if(mpz_cmp_ui(count,1) == 0){
+	        break;
+	    }
+	    else{
+	        mpz_add_ui(e,e,1);
+	    }
+    }
 	mpf_t ef;
 	mpf_init(ef);
 	mpf_set_z(ef,e);
+
+
 	mpf_t k;
 	mpf_init(k);
-	mpf_set_si(k,1);
-	mpf_t carmNumf;
-	mpf_init(carmNumf);
-	mpf_set_z(carmNumf,carmichaelNum);
-	mpz_clear(carmichaelNum);
-
-	mpf_init(d);
-
-	mpf_add(carmNumf,carmNumf,k);
-	mpf_div(d,carmNumf,ef);
+	mpf_set_ui(k,1);
+	mpf_t toitient_f;
+	mpf_init(toitient_f);
+	mpf_set_z(toitient_f,toitent);
+	mpz_clear(toitent);
 
 	mpf_t tmp;
 	mpf_init(tmp);
+	
+	mpf_t tmp2;
+	mpf_init(tmp2);
+	mpf_set_ui(tmp2,0);
+	
+	mpf_t tmp3;
+	mpf_init(tmp3);
+	mpf_set_ui(tmp3,0);
+
+	mpf_mul(tmp2,k,toitient_f);// tmp2 = k * toitent; 
+	mpf_add_ui(k,k,1);//k++
+	mpf_add_ui(tmp3,tmp2,1);//tmp3 = tmp2 + 1
+	mpf_div(d,tmp3,ef);// d = tmp3 / e
 	mpf_floor(tmp,d);
-	while (!mpf_cmp(d,tmp)) {
-		mpf_add(carmNumf,carmNumf,k);
-		mpf_div(d,carmNumf,ef);
+
+	
+	while (mpf_cmp(d,tmp) != 0) {
+		//d = (1 + k * toitient) / e
+		//k++
+		mpf_mul(tmp2,k,toitient_f);// tmp2 = k * toitent; 
+		mpf_add_ui(k,k,1);//k++
+		mpf_add_ui(tmp3,tmp2,1);//tmp3 = tmp2 + 1
+		mpf_div(d,tmp3,ef);// d = tmp3 / e
 		mpf_floor(tmp,d);
+		//std::cout<< d << "= (1 + (" << k << " * " << toitient << ") /" << ef <<std::endl;
 	}
+	mpz_set_f(new_d,d);
+	
 	mpf_clear(tmp);
-	mpf_clear(carmNumf);
+	mpf_clear(toitient_f);
 	mpf_clear(ef);
 	mpf_clear(k);
-	mpz_set_f(new_d,d);
 	mpf_clear(d);
 	return;
 }
@@ -86,7 +122,10 @@ void RSA::RSAEncrypt(std::string message) {
 	//convert message to mpz_t and store in m
 	const char* msg = message.c_str();
 	mpz_set_str(m,msg,10);
+	std::cout<< "Encrypting This: " << m <<std::endl;
+	std::cout << c << " | " << m << " | " << e2 << " | " << N2 <<std::endl;
 	pow(c, m, e2, N2);
+	std::cout<< "Got This: " << c <<std::endl<<std::endl;
 	return;
 }
 
@@ -95,8 +134,11 @@ void RSA::RSAEncrypt(std::string message) {
 void RSA::RSADecrypt(std::string cryptotext) {
 	//convert cryptotext to mpz_t and store in c2
 	const char* ctxt = cryptotext.c_str();
-	mpz_init_set_str(c2,ctxt,10);
+	mpz_set_str(c2,ctxt,10);
+	std::cout<< "Decrypting This: " << c2 <<std::endl;
+	std::cout << m2 << " | " << c2 << " | " << new_d << " | " << N<<std::endl;
 	pow(m2, c2, new_d, N);
+	std::cout<< "Got This: " << m2 <<std::endl<<std::endl;
 	return;
 }
 
@@ -159,6 +201,12 @@ void RSA::getPublicKeys(mpz_t pub1, mpz_t pub2){
 	mpz_set(pub2,N);
 }
 
+//gets other party'spublic key
+void RSA::getOtherPublicKeys(mpz_t pub1, mpz_t pub2){
+	mpz_set(pub1,e2);
+	mpz_set(pub2,N2);
+}
+
 //loads on other's public key from file
 void RSA::LoadKeys(std::string filename){
 	std::string x;
@@ -174,6 +222,7 @@ void RSA::LoadKeys(std::string filename){
     mpz_init(new_d);
     mpz_init(N2);
     mpz_init(e2);
+    mpz_init(N);
    	inFile >> x;
     mpz_set_str(new_d,x.c_str(),10);
    	inFile >> x;
@@ -182,21 +231,52 @@ void RSA::LoadKeys(std::string filename){
     mpz_set_str(e2,x.c_str(),10);
     inFile >> x;
     mpz_set_str(N,x.c_str(),10);
-   	inFile >> x;
-    mpz_set_str(e,x.c_str(),10);
     inFile.close();
 	return;
 }
 
-// int main(int argc, char ** argv){
-// 	std::cout<<"Testing RSA Key Writing" <<std::endl;
-// 	RSA myRSA;
-// 	myRSA.SetKeys("1231424", "2354264523");
-// 	std::string test = myRSA.RSAgetcryptotext("143252213");
-// 	myRSA.SaveKeys("keys.txt");
-// 	RSA myRSA2;
-// 	myRSA2.SetKeys("12313643463", "124235");
-// 	myRSA2.LoadKeys("keys.txt");
-// 	myRSA2.SaveKeys("keys2.txt");
-// 	return 0;
-// }
+/*
+int main(int argc, char ** argv){
+	RSA clientRSA;
+	RSA serverRSA;
+
+	clientRSA.RSAKeyGen();
+	serverRSA.RSAKeyGen();
+	
+	mpz_t client_e;
+	mpz_t server_e;
+	mpz_t client_N;
+	mpz_t server_N;
+	
+	mpz_init(client_e);
+	mpz_init(server_e);
+	mpz_init(client_N);
+	mpz_init(server_N);
+
+	clientRSA.getPublicKeys(client_e,client_N);
+	serverRSA.getPublicKeys(server_e,server_N);
+
+	mpz_class c_e(client_e);
+	mpz_class serv_e(server_e);
+	mpz_class c_N(client_N);
+	mpz_class serv_N(server_N);
+	
+	clientRSA.SetKeys(serv_e.get_str(),serv_N.get_str());
+	serverRSA.SetKeys(c_e.get_str(),c_N.get_str());
+	std::cout<< "Server N: " <<serv_N.get_str() <<std::endl;
+	std::cout<< "Client N: " <<c_N.get_str() <<std::endl;
+
+	clientRSA.SaveKeys("clientKeys");
+	serverRSA.SaveKeys("serverKeys");
+	clientRSA.LoadKeys("clientKeys");
+	serverRSA.LoadKeys("serverKeys");
+	//encrypt message
+	std::string ctxt = serverRSA.RSAgetcryptotext("987654");
+
+	//decrypt message
+	std::string msg = clientRSA.RSAgetmessage(ctxt);
+
+	std::cout<<ctxt<<std::endl<<msg<<std::endl;
+	return 0;
+}
+*/

@@ -18,6 +18,20 @@
 //set static global so doesn't reinitialize on random calls
 static std::random_device rd;
 
+//mpz_t to string
+std::string mpzt2string(mpz_t a){
+    std::string res;
+    mpz_class tmp(a);
+    res = tmp.get_str();
+    return res;
+}
+
+//string to mpz_t
+void stringt2mpzt(mpz_t res, std::string op){
+    const char* str = op.c_str();
+    mpz_set_str(res,str,10);
+}
+
 // Modular Exponentation 
 void pow(mpz_t result, mpz_t x, mpz_t y, mpz_t p)  
 {  
@@ -35,8 +49,8 @@ int isPrime(mpz_t N) {
 }
 
 void getRandPrime(mpz_t result) {
-    unsigned min_digits = 128;
-    unsigned max_digits = 128;
+    unsigned min_digits = 16;
+    unsigned max_digits = 16;
     mpz_t rmin;
     mpz_init(rmin);
     mpz_ui_pow_ui(rmin, 10, min_digits-1);

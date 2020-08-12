@@ -4,6 +4,9 @@ int main(){
 	RSA clientRSA;
 	RSA serverRSA;
 
+	clientRSA.RSAKeyGen();
+	serverRSA.RSAKeyGen();
+
 	mpz_t client_e;
 	mpz_t server_e;
 	mpz_t client_N;
