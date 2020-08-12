@@ -20,7 +20,6 @@ int make_client(char * host, char * port) {
   errno = 0;
   int client, value;
   struct addrinfo hints = {0};
-  memset(&hints, 0, sizeof(hints));
   hints.ai_family = AF_UNSPEC;
   //set to TCP
   hints.ai_socktype = SOCK_STREAM;
@@ -33,8 +32,7 @@ int make_client(char * host, char * port) {
   int sd;
   //loop through every socket and connect to the first one
   while(itr) {
-    if ((client = socket(res->ai_family, res->ai_socktype,
-        0)) == -1) {
+    if ((client = socket(res->ai_family, res->ai_socktype, 0)) == -1) {
 	  itr = itr->ai_next; // <<<<<<<<<<<<<<< added here
         continue;
     }
