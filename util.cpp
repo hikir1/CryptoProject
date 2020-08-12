@@ -56,4 +56,6 @@ void getRandPrime(mpz_t result) {
 	    if (mpz_probab_prime_p(result, 50))
           break;
 	}
+    mpz_clear(rmax);
+    mpz_clear(rmin);
 }

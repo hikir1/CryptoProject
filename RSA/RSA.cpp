@@ -15,6 +15,20 @@ RSA::RSA(){
 	RSAKeyGen();
 }
 
+//destructor
+RSA::~RSA(){
+	mpz_clear(e);
+	mpz_clear(N);
+	mpz_clear(e2);
+	mpz_clear(N2);
+	mpf_clear(d);
+	mpz_clear(new_d);
+	mpz_clear(m);
+	mpz_clear(m2);
+	mpz_clear(c);
+	mpz_clear(c2);
+}
+
 //desc: generates public and private keys
 void RSA::RSAKeyGen() {
 	//Generate 2 random prime numbers
@@ -172,7 +186,6 @@ void RSA::LoadKeys(std::string filename){
 	return;
 }
 
-/*
 int main(int argc, char ** argv){
 	std::cout<<"Testing RSA Key Writing" <<std::endl;
 	RSA myRSA;
@@ -185,4 +198,3 @@ int main(int argc, char ** argv){
 	myRSA2.SaveKeys("keys2.txt");
 	return 0;
 }
-*/

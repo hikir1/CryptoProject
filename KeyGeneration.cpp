@@ -29,6 +29,7 @@ void KeyGen::sendKeyDiffieHellman(mpz_t sendingkeyhalf, mpz_t g, mpz_t p) {
 	mpz_init(pkb);
 	getRandPrime(pkb);
 	pow(sendingkeyhalf, g, pkb, p);	
+	mpz_clear(pkb);
 }
 
 /*

@@ -5,6 +5,7 @@ class RSA
 {   
     public: 
     RSA();
+    ~RSA();
     std::string RSAgetmessage(std::string cryptotext);
     std::string RSAgetcryptotext(std::string message);
     void SaveKeys(std::string filename);
