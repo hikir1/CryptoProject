@@ -12,7 +12,7 @@ constexpr size_t MSG_LEN = sizeof(char[2]) + sizeof(uint64_t); // bytes
 // include padding for aes
 constexpr size_t AES_BUF_LEN = MSG_LEN + aes::BLOCK_BYTES - MSG_LEN % aes::BLOCK_BYTES; 
 // include preceding hmac
-constexpr size_t TOTAL_LEN = hmac::output_length + MSG_LEN + aes::PADDING - MSG_LEN % aes::PADDING;
+constexpr size_t TOTAL_LEN = hmac::output_length + AES_BUF_LEN;
 
 constexpr const char * HELLO_MSG = "I AM NOT A HACKER";
 constexpr size_t HELLO_LEN = strlen(HELLO_MSG);
