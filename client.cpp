@@ -20,7 +20,7 @@ int make_client(char * host, char * port) {
   errno = 0;
   int client, value;
   struct addrinfo hints = {0};
-  memset(&hints, 0, sizeof hints);
+  memset(&hints, 0, sizeof(hints));
   hints.ai_family = AF_UNSPEC;
   //set to TCP
   hints.ai_socktype = SOCK_STREAM;
