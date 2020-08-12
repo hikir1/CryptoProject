@@ -54,7 +54,7 @@ int make_client(char * host, char * port) {
 
 int estab_con(int client, Keys all_keys, RSA my_rsa){
   int num_bytes;
-  char buf[MSG_MAX];
+  char buf[RECV_MAX];
   std::string msg(HELLO_MSG,strlen(HELLO_MSG));
   std::cout << "check" << std::endl;
   std::string encrypted_msg = my_rsa.RSAgetcryptotext(msg);
@@ -66,7 +66,7 @@ int estab_con(int client, Keys all_keys, RSA my_rsa){
     return -1;
   }
   //get message
-  if ((num_bytes = recv(client, buf, MSG_MAX-1, 0)) == -1) {
+  if ((num_bytes = recv(client, buf, RECV_MAX-1, 0)) == -1) {
     perror("Error: recv failed");
     return -1;
   }
@@ -83,7 +83,7 @@ int estab_con(int client, Keys all_keys, RSA my_rsa){
   for(int x = 0; x < 3; x++){
     mpz_t shared_key;
     mpz_init(shared_key);
-    char hold[MSG_MAX];
+    char hold[RECV_MAX];
     mpz_t keyhalf;
     mpz_init(keyhalf);
     mpz_t p;
@@ -101,7 +101,7 @@ int estab_con(int client, Keys all_keys, RSA my_rsa){
       perror( "write() failed" );
       return -1;
     }
-    if ((num_bytes = recv(client, hold, MSG_MAX-1, 0)) == -1) {
+    if ((num_bytes = recv(client, hold, RECV_MAX-1, 0)) == -1) {
       perror("Error: recv failed");
       return -1;
     }
@@ -141,7 +141,7 @@ int main(int argc, char ** argv)
   //confirm connection
   //key
   int num_bytes, fail;
-  char buf[MSG_MAX];
+  char buf[RECV_MAX];
   int client = make_client(argv[1], argv[2]);
   if (client == -1)
     return EXIT_FAILURE;
@@ -161,8 +161,8 @@ int main(int argc, char ** argv)
     std::cout << "For withdrawing funds please use the format \"2 $amount\"" << std::endl;
     std::cout << "To deplay your balance please use the format \"3\"" << std::endl;
     std::cout << "To leave please uses \"q\"" << std::endl << std::endl;
-    char first[MSG_MAX];
-    char last[MSG_MAX];
+    char first[RECV_MAX];
+    char last[RECV_MAX];
     std::cout << "Enter your transaction below:" << std::endl;
     if (!std::getline(std::cin, message)) {
       perror("Error: getline failed");
@@ -178,7 +178,7 @@ int main(int argc, char ** argv)
     }
 
     // if length (ssh) msg_max is exceeded abort
-    if (message.length() > MSG_MAX){
+    if (message.length() > RECV_MAX){
         std::cout << "Message Aborted: Message was too long" << std::endl;
         continue;
     }
@@ -187,7 +187,7 @@ int main(int argc, char ** argv)
     // 2 = withdraw (ssh)
     // 3 = balance (ssh)
     //ignore if message doesn't start with one of these 3
-    else if (message[0] != ATMMsg::DEPOSIT && message[0] != ATMMsg::WITHDRAW && message[0] != ATMMsg::BALANCE){
+    else if (message[0] != MsgType::DEPOSIT && message[0] != MsgType::WITHDRAW && message[0] != MsgType::BALANCE){
         std::cout << "Message Aborted: Message had improper start" << std::endl;
         continue;
     }
@@ -219,13 +219,13 @@ int main(int argc, char ** argv)
       perror( "write() failed" );
       return EXIT_FAILURE;
     }
-    if ((num_bytes = recv(client, first, MSG_MAX-1, 0)) == -1) {
+    if ((num_bytes = recv(client, first, RECV_MAX-1, 0)) == -1) {
       perror("Error: recv failed");
       return EXIT_FAILURE;
     }
     first[num_bytes] = '\0';
     std::string en_msg(first,strlen(first));
-    if ((num_bytes = recv(client, last, MSG_MAX-1, 0)) == -1) {
+    if ((num_bytes = recv(client, last, RECV_MAX-1, 0)) == -1) {
       perror("Error: recv failed");
       return EXIT_FAILURE;
     }
