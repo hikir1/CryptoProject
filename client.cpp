@@ -9,6 +9,7 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <gmpxx.h>
+#include <stdexcept>
 #include "aes/aes.hpp"
 #include "hmac/hmac.h"
 #include "ssh.hpp"
@@ -187,7 +188,7 @@ int main(int argc, char ** argv)
     // 2 = withdraw (ssh)
     // 3 = balance (ssh)
     //ignore if message doesn't start with one of these 3
-    else if (message[0] != MsgType::DEPOSIT && message[0] != MsgType::WITHDRAW && message[0] != MsgType::BALANCE){
+    else if (message[0] != (int)MsgType::DEPOSIT && message[0] != (int)MsgType::WITHDRAW && message[0] != (int)MsgType::BALANCE){
         std::cout << "Message Aborted: Message had improper start" << std::endl;
         continue;
     }
@@ -195,6 +196,21 @@ int main(int argc, char ** argv)
     else if (message[2] != '$'){
         std::cout << "Message Aborted: No $ detected" << std::endl;
         continue;
+    }
+    std::checker = "";
+    for(int x = 2; x < message.length(); x++){
+      checker = checker+message[x];
+    }
+    try{
+      unsigned long long int money = stoull(checker);
+    }catch(const std::invalid_argument& ia){
+       std::cerr << "Invalid arguments: " << ia.what() << std::endl;
+       std::cerr << "Message Aborted: Cannot be converted" << std::endl;
+       continue;
+    }catch(const std::out_of_range& oor){
+       std::cerr << "Invalid arguments: " << oor.what() << std::endl;
+       std::cerr << "Message Aborted: amount too large" << std::endl;
+       continue;
     }
     //feed buffer make sure there is at least blockbuffer extra space
     //otherwise 
