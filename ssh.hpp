@@ -2,26 +2,33 @@
 #define _SSH_HPP_
 #include <cstring>
 #include "aes/aes.hpp"
+#include "hmac/hmac.h"
+#include "KeyGen.hpp"
 
-constexpr size_t MSG_MAX = 1024; // bytes
+namespace ssh {
+
+constexpr size_t RECV_MAX = 1024;
+
+// after sym keys established
+constexpr size_t MSG_LEN = sizeof(char[2]) + sizeof(uint64_t); // bytes
+// include padding for aes
+constexpr size_t AES_BUF_LEN = MSG_LEN + aes::BLOCK_BYTES - MSG_LEN % aes::BLOCK_BYTES; 
+// include preceding hmac
+constexpr size_t TOTAL_LEN = hmac::output_length + AES_BUF_LEN;
 
 constexpr const char * HELLO_MSG = "I AM NOT A HACKER";
-constexpr size_t HELLO_LEN = strlen(HELLO_MSG) + 1;
-static_assert(HELLO_LEN <= MSG_MAX);
+constexpr size_t HELLO_LEN = strlen(HELLO_MSG) + 1; // + 1 for null byte
 
-[[deprecated]] // define in diffie helman header
-constexpr size_t PARKEY_LEN = 16;
+constexpr size_t KEYEX_LEN = 
+		#ifdef NENCRYPT
+			1;
+		#else
+			3 * KeyGen::diffiekeyhalfsize;
+		#endif
 
-constexpr size_t KEYEX_LEN = 3 * PARKEY_LEN;
-
-constexpr size_t DEPOSIT_LEN = sizeof(char) + sizeof(uint64_t);
-constexpr size_t WITHDRAW_LEN = sizeof(char) + sizeof(uint64_t);
-constexpr size_t BALANCE_LEN = sizeof(char);
-constexpr size_t BAD_FORMAT_LEN = sizeof(char);
-
-constexpr size_t DEP_RES_LEN = sizeof(char);
-constexpr size_t WD_RES_LEN = sizeof(char);
-constexpr size_t BAL_RES_LEN = sizeof(char) + sizeof(uint64_t);
+static_assert(HELLO_LEN <= RECV_MAX);
+static_assert(KEYEX_LEN <= RECV_MAX);
+static_assert(TOTAL_LEN <= RECV_MAX);
 
 struct Keys {
 	std::string hmac_key;
@@ -29,21 +36,37 @@ struct Keys {
 	aes::IV aes_iv;
 };
 
-namespace ATMMsg {
-	enum Msg {
-		DEPOSIT = '1',
-		WITHDRAW = '2',
-		BALANCE = '3'
+namespace MsgType {
+	enum Type {
+		DEPOSIT, //0
+		WITHDRAW, //1
+		BALANCE, //2
+		OK, //3
+		BAD_FORMAT, //4
+		TOO_MUCH_BANK, //5
+		NOT_ENOUGH_DOUGH, //6
+		INVALID //7
 	};
 }
 
-namespace BankMsg {
-	enum Msg {
-		OK,
-		BAD_FORMAT,
-		TOO_MUCH_BANK,
-		NOT_ENOUGH_DOUGH
-	};
+struct RecvMsg {
+	MsgType::Type type = MsgType::INVALID;
+	unsigned char uid = 0;
+	uint64_t amt = 0;
+	const char * error = nullptr;
+	RecvMsg(const char msg[TOTAL_LEN], size_t recvlen, const Keys &keys);
+};
+
+struct SendMsg {
+	private:
+	char msg[TOTAL_LEN] = {0};
+	public:
+	SendMsg(MsgType::Type type, unsigned char uid, uint64_t amt, const Keys &keys);
+	operator const char*() const {
+		return msg;
+	}
+};
+
 }
 
 #endif

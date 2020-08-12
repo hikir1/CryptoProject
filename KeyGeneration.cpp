@@ -5,9 +5,6 @@
 #include "util.hpp"
 #include "KeyGen.hpp"
 
-int KeyGen::diffiekeyhalfsize = 128;
-
-
 /*
 input:	g,p - public keys 
 		pkb - private key

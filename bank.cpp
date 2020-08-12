@@ -78,7 +78,7 @@ ssize_t try_recv(int cd, char * buf, size_t buflen) {
 	#ifndef NENCRYPT
 	alarm(TIMEOUT);
 	#endif
-	ssize_t len = recv(cd, buf, buflen - 1, 0);
+	ssize_t len = recv(cd, buf, buflen, MSG_WAITALL);
 	alarm(0);
 	if (gtimeout) {
 		std::cout << "Client took too long to respond. Connection timed out." << std::endl;
@@ -92,28 +92,27 @@ ssize_t try_recv(int cd, char * buf, size_t buflen) {
 		std::cout << "Client closed connection early." << std::endl;
 		return -1;
 	}
+	#ifndef NDEBUG
 	std::cout << "recvd len: " << len << std::endl;
-	buf[len] = '\0';
+	#endif
 	return len;
 }
 
 int hello(int cd) {
-	char buf[HELLO_LEN] = {0};
-	if (try_recv(cd, buf, HELLO_LEN) == -1)
+	char buf[ssh::HELLO_LEN] = {0};
+	if (try_recv(cd, buf, ssh::HELLO_LEN) == -1)
 		return -1;
 
 	// TODO: RSA Decrypt
 
-	if (strlen(buf) != strlen(HELLO_MSG) || strcmp(buf, HELLO_MSG) != 0) {
+	if (strncmp(buf, ssh::HELLO_MSG, ssh::HELLO_LEN) != 0) {
 		std::cout << "Received invalid HELLO" << std::endl;
 		return -1;
 	}
 
-	strcpy(buf, HELLO_MSG); // extra null byte at end (Only one bank, only one id)
-
 	// TODO: RSA Encrypt
 
-	if (send(cd, buf, HELLO_LEN /* TODO change this? */, 0) == -1) {
+	if (send(cd, ssh::HELLO_MSG, ssh::HELLO_LEN, 0) == -1) {
 		std::cout << "Failed to send HELLO to client" << std::endl;
 		return -1;
 	}
@@ -121,11 +120,14 @@ int hello(int cd) {
 	return 0;
 }
 
-int keyex(int cd, Keys &keys) {
-	char buf[KEYEX_LEN + 1] = {0};
-	if (try_recv(cd, buf, KEYEX_LEN + 1) == -1)
+int keyex(int cd, ssh::Keys &keys) {
+	char buf[ssh::KEYEX_LEN] = {0};
+	if (try_recv(cd, buf, ssh::KEYEX_LEN) == -1)
 		return -1;
+	#ifndef NDEBUG
 	std::cout << "recvd keyex" << std::endl;
+	#endif
+
 	// TODO: RSA Decrypt
 
 	// TODO: Parse client key parts
@@ -137,148 +139,71 @@ int keyex(int cd, Keys &keys) {
 	return 0;
 }
 
-int bank(int cd, const Keys &keys) {
-	char mac[hmac::output_length + 1];
-	char ctxt[MSG_MAX + aes::BLOCK_BYTES + 1];
-	ssize_t ctxtlen;
-	if (try_recv(cd, mac, hmac::output_length + 1) == -1
-			|| (ctxtlen = try_recv(cd, ctxt, MSG_MAX + 1)) == -1)
+int bank(int cd, const ssh::Keys &keys) {
+	char recvbuf[ssh::TOTAL_LEN] = {0};
+	ssize_t recvlen;
+	if ((recvlen = try_recv(cd, recvbuf, ssh::TOTAL_LEN)) == -1)
 		return -1;
-	if (ctxtlen % aes::BLOCK_BYTES != 0) {
-		#ifdef NDEBUG
-		std::cout << "Invalid message format." << std::endl;
-		#else
-		std::cout << "Invalid message length. Must be multiple of block size." << std::endl;
-		#endif
-		return -1;
-	}
-	char ptxt[sizeof(ctxt)];
-	aes::cbc_decrypt(ctxt, ptxt, (size_t)ctxtlen, keys.aes_iv, keys.aes_key);
-	#ifdef NDEBUG
-	if (hmac::create_HMAC(ptxt, keys.hmac_key).compare(mac) != 0) {
-		std::cout << "Corrupt message detected. HMAC's do not match." << std::endl;
-		return -1;
-	}
-	#endif
+	ssh::RecvMsg msg(recvbuf, recvlen, keys);
+	if (msg.error)
+		msg.type = ssh::MsgType::INVALID;
 
 	static uint64_t safe[UCHAR_MAX] = {0};
 
-	// put server's ptxt in ctxt
+	ssh::MsgType::Type msgType = ssh::MsgType::OK;
+	uint64_t msgAmt = 0;
 
-	switch (ptxt[0]) {
-	case ATMMsg::DEPOSIT: {
-		if (ctxtlen < DEPOSIT_LEN) {
-			ctxtlen = BAD_FORMAT_LEN;
-			#ifdef NDEBUG
-			std::cout << "Invalid message format." << std::endl;
-			#else
-			std::cout << "Invalid message length. Deposit length must be " << DEPOSIT_LEN << std::endl;
-			#endif
-			ctxt[0] = BankMsg::BAD_FORMAT;
-			ctxt[1] = 0;
-			return -1;
-		}
-		ctxtlen = DEP_RES_LEN;
-		unsigned char uid = ptxt[1];
-		// TODO: ensure endianess is consistent
-		uint64_t dep = *((uint64_t *)(ptxt + 2));
-		if (dep > UINT64_MAX - safe[uid]) {
+	switch (msg.type) {
+	case ssh::MsgType::DEPOSIT: {
+		if (msg.amt > UINT64_MAX - safe[msg.uid]) {
 			std::cout << "Client attempted to deposit more than maximum." << std::endl;
-			ctxt[0] = BankMsg::TOO_MUCH_BANK;
-			ctxt[1] = 0;
+			msgType = ssh::MsgType::TOO_MUCH_BANK;
 			break;
 		}
-		safe[uid] += dep;
+		msgAmt = safe[msg.uid] += msg.amt;
 		#ifndef NDEBUG
-		std::cout << "New Balance for " << (unsigned int) uid << " is " << safe[uid] << std::endl;
+		std::cout << "New Balance for " << msg.uid << " is " << safe[msg.uid] << std::endl;
 		#endif
-		ctxt[0] = BankMsg::OK;
-		ctxt[1] = 0;
 	} break;
-	case ATMMsg::WITHDRAW: {
-		if (ctxtlen < WITHDRAW_LEN) {
-			ctxtlen = BAD_FORMAT_LEN;
-			#ifdef NDEBUG
-			std::cout << "Invalid message format." << std::endl;
-			#else
-			std::cout << "Invalid message length. Withdraw length must be " << WITHDRAW_LEN << std::endl;
-			#endif
-			ctxt[0] = BankMsg::BAD_FORMAT;
-			ctxt[1] = 0;
-			break;
-		}
-		ctxtlen = WD_RES_LEN;
-		unsigned char uid = ptxt[1];
-		uint64_t wd = *((uint64_t *)(ptxt + 2));
-		if (wd > safe[uid]) {
+	case ssh::MsgType::WITHDRAW: {
+		if (msg.amt > safe[msg.uid]) {
 			std::cout << "Client attempted to withdraw more than they had." << std::endl;
-			ctxt[0] = BankMsg::NOT_ENOUGH_DOUGH;
-			ctxt[1] = 0;
+			msgType = ssh::MsgType::NOT_ENOUGH_DOUGH;
 			break;
 		}
-		safe[uid] -= wd;
+		msgAmt = safe[msg.uid] -= msg.amt;
 		#ifndef NDEBUG
-		std::cout << "New Balance for " << (unsigned int) uid << " is " << safe[uid] << std::endl;
+		std::cout << "New Balance for " << msg.uid << " is " << safe[msg.uid] << std::endl;
 		#endif
-		ctxt[0] = BankMsg::OK;
-		ctxt[1] = 0;
 	} break;
-	case ATMMsg::BALANCE: {
-		if (ctxtlen < BALANCE_LEN) {
-			ctxtlen = BAD_FORMAT_LEN;
-			#ifdef NDEBUG
-			std::cout << "Invalid message format." << std::endl;
-			#else
-			std::cout << "Invalid message length. Balance length must be " << BALANCE_LEN << std::endl;
-			#endif
-			ctxt[0] = BankMsg::BAD_FORMAT;
-			ctxt[1] = 0;
-			break;
-		}
-		ctxtlen = BAL_RES_LEN;
-		unsigned char uid = ptxt[1];
-		uint64_t bal = safe[uid];
+	case ssh::MsgType::BALANCE: {
+		msgAmt = safe[msg.uid];
 		#ifndef NDEBUG
-		std::cout << "Current balance for " << (unsigned int) uid << " is " << bal << std::endl;
+		std::cout << "Current balance for " << msg.uid << " is " << msgAmt << std::endl;
 		#endif
-		ctxt[0] = BankMsg::OK;
-		uint64_t * balp = (uint64_t *)(ctxt + 1);
-		*balp = bal;
-		ctxt[1 + sizeof(uint64_t)] = 0;
 	} break;
 	default: {
-		ctxtlen = BAD_FORMAT_LEN;
-		#ifdef NDEBUG
-		std::cout << "Invalid message format" << std::endl;
+		#ifndef NDEBUG
+		if (msg.error)
+			std::cout << msg.error << std::endl;
+		else
 		#else
-		std::cout << "Unknown message class " << ptxt[0] << std::endl;
+		std::cout << "Invalid message format" << std::endl;
 		#endif
-		ctxt[0] = BankMsg::BAD_FORMAT;
-		ctxt[1] = 0;
+		msgType = ssh::MsgType::BAD_FORMAT;
 	}
 	}
 
-	// server's ptxt is now in ctxt
-	// server's ctxt will be put in ptxt
-
-	if (send(cd, hmac::create_HMAC(ctxt, keys.hmac_key).c_str(),
-			hmac::output_length, MSG_MORE) == -1) {
-		perror("ERROR: Failed to send HMAC");
-		return -1;
-	}
-	size_t newlen = (size_t)ctxtlen;
-	aes::cbc_encrypt(ctxt, ptxt, newlen, keys.aes_iv, keys.aes_key);
-	if (send(cd, ptxt, newlen, 0) == -1) {
+	if (send(cd, ssh::SendMsg(msgType, msg.uid, msgAmt, keys) , ssh::TOTAL_LEN, 0) == -1) {
 		perror("ERROR: Failed to send message");
 		return -1;
 	}
-	
 	
 	return 0;
 }
 
 int serve(int cd) {
-	Keys keys;
+	ssh::Keys keys;
 	if (hello(cd) == -1 
 			|| keyex(cd, keys) == -1 
 			|| bank(cd, keys) == -1)
@@ -336,7 +261,6 @@ int main(int argc, char ** argv) {
 			return EXIT_FAILURE;
 		}
 	}
-	
 
 }
 
