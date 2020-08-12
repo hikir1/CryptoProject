@@ -262,7 +262,7 @@ int main(int argc, char ** argv)
         msgType = ssh::MsgType::BAD_FORMAT;
       }
     }
-    if (send(client, ssh::SendMsg(msgType, u_id, money) , newlen, 0) == -1) {
+    if (send(client, ssh::SendMsg(msgType, u_id, money, all_keys) , ssh::TOTAL_LEN, 0) == -1) {
       perror("ERROR: Failed to send message");
       return -1;
     }
