@@ -80,7 +80,7 @@ int estab_con(int client, ssh::Keys all_keys, RSA my_rsa){
     encrypted_msg = msg;
   #endif
   //send message
-  int fail = write( client, ssh::HELLO_MSG, ssh::HELLO_LEN); 
+  int fail = write( client, encrypted_msg.c_str(), ssh::HELLO_LEN); 
   if ( fail < msg.length() ){
     perror( "write() failed" );
     return -1;
