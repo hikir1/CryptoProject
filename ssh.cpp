@@ -19,7 +19,7 @@ RecvMsg::RecvMsg(const char msg[TOTAL_LEN], size_t recvlen, const Keys &keys) {
 	}
 	if ((unsigned int)ptxt[0] >= (unsigned int)MsgType::INVALID) {
 		type = MsgType::INVALID;
-		error = "Bad message format: Unkown message type";
+		error = "Bad message format: Unknown message type";
 		return;
 	}
 	type = (MsgType::Type) ptxt[0];
