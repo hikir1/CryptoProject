@@ -35,5 +35,4 @@ int main(){
 	mpz_clear(server_e);
 	mpz_clear(client_N);
 	mpz_clear(server_N);
-
 }

@@ -61,6 +61,25 @@ void KeyGen::KeyExchange(mpz_t sendingkeyhalf, mpz_t p, mpz_t pkb)
 	mpz_clear(g);
 }
 
+
+std::string KeyGen::createKeyhalf(){
+	mpz_t keyhalf;
+	mpz_init(keyhalf);
+
+	mpz_t p;
+	mpz_init(p);
+
+	mpz_t pkb;
+	mpz_init(pkb);
+
+	mpz_t other_keyhalf;
+	mpz_init(other_keyhalf);
+
+	mpz_t shared_key;
+	mpz_init(shared_key);
+
+	KeyExchange(keyhalf,p,pkb); //keyhalf has proper values after this
+}
 /* How to use code above
 
 //initialize 3 mpz_t types
