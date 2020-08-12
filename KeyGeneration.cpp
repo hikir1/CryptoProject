@@ -41,7 +41,7 @@ desc: computes shared key ( private key randomly generated )
 */
 void KeyGen::sharedkey(mpz_t sharedSecret, mpz_t receivedkeyhalf, mpz_t p, mpz_t pkb){
 	/*remove bottom 4 lines when socket prog is added*/
-	const char * const constkey = "12345678901234567890";
+	const char * const constkey = "1234567890";
 	int err = mpz_set_str(receivedkeyhalf, constkey, 10); //err == 0 if pass
 	//generate secret keys upon receiving
 	pow(sharedSecret,receivedkeyhalf, pkb, p);
