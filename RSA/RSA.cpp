@@ -119,12 +119,16 @@ void RSA::SaveKeys(std::string filename){
 	 if(of.is_open())
     {	
     	mpz_class priv(new_d);
-    	mpz_class pub1(N);
-    	mpz_class pub2(e);
+    	mpz_class pub1(N2);
+    	mpz_class pub2(e2);
+    	mpz_class mypub1(N);
+    	mpz_class mypub2(e);
     	std::string privatekey = priv.get_str();
     	std::string publickey1 = pub1.get_str();
     	std::string publickey2 = pub2.get_str(); 
-        of<< privatekey << std::endl << publickey1 << std::endl << publickey2 <<std::endl;
+		std::string mypublickey1 = mypub1.get_str();
+    	std::string mypublickey2 = mypub2.get_str(); 
+        of<< privatekey << std::endl << publickey1 << std::endl << publickey2 <<std::endl << mypublickey1 << std::endl << mypublickey2 <<std::endl;
         of.flush();
         of.close();
     }
@@ -160,6 +164,10 @@ void RSA::LoadKeys(std::string filename){
     mpz_set_str(N2,x.c_str(),10);
    	inFile >> x;
     mpz_set_str(e2,x.c_str(),10);
+    inFile >> x;
+    mpz_set_str(N,x.c_str(),10);
+   	inFile >> x;
+    mpz_set_str(e,x.c_str(),10);
     inFile.close();
 	return;
 }
