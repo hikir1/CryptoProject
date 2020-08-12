@@ -48,11 +48,7 @@ void RSA::RSAKeyGen() {
 	calcLCM(carmichaelNum, p , q);
 	mpz_clear(p);
 	mpz_clear(q);
-
-
-	//getRandPrime(e);
-    //e stands for encrypt
-    mpz_set_ui(e,2);
+    mpz_set_ui(e,65537);
  	mpz_t count;
  	mpz_init(count);
     //for checking co-prime which satisfies e>1
@@ -66,53 +62,7 @@ void RSA::RSAKeyGen() {
 	        mpz_add_ui(e,e,1);
 	    }
     }
-	mpf_t ef;
-	mpf_init(ef);
-	mpf_set_z(ef,e);
-
-
-	mpf_t k;
-	mpf_init(k);
-	mpf_set_ui(k,1);
-	mpf_t toitient_f;
-	mpf_init(toitient_f);
-	mpf_set_z(toitient_f,toitent);
-	mpz_clear(toitent);
-
-	mpf_t tmp;
-	mpf_init(tmp);
-	
-	mpf_t tmp2;
-	mpf_init(tmp2);
-	mpf_set_ui(tmp2,0);
-	
-	mpf_t tmp3;
-	mpf_init(tmp3);
-	mpf_set_ui(tmp3,0);
-
-	mpf_mul(tmp2,k,toitient_f);// tmp2 = k * toitent; 
-	mpf_add_ui(k,k,1);//k++
-	mpf_add_ui(tmp3,tmp2,1);//tmp3 = tmp2 + 1
-	mpf_div(d,tmp3,ef);// d = tmp3 / e
-	mpf_floor(tmp,d);
-
-	
-	while (mpf_cmp(d,tmp) != 0) {
-		//d = (1 + k * toitient) / e
-		//k++
-		mpf_mul(tmp2,k,toitient_f);// tmp2 = k * toitent; 
-		mpf_add_ui(k,k,1);//k++
-		mpf_add_ui(tmp3,tmp2,1);//tmp3 = tmp2 + 1
-		mpf_div(d,tmp3,ef);// d = tmp3 / e
-		mpf_floor(tmp,d);
-		//std::cout<< d << "= (1 + (" << k << " * " << toitient << ") /" << ef <<std::endl;
-	}
-	mpz_set_f(new_d,d);
-	
-	mpf_clear(tmp);
-	mpf_clear(toitient_f);
-	mpf_clear(ef);
-	mpf_clear(k);
+    mpz_invert(new_d,e,toitent);
 	mpf_clear(d);
 	return;
 }
@@ -122,10 +72,7 @@ void RSA::RSAEncrypt(std::string message) {
 	//convert message to mpz_t and store in m
 	const char* msg = message.c_str();
 	mpz_set_str(m,msg,10);
-	std::cout<< "Encrypting This: " << m <<std::endl;
-	std::cout << c << " | " << m << " | " << e2 << " | " << N2 <<std::endl;
 	pow(c, m, e2, N2);
-	std::cout<< "Got This: " << c <<std::endl<<std::endl;
 	return;
 }
 
@@ -135,10 +82,7 @@ void RSA::RSADecrypt(std::string cryptotext) {
 	//convert cryptotext to mpz_t and store in c2
 	const char* ctxt = cryptotext.c_str();
 	mpz_set_str(c2,ctxt,10);
-	std::cout<< "Decrypting This: " << c2 <<std::endl;
-	std::cout << m2 << " | " << c2 << " | " << new_d << " | " << N<<std::endl;
 	pow(m2, c2, new_d, N);
-	std::cout<< "Got This: " << m2 <<std::endl<<std::endl;
 	return;
 }
 
@@ -271,7 +215,7 @@ int main(int argc, char ** argv){
 	clientRSA.LoadKeys("clientKeys");
 	serverRSA.LoadKeys("serverKeys");
 	//encrypt message
-	std::string ctxt = serverRSA.RSAgetcryptotext("987654");
+	std::string ctxt = serverRSA.RSAgetcryptotext("98765418719823712987389127389128931381209381038390128309810310928309");
 
 	//decrypt message
 	std::string msg = clientRSA.RSAgetmessage(ctxt);
