@@ -19,7 +19,7 @@ testbank : **.[ch]pp **/**.[ch]pp **/**.h
 
 rawatm : **.[ch]pp **/**.[ch]pp **/**.h
 	g++ KeyGeneration.cpp KeyEncryption.cpp client.cpp aes/**.cpp RSA/**.cpp \
-		ssh.cpp hmac/**.cpp util.cpp -D BANK -D NENCRYPT -o bank.out -lgmp -g
+		ssh.cpp hmac/**.cpp util.cpp -D BANK -D NENCRYPT -o atm.out -lgmp -g
 
 rawbank : **.[ch]pp **/**.[ch]pp **/**.h
 	g++ KeyGeneration.cpp KeyEncryption.cpp bank.cpp aes/**.cpp RSA/**.cpp \
