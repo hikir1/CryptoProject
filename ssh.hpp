@@ -5,6 +5,8 @@
 #include "hmac/hmac.h"
 #include "KeyGen.hpp"
 
+namespace ssh {
+
 constexpr size_t RECV_MAX = 1024;
 
 // after sym keys established
@@ -59,5 +61,7 @@ struct SendMsg {
 		return msg;
 	}
 };
+
+}
 
 #endif

@@ -138,6 +138,7 @@ int keyex(int cd, Keys &keys) {
 }
 
 int bank(int cd, const Keys &keys) {
+	char msg[TOTAL_LEN];
 	char mac[hmac::output_length + 1];
 	char ctxt[MSG_MAX + aes::BLOCK_BYTES + 1];
 	ssize_t ctxtlen;

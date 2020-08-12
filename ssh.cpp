@@ -4,7 +4,7 @@
 #include "KeyGen.hpp"
 #include "ssh.hpp"
 
-RecvMsg::RecvMsg(const char msg[TOTAL_LEN], size_t recvlen, const Keys &keys) {
+ssh::RecvMsg::RecvMsg(const char msg[TOTAL_LEN], size_t recvlen, const Keys &keys) {
 	if (recvlen != TOTAL_LEN) {
 		error = "Bad message format: Invalid length";
 		return;
@@ -31,7 +31,7 @@ RecvMsg::RecvMsg(const char msg[TOTAL_LEN], size_t recvlen, const Keys &keys) {
 	}
 }
 
-SendMsg::SendMsg(MsgType::Type type, unsigned char uid, uint64_t amt, const Keys &keys) {
+ssh::SendMsg::SendMsg(MsgType::Type type, unsigned char uid, uint64_t amt, const Keys &keys) {
 	char ptxt[AES_BUF_LEN] = {0};
 	ptxt[0] = (char) type;
 	ptxt[1] = (char) uid;
