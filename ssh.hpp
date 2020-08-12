@@ -17,7 +17,7 @@ constexpr size_t AES_BUF_LEN = MSG_LEN + aes::BLOCK_BYTES - MSG_LEN % aes::BLOCK
 constexpr size_t TOTAL_LEN = hmac::output_length + AES_BUF_LEN;
 
 constexpr const char * HELLO_MSG = "I AM NOT A HACKER";
-constexpr size_t HELLO_LEN = strlen(HELLO_MSG);
+constexpr size_t HELLO_LEN = strlen(HELLO_MSG) + 1; // + 1 for null byte
 
 constexpr size_t KEYEX_LEN = 3 * KeyGen::diffiekeyhalfsize;
 
