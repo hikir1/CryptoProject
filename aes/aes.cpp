@@ -193,7 +193,7 @@ namespace {
 #include <cstring>
 
 // ctxt needs at least BLOCK_BYTES extra space (for padding)
-void aes::cbc_encrypt(const char * ptxt, char * ctxt, size_t &len,  
+void aes::cbc_encrypt(const char * ptxt, char * ctxt, size_t len,  
 		const uint32_t iv[BLOCK_SIZE], const uint32_t key[KEY_SIZE]) {
 #ifdef NENCRYPT
 	memcpy(ctxt, ptxt, len);
