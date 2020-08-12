@@ -186,15 +186,15 @@ void RSA::LoadKeys(std::string filename){
 	return;
 }
 
-int main(int argc, char ** argv){
-	std::cout<<"Testing RSA Key Writing" <<std::endl;
-	RSA myRSA;
-	myRSA.SetKeys("1231424", "2354264523");
-	std::string test = myRSA.RSAgetcryptotext("143252213");
-	myRSA.SaveKeys("keys.txt");
-	RSA myRSA2;
-	myRSA2.SetKeys("12313643463", "124235");
-	myRSA2.LoadKeys("keys.txt");
-	myRSA2.SaveKeys("keys2.txt");
-	return 0;
-}
+// int main(int argc, char ** argv){
+// 	std::cout<<"Testing RSA Key Writing" <<std::endl;
+// 	RSA myRSA;
+// 	myRSA.SetKeys("1231424", "2354264523");
+// 	std::string test = myRSA.RSAgetcryptotext("143252213");
+// 	myRSA.SaveKeys("keys.txt");
+// 	RSA myRSA2;
+// 	myRSA2.SetKeys("12313643463", "124235");
+// 	myRSA2.LoadKeys("keys.txt");
+// 	myRSA2.SaveKeys("keys2.txt");
+// 	return 0;
+// }

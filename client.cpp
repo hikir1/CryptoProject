@@ -133,8 +133,6 @@ int estab_con(int client, Keys all_keys, RSA my_rsa){
   return client;
 }
 
-
-
 int main(int argc, char ** argv)
 {
   if (argc != 3) {
@@ -152,6 +150,7 @@ int main(int argc, char ** argv)
     return EXIT_FAILURE;
   // RSA Encrypt
   RSA my_rsa;
+  std::cout << "never" << std::endl;
   my_rsa.LoadKeys("clientKeys");
   //send public keys
   //receive keys
