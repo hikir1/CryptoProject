@@ -78,7 +78,7 @@ ssize_t try_recv(int cd, char * buf, size_t buflen) {
 	#ifndef NENCRYPT
 	alarm(TIMEOUT);
 	#endif
-	ssize_t len = recv(cd, buf, buflen - 1, MSG_WAITALL);
+	ssize_t len = recv(cd, buf, buflen, MSG_WAITALL);
 	alarm(0);
 	if (gtimeout) {
 		std::cout << "Client took too long to respond. Connection timed out." << std::endl;
@@ -92,28 +92,27 @@ ssize_t try_recv(int cd, char * buf, size_t buflen) {
 		std::cout << "Client closed connection early." << std::endl;
 		return -1;
 	}
+	#ifndef NDEBUG
 	std::cout << "recvd len: " << len << std::endl;
-	buf[len] = '\0';
+	#endif
 	return len;
 }
 
 int hello(int cd) {
-	char buf[HELLO_LEN] = {0};
-	if (try_recv(cd, buf, HELLO_LEN) == -1)
+	char buf[ssh::HELLO_LEN] = {0};
+	if (try_recv(cd, buf, ssh::HELLO_LEN) == -1)
 		return -1;
 
 	// TODO: RSA Decrypt
 
-	if (strlen(buf) != strlen(HELLO_MSG) || strcmp(buf, HELLO_MSG) != 0) {
+	if (strncmp(buf, ssh::HELLO_MSG, ssh::HELLO_LEN) != 0) {
 		std::cout << "Received invalid HELLO" << std::endl;
 		return -1;
 	}
 
-	strcpy(buf, HELLO_MSG); // extra null byte at end (Only one bank, only one id)
-
 	// TODO: RSA Encrypt
 
-	if (send(cd, buf, HELLO_LEN /* TODO change this? */, 0) == -1) {
+	if (send(cd, ssh::HELLO_MSG, ssh::HELLO_LEN, 0) == -1) {
 		std::cout << "Failed to send HELLO to client" << std::endl;
 		return -1;
 	}
@@ -121,11 +120,14 @@ int hello(int cd) {
 	return 0;
 }
 
-int keyex(int cd, Keys &keys) {
-	char buf[KEYEX_LEN + 1] = {0};
-	if (try_recv(cd, buf, KEYEX_LEN + 1) == -1)
+int keyex(int cd, ssh::Keys &keys) {
+	char buf[ssh::KEYEX_LEN] = {0};
+	if (try_recv(cd, buf, ssh::KEYEX_LEN) == -1)
 		return -1;
+	#ifndef NDEBUG
 	std::cout << "recvd keyex" << std::endl;
+	#endif
+
 	// TODO: RSA Decrypt
 
 	// TODO: Parse client key parts
@@ -137,8 +139,8 @@ int keyex(int cd, Keys &keys) {
 	return 0;
 }
 
-int bank(int cd, const Keys &keys) {
-	char recvbuf[ssh::TOTAL_LEN];
+int bank(int cd, const ssh::Keys &keys) {
+	char recvbuf[ssh::TOTAL_LEN] = {0};
 	ssize_t recvlen;
 	if ((recvlen = try_recv(cd, recvbuf, ssh::TOTAL_LEN)) == -1)
 		return -1;
@@ -160,42 +162,40 @@ int bank(int cd, const Keys &keys) {
 			msgType = ssh::MsgType::TOO_MUCH_BANK;
 			break;
 		}
-		msgAmt = safe[uid] += dep;
+		msgAmt = safe[msg.uid] += msg.amt;
 		#ifndef NDEBUG
-		std::cout << "New Balance for " << (unsigned int) uid << " is " << safe[uid] << std::endl;
+		std::cout << "New Balance for " << msg.uid << " is " << safe[msg.uid] << std::endl;
 		#endif
 	} break;
 	case ssh::MsgType::WITHDRAW: {
 		if (msg.amt > safe[msg.uid]) {
 			std::cout << "Client attempted to withdraw more than they had." << std::endl;
-			msgType = BankMsg::NOT_ENOUGH_DOUGH;
-			ctxt[1] = 0;
+			msgType = ssh::MsgType::NOT_ENOUGH_DOUGH;
 			break;
 		}
-		msgAmt = safe[uid] -= wd;
+		msgAmt = safe[msg.uid] -= msg.amt;
 		#ifndef NDEBUG
-		std::cout << "New Balance for " << (unsigned int) uid << " is " << safe[uid] << std::endl;
+		std::cout << "New Balance for " << msg.uid << " is " << safe[msg.uid] << std::endl;
 		#endif
-		ctxt[0] = BankMsg::OK;
-		ctxt[1] = 0;
 	} break;
 	case ssh::MsgType::BALANCE: {
-		msgAmt = safe[uid];
+		msgAmt = safe[msg.uid];
 		#ifndef NDEBUG
-		std::cout << "Current balance for " << (unsigned int) uid << " is " << bal << std::endl;
+		std::cout << "Current balance for " << msg.uid << " is " << msgAmt << std::endl;
 		#endif
 	} break;
 	default: {
 		#ifdef NDEBUG
 		std::cout << "Invalid message format" << std::endl;
 		#else
-		std::cout << "Unknown message class " << ptxt[0] << std::endl;
+		if (msg.error)
+			std::cout << msg.error << std::endl;
 		#endif
 		msgType = ssh::MsgType::BAD_FORMAT;
 	}
 	}
 
-	if (send(cd, ssh::SendMsg(msgType, msg.uid, msgAmt) , newlen, 0) == -1) {
+	if (send(cd, ssh::SendMsg(msgType, msg.uid, msgAmt, keys) , ssh::TOTAL_LEN, 0) == -1) {
 		perror("ERROR: Failed to send message");
 		return -1;
 	}
@@ -204,7 +204,7 @@ int bank(int cd, const Keys &keys) {
 }
 
 int serve(int cd) {
-	Keys keys;
+	ssh::Keys keys;
 	if (hello(cd) == -1 
 			|| keyex(cd, keys) == -1 
 			|| bank(cd, keys) == -1)
@@ -262,7 +262,6 @@ int main(int argc, char ** argv) {
 			return EXIT_FAILURE;
 		}
 	}
-	
 
 }
 
