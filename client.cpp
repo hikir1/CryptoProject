@@ -81,13 +81,13 @@ int estab_con(int client, ssh::Keys all_keys, RSA my_rsa){
   #endif
 
   //send message
-  int fail = write( client, msg.c_str(), msg.length()); 
+  int fail = write( client, msg.c_str(), ssh::HELLO_LEN); 
   if ( fail < msg.length() ){
     perror( "write() failed" );
     return -1;
   }
   //get message
-  if ((num_bytes = recv(client, buf, ssh::RECV_MAX-1, 0)) == -1) {
+  if ((num_bytes = recv(client, buf, ssh::HELLO_LEN, 0)) == -1) {
     perror("Error: recv failed");
     return -1;
   }
@@ -127,12 +127,12 @@ int estab_con(int client, ssh::Keys all_keys, RSA my_rsa){
       cryptotext = "Check";
     #endif
     //send keyhalf here
-    fail = write( client, cryptotext.c_str(), cryptotext.length()); 
+    fail = write( client, cryptotext.c_str(), ssh::KEYEX_LEN); 
     if ( fail < cryptotext.length() ){
       perror( "write() failed" );
       return -1;
     }
-    if ((num_bytes = recv(client, hold, ssh::RECV_MAX-1, 0)) == -1) {
+    if ((num_bytes = recv(client, hold, ssh::KEYEX_LEN, 0)) == -1) {
       perror("Error: recv failed");
       return -1;
     }
