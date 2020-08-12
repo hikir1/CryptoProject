@@ -29,8 +29,6 @@ ssh::RecvMsg::RecvMsg(const char msg[TOTAL_LEN], size_t recvlen, const Keys &key
 	amt = 0;
 	for (int i = 2; i < 2 + sizeof(uint64_t)/sizeof(char); i++) {
 		amt <<= 8;
-		std::cout << ptxt[i] << std::endl;
-		std::cout << (uint64_t) ptxt[i] << std::endl;
 		amt |= (uint64_t) ptxt[i];
 	}
 }
