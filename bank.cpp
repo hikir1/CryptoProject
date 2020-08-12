@@ -145,10 +145,8 @@ int bank(int cd, const ssh::Keys &keys) {
 	if ((recvlen = try_recv(cd, recvbuf, ssh::TOTAL_LEN)) == -1)
 		return -1;
 	ssh::RecvMsg msg(recvbuf, recvlen, keys);
-	if (msg.error) {
-		std::cout << msg.error << std::endl;
+	if (msg.error)
 		msg.type = ssh::MsgType::INVALID;
-	}
 
 	static uint64_t safe[UCHAR_MAX] = {0};
 
@@ -185,11 +183,12 @@ int bank(int cd, const ssh::Keys &keys) {
 		#endif
 	} break;
 	default: {
-		#ifdef NDEBUG
-		std::cout << "Invalid message format" << std::endl;
-		#else
+		#ifndef NDEBUG
 		if (msg.error)
 			std::cout << msg.error << std::endl;
+		else
+		#else
+		std::cout << "Invalid message format" << std::endl;
 		#endif
 		msgType = ssh::MsgType::BAD_FORMAT;
 	}

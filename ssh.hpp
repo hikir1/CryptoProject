@@ -19,7 +19,12 @@ constexpr size_t TOTAL_LEN = hmac::output_length + AES_BUF_LEN;
 constexpr const char * HELLO_MSG = "I AM NOT A HACKER";
 constexpr size_t HELLO_LEN = strlen(HELLO_MSG) + 1; // + 1 for null byte
 
-constexpr size_t KEYEX_LEN = 3 * KeyGen::diffiekeyhalfsize;
+constexpr size_t KEYEX_LEN = 
+		#ifdef NENCRYPT
+			1;
+		#else
+			3 * KeyGen::diffiekeyhalfsize;
+		#endif
 
 static_assert(HELLO_LEN <= RECV_MAX);
 static_assert(KEYEX_LEN <= RECV_MAX);
