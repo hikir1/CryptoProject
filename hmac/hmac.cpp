@@ -7,8 +7,6 @@
 #include "hmac.h"
 #include "hmac_util.hpp"
 
-int hmac::byte_length = 64;
-int hmac::output_length = 20;
 std::string hmac::ipad = "";
 std::string hmac::opad = "";
 
