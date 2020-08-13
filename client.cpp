@@ -153,7 +153,7 @@ int estab_con(int client, ssh::Keys all_keys, RSA &my_rsa){
 std::cerr << "here1" <<std::endl;
 
   // TODO: RSA Encrypt server key parts
-  if (send(client, diffieKeys, ssh::KEYEX_LEN, 0) == -1) {
+  if (send(client, diffieKeys.pubKeys(), ssh::KEYEX_LEN, 0) == -1) {
     perror("ERROR: Failed to send keys.");
     return -1;
   }

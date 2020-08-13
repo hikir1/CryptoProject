@@ -7,21 +7,33 @@
 #include <cmath>
 
 int ssh::DiffieKeys::genKeys(const char keyex_msg[KEYEX_LEN], ssh::Keys &keys) {
-	std::string shared = KeyGen::getSharedKey(this->keys, std::string(keyex_msg, KEYEX_LEN));
-	keys.hmac_key = shared.substr(0, hmac::byte_length);
-	mpz_t aes_key, aes_iv;
-	mpz_init (aes_key);
-	mpz_init (aes_iv);
-	constexpr size_t half_rem = (KeyGen::diffiekeysize - hmac::byte_length) / 2;
-	static_assert(pow(KeyGen::base, half_rem) > pow(8, sizeof(aes::Key)));
-	static_assert(pow(KeyGen::base, half_rem) > pow(8, sizeof(aes::IV)));
-	if (mpz_set_str(aes_key, shared.substr(hmac::byte_length, half_rem).c_str(), KeyGen::base) == -1
-			|| mpz_set_str(aes_iv, shared.substr(hmac::byte_length + half_rem).c_str(), KeyGen::base) == -1
-			|| aes::fill_key(keys.aes_key, aes_key)
-			|| aes::fill_key(keys.aes_iv, aes_iv))
+	std::string hmac_half = std::string(keyex_msg, KeyGen::diffiekeyhalfsize);
+	std::string aes_half
+			= std::string(keyex_msg + KeyGen::diffiekeyhalfsize, KeyGen::diffiekeyhalfsize);
+	keys.hmac_key = KeyGen::getSharedKey(this->hmac_keys, hmac_half);
+	std::string aes_shared = KeyGen::getSharedKey(this->aes_keys, aes_half);
+	mpz_t mpz_aes_key, mpz_aes_iv;
+	mpz_init (mpz_aes_key);
+	mpz_init (mpz_aes_iv);
+	constexpr size_t half_size = KeyGen::diffiekeysize / 2;
+	std::string aes_key_str = aes_shared.substr(0, half_size);
+	std::string aes_iv_str = aes_shared.substr(half_size);
+	
+	if (mpz_set_str(mpz_aes_key, aes_key_str.c_str(), KeyGen::base) == -1
+			|| mpz_set_str(mpz_aes_iv, aes_iv_str.c_str(), KeyGen::base) == -1) {
+		std::cerr << "Keys are of invalid base type" << std::endl;
+		mpz_clear(mpz_aes_key);
+		mpz_clear(mpz_aes_iv);
 		return -1;
-	mpz_clear(aes_key);
-	mpz_clear(aes_iv);
+	}
+	if (aes::fill_key(keys.aes_key, mpz_aes_key) == -1
+			|| aes::fill_iv(keys.aes_iv, mpz_aes_iv) == -1) {
+		mpz_clear(mpz_aes_key);
+		mpz_clear(mpz_aes_iv);
+		return -1;
+	}
+	mpz_clear(mpz_aes_key);
+	mpz_clear(mpz_aes_iv);
 	return 0;
 }
 

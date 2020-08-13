@@ -25,7 +25,7 @@ constexpr size_t KEYEX_LEN =
 		#ifdef NENCRYPT
 			1;
 		#else
-			KeyGen::diffiekeyhalfsize;
+			2 * KeyGen::diffiekeyhalfsize;
 		#endif
 
 static_assert(HELLO_LEN <= RECV_MAX);
@@ -39,14 +39,19 @@ struct Keys {
 };
 
 class DiffieKeys {	
-	std::vector<std::string> keys;
+	std::vector<std::string> hmac_keys;
+	std::vector<std::string> aes_keys;
+	char buf[KEYEX_LEN];
 	public:
-	DiffieKeys() : keys(KeyGen::createKeyhalf()) {
-		std::cerr << "Key size: " << keys[0].size() << std::endl;
-		assert(keys[0].size() == KeyGen::diffiekeyhalfsize);
+	DiffieKeys() : hmac_keys(KeyGen::createKeyhalf()),
+			aes_keys(KeyGen::createKeyhalf()) {
+		assert(hmac_keys[0].size() == KeyGen::diffiekeyhalfsize);
+		assert(aes_keys[0].size() == KeyGen::diffiekeyhalfsize);
+		memcpy(buf, hmac_keys[0].data(), KeyGen::diffiekeyhalfsize);
+		memcpy(buf + KeyGen::diffiekeyhalfsize, aes_keys[0].data(), KeyGen::diffiekeyhalfsize);
 	}
-	operator const char *() {
-		return keys[0].data();
+	const char * pubKeys() const {
+		return buf;
 	}
 	int genKeys(const char keyex_msg[KEYEX_LEN], Keys &keys);
 };

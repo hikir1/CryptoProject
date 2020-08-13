@@ -138,7 +138,7 @@ int keyex(int cd, ssh::Keys &keys) {
 
 	// TODO: RSA Encrypt server key parts
 
-	if (send(cd, diffieKeys, ssh::KEYEX_LEN, 0) == -1) {
+	if (send(cd, diffieKeys.pubKeys(), ssh::KEYEX_LEN, 0) == -1) {
 		perror("ERROR: Failed to send keys.");
 		return -1;
 	}
