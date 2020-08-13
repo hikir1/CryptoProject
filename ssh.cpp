@@ -3,7 +3,7 @@
 #include "hmac/hmac.h"
 #include "KeyGen.hpp"
 #include "ssh.hpp"
-#include "RSA.h"
+#include "RSA/RSA.h"
 #include "util.hpp"
 #include <cassert>
 #include <cmath>
@@ -48,10 +48,12 @@ int ssh::genKeys(std::string hmac_shared, std::string aes_shared, ssh::Keys &key
 	return 0;
 }
 
-int ssh::ClientDiffieKeys::genKeys(const char keyex_msg[SERVER_KEYEX_LEN], ssh::Keys &keys) {
-	std::string hmac_half = std::string(keyex_msg, KeyGen::diffiekeyhalfsize);
-	std::string aes_half
-			= std::string(keyex_msg + KeyGen::diffiekeyhalfsize, KeyGen::diffiekeyhalfsize);
+int ssh::ClientDiffieKeys::genKeys(const char keyex_msg[SERVER_KEYEX_LEN], RSA &rsa, ssh::Keys &keys) {
+	std::string ctxt(keyex_msg, SERVER_KEYEX_LEN);
+	std::string ptxt = rsa.RSAgetmessage(ctxt);
+	std::string hmac_half = ptxt.substr(0, KeyGen::diffiekeyhalfsize);
+	std::string aes_half = ptxt.substr(KeyGen::diffiekeyhalfsize);
+
 	std::string hmac_shared = KeyGen::getSharedKey(this->hmac_keys, hmac_half);
 	std::string aes_shared = KeyGen::getSharedKey(this->aes_keys, aes_half);
 	if (ssh::genKeys(hmac_shared, aes_shared, keys) == -1)
