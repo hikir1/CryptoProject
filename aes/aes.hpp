@@ -13,7 +13,7 @@ namespace aes {
 	using Key = uint32_t[KEY_SIZE];
 	using IV = uint32_t[BLOCK_SIZE];
 	// ctxt must be exact multiple of BLOCK_BYTES
-	void cbc_encrypt(const char * ptxt, char * ctxt, size_t len, const IV, const Key, std::string hmac_key);
+	void cbc_encrypt(const char * ptxt, char * ctxt, size_t len, const IV, const Key, const char * hmac_key);
 	// len must be exact multiple of BLOCK_BYTES
 	void cbc_decrypt(const char * ctxt, char * ptxt, size_t len, const IV, const Key);
 	int fill_key(Key aes_key, const mpz_t mpz_key);
