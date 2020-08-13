@@ -168,7 +168,7 @@ int bank(int cd, const ssh::Keys &keys) {
 		}
 		msgAmt = safe[msg.uid] += msg.amt;
 		#ifndef NDEBUG
-		std::cout << "New Balance for " << msg.uid << " is " << safe[msg.uid] << std::endl;
+		std::cout << "New Balance for " << (int)msg.uid << " is " << safe[msg.uid] << std::endl;
 		#endif
 	} break;
 	case ssh::MsgType::WITHDRAW: {
@@ -179,13 +179,13 @@ int bank(int cd, const ssh::Keys &keys) {
 		}
 		msgAmt = safe[msg.uid] -= msg.amt;
 		#ifndef NDEBUG
-		std::cout << "New Balance for " << msg.uid << " is " << safe[msg.uid] << std::endl;
+		std::cout << "New Balance for " << (int)msg.uid << " is " << safe[msg.uid] << std::endl;
 		#endif
 	} break;
 	case ssh::MsgType::BALANCE: {
 		msgAmt = safe[msg.uid];
 		#ifndef NDEBUG
-		std::cout << "Current balance for " << msg.uid << " is " << msgAmt << std::endl;
+		std::cout << "Current balance for " << (int)msg.uid << " is " << msgAmt << std::endl;
 		#endif
 	} break;
 	default: {
