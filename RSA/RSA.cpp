@@ -45,7 +45,7 @@ void RSA::RSAKeyGen() {
 	mpz_mul(toitent,p,q);
 	mpz_clear(p);
 	mpz_clear(q);
-    mpz_set_ui(e,65537);
+	getRandPrime(e);
  	mpz_t count;
  	mpz_init(count);
     //for checking co-prime which satisfies e>1
@@ -242,6 +242,12 @@ int main(int argc, char ** argv){
 	//std::cout << "unASCII's text: " << msg <<std::endl;	
 	ctxt = convertFromASCII(msg);
 	std::cout << "original message: " << ctxt <<std::endl;
+	input = convertToASCII(ctxt);
+	ctxt = clientRSA.RSAgetcryptotext(input);
+	msg = serverRSA.RSAgetmessage(ctxt);
+	std::string orig_msg = convertFromASCII(msg);
+	std::cout << "Orginal message 2x: " << orig_msg <<std::endl;
+
 	//std::cout <<ctxt<<std::endl;
 	//std::cout <<"here"<<std::endl;
 	

@@ -1,7 +1,7 @@
 #ifndef _RSA_H_
 #define _RSA_H_
 
-#include "../util.hpp"
+#include "../util.cpp"
 #include <fstream>
 
 class RSA 

@@ -1,4 +1,4 @@
-#include "RSA/RSA.h"
+#include "RSA/RSA.cpp"
 
 int main(){
 	RSA clientRSA;

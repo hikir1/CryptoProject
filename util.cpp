@@ -21,7 +21,6 @@ std::random_device rd;
 //convert ascii value to string
 std::string convertFromASCII(std::string str) 
 {   
-    std:cout << str << std::endl;
     std::string res = "";
     int num = 0; 
     int len = str.length();
@@ -42,7 +41,7 @@ std::string convertFromASCII(std::string str)
             num = 0; 
         } 
     }
-    std:cout << res << std::endl;
+    std::cout << res << std::endl;
     return res; 
 } 
 
