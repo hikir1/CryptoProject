@@ -75,33 +75,46 @@ int estab_con(int client, ssh::Keys &all_keys, RSA &my_rsa){
   #if !(NENCRYPT || NRSA)
    encrypted_msg = ssh::RSAGetCipherText(my_rsa, msg);
    assert(encrypted_msg.size() == ssh::RSA_MAX);
+   std::cerr << "Encrypted message: " << encrypted_msg << std::endl;
+    //send message
+    int fail = write( client, encrypted_msg.data(), ssh::RSA_MAX); 
+    if ( fail < msg.length() ){
+      perror( "write() failed" );
+      return -1;
+    }
   #else
-   while(msg.length() < ssh::RSA_MAX){
-    msg = "0" + msg;
-   }
-    encrypted_msg = msg;
+    encrypted_msg = msg;std::cerr << "Encrypted message: " << encrypted_msg << std::endl;
+    //send message
+    int fail = write( client, encrypted_msg.data(), ssh::HELLO_LEN); 
+    if ( fail < msg.length() ){
+      perror( "write() failed" );
+      return -1;
+    }
   #endif
-  std::cerr << "Encrypted message: " << encrypted_msg << std::endl;
-  //send message
-  int fail = write( client, encrypted_msg.data(), ssh::RSA_MAX); 
-  if ( fail < msg.length() ){
-    perror( "write() failed" );
-    return -1;
-  }
-  //get message
-  if ((num_bytes = recv(client, buf, ssh::RSA_MAX, MSG_WAITALL)) == -1) {
-    perror("Error: recv failed");
-    return -1;
-  }
-  // RSA Decrypt
-  std::string received_msg(buf, ssh::RSA_MAX);
-
-std::cerr << "'''''''''' received_msg: " << received_msg << std::endl;
+  
 
   std::string decrypted_msg;
   #if !(NENCRYPT || NRSA)
      decrypted_msg = ssh::RSAGetPlainText(my_rsa, received_msg);
+     //get message
+    if ((num_bytes = recv(client, buf, ssh::RSA_MAX, MSG_WAITALL)) == -1) {
+      perror("Error: recv failed");
+      return -1;
+    }
+    // RSA Decrypt
+    std::string received_msg(buf, ssh::RSA_MAX);
+
+  std::cerr << "'''''''''' received_msg: " << received_msg << std::endl;
   #else
+    //get message
+    if ((num_bytes = recv(client, buf, ssh::HELLO_LEN, MSG_WAITALL)) == -1) {
+      perror("Error: recv failed");
+      return -1;
+    }
+    // RSA Decrypt
+    std::string received_msg(buf, ssh::HELLO_LEN);
+
+  std::cerr << "'''''''''' received_msg: " << received_msg << std::endl;
      decrypted_msg = received_msg;
     std::cout << decrypted_msg << std::endl;
   #endif
