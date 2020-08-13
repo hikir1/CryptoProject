@@ -174,38 +174,33 @@ int main(int argc, char ** argv)
     int client = make_client(argv[1], argv[2]);
     if (client == -1)
       return EXIT_FAILURE;
-    int test = estab_con(client, all_keys, my_rsa);
-    if(test == -1){
-      CLOSE_CLIENT
-      return EXIT_FAILURE;
-    }
+
     std::cout << "What user are you (0, 255):" << std::endl;
 
     if (!std::getline(std::cin, id)) {
       perror("Error: getline failed");
-	CLOSE_CLIENT
+      CLOSE_CLIENT
       return EXIT_FAILURE;
     }
 
     int i_d;
-    try {	// <<<<<<<<<<<<<<<<<<<<<<<<<< added this try block
-
+    try { // <<<<<<<<<<<<<<<<<<<<<<<<<< added this try block
       i_d = stoi(id);
       if(i_d < 0 || i_d > 255){
         std::cerr << "Unsupported ID" << std::endl;
-	  CLOSE_CLIENT
+        CLOSE_CLIENT
         continue;
-	}
+  }
 
     }catch(const std::invalid_argument& ia){ // <<<<<<<<<<<<<<<< and these catches (copied from below)
        std::cerr << "Invalid id" << std::endl;
        std::cerr << "Message Aborted: Cannot be converted" << std::endl;
-	 CLOSE_CLIENT
+       CLOSE_CLIENT
        continue;
     }catch(const std::out_of_range& oor){
        std::cerr << "Invalid id" << std::endl;
        std::cerr << "Message Aborted: Amount of funds too large" << std::endl;
-	 CLOSE_CLIENT
+       CLOSE_CLIENT
        continue;
     }
 
@@ -219,17 +214,17 @@ int main(int argc, char ** argv)
 
     if (!std::getline(std::cin, message)) {
       perror("Error: getline failed");
-	CLOSE_CLIENT
+      CLOSE_CLIENT
       return EXIT_FAILURE;
     }
     if(message.length() == 0){
       std::cout << "Message Aborted: Message was too short" << std::endl;
-	CLOSE_CLIENT
+      CLOSE_CLIENT
       continue;
     }
     else if(message[0] == 'q'){
       std::cout << "Bye" << std::endl;
-	CLOSE_CLIENT
+      CLOSE_CLIENT
       break;
     }
 
@@ -237,34 +232,34 @@ int main(int argc, char ** argv)
 
     if (message[0] == act::DEPOSIT || message[0] == act::WITHDRAW) { // <<<<<<<<<<<<<<<<<<<<<<<< added this
 
-	if (message.size() < 4) { // <<<<<<<<<<<<< check for right size
+  if (message.size() < 4) { // <<<<<<<<<<<<< check for right size
         std::cout << "Message Aborted: No amount detected" << std::endl;
-	  CLOSE_CLIENT
-	  continue;
-	}
+        CLOSE_CLIENT
+       continue;
+  }
 
       if (message[2] != '$') { // <<<<<<<<<<<<< Pulled from above
         std::cout << "Message Aborted: No $ detected" << std::endl;
-	  CLOSE_CLIENT
+        CLOSE_CLIENT
         continue;
       }
 
       try{
         money = stoull(message.substr(3));
 
-	  if (sizeof(uint64_t) < sizeof(unsigned long long) // <<<<<<< uint64_t and ull nott technically the same
-	      && money > sizeof(uint64_t))
-	    throw std::out_of_range("Exceeded maximum of uint64");
+    if (sizeof(uint64_t) < sizeof(unsigned long long) // <<<<<<< uint64_t and ull nott technically the same
+        && money > sizeof(uint64_t))
+      throw std::out_of_range("Exceeded maximum of uint64");
 
       }catch(const std::invalid_argument& ia){
          std::cerr << "Invalid amount" << std::endl;
          std::cerr << "Message Aborted: Cannot be converted" << std::endl;
-	   CLOSE_CLIENT
+        CLOSE_CLIENT
          continue;
       }catch(const std::out_of_range& oor){
          std::cerr << "Invalid amount" << std::endl;
          std::cerr << "Message Aborted: Amount of funds too large" << std::endl;
-	   CLOSE_CLIENT
+         CLOSE_CLIENT
          continue;
       }
 
@@ -282,12 +277,19 @@ int main(int argc, char ** argv)
         msgType = ssh::MsgType::BALANCE;
       } break;
       default: {
-		
+    
         std::cout << "Message Aborted: Message had improper start" << std::endl; // <<<<<<< moved from above
         CLOSE_CLIENT
         continue;
 
       }
+    }
+
+
+    int test = estab_con(client, all_keys, my_rsa);
+    if(test == -1){
+      CLOSE_CLIENT
+      return EXIT_FAILURE;
     }
     if (send(client, ssh::SendMsg(msgType, u_id, money, all_keys) , ssh::TOTAL_LEN, 0) == -1) {
       perror("ERROR: Failed to send message");
