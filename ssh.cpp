@@ -10,6 +10,8 @@ int ssh::DiffieKeys::genKeys(const char keyex_msg[KEYEX_LEN], ssh::Keys &keys) {
 	std::string shared = KeyGen::getSharedKey(this->keys, std::string(keyex_msg, KEYEX_LEN));
 	keys.hmac_key = shared.substr(0, hmac::byte_length);
 	mpz_t aes_key, aes_iv;
+	mpz_init (aes_key);
+	mpz_init (aes_iv);
 	constexpr size_t half_rem = (KeyGen::diffiekeysize - hmac::byte_length) / 2;
 	static_assert(pow(KeyGen::base, half_rem) > pow(8, sizeof(aes::Key)));
 	static_assert(pow(KeyGen::base, half_rem) > pow(8, sizeof(aes::IV)));
