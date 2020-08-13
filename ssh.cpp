@@ -3,7 +3,7 @@
 #include "hmac/hmac.h"
 #include "KeyGen.hpp"
 #include "ssh.hpp"
-#include "RSA.h"
+#include "RSA/RSA.h"
 #include "util.hpp"
 #include <cassert>
 #include <cmath>

@@ -4,6 +4,7 @@
 #include "aes/aes.hpp"
 #include "hmac/hmac.h"
 #include "KeyGen.hpp"
+#include "RSA/RSA.h"
 #include <cmath>
 #include <gmpxx.h>
 
@@ -27,7 +28,7 @@ constexpr size_t SERVER_PTXT_KEYEX_LEN = 2 * KeyGen::diffiekeyhalfsize;
 constexpr size_t CLIENT_KEYEX_LEN = CLIENT_PTXT_KEYEX_LEN
 		+ (CLIENT_PTXT_KEYEX_LEN % RSA_MAX > 0? RSA_MAX - CLIENT_PTXT_KEYEX_LEN % RSA_MAX: 0);
 constexpr size_t SERVER_KEYEX_LEN = SERVER_PTXT_KEYEX_LEN
-		+ (SERVER_PTXT_KEYEX_LEN % RSA_MAX >0? RSA_MAX - CLIENT_PTXT_KEYEX_LEN % RSA_MAX: 0)
+		+ (SERVER_PTXT_KEYEX_LEN % RSA_MAX >0? RSA_MAX - CLIENT_PTXT_KEYEX_LEN % RSA_MAX: 0);
 
 static_assert(HELLO_LEN <= RECV_MAX);
 static_assert(CLIENT_KEYEX_LEN <= RECV_MAX);
@@ -138,7 +139,7 @@ struct SendMsg {
 };
 
 char* RSAGetCipherText(RSA myRSA, std::string message);
-
+char* RSAGetPlainText(RSA myRSA, std::string ciphertext);
 }
 
 #endif
