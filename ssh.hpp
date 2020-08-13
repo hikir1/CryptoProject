@@ -21,7 +21,14 @@ constexpr size_t TOTAL_LEN = hmac::output_length + AES_BUF_LEN;
 constexpr const char * HELLO_MSG = "I AM NOT A HACKER";
 constexpr size_t HELLO_LEN = strlen(HELLO_MSG) + 1; // + 1 for null byte
 
-constexpr size_t KEYEX_LEN = 
+constexpr size_t CLIENT_KEYEX_LEN = 
+		#ifdef NENCRYPT
+			1;
+		#else
+			6 * KeyGen::diffiekeyhalfsize;
+		#endif
+
+constexpr size_t SERVER_KEYEX_LEN = 
 		#ifdef NENCRYPT
 			1;
 		#else
@@ -38,24 +45,40 @@ struct Keys {
 	aes::IV aes_iv;
 };
 
-class DiffieKeys {	
+class ClientDiffieKeys {	
 	std::vector<std::string> hmac_keys;
 	std::vector<std::string> aes_keys;
-	char buf[KEYEX_LEN];
+	char buf[CLIENT_KEYEX_LEN];
 	public:
-	DiffieKeys() : hmac_keys(KeyGen::createKeyhalf_client()),
+	ClientDiffieKeys() : hmac_keys(KeyGen::createKeyhalf_client()),
 			aes_keys(KeyGen::createKeyhalf_client()) {
-		std::cerr << "hmac_key size" << hmac_keys[0].size() << std::endl;
-		std::cerr << "aes_key size" << aes_keys[0].size() << std::endl;
 		assert(hmac_keys[0].size() == KeyGen::diffiekeyhalfsize);
 		assert(aes_keys[0].size() == KeyGen::diffiekeyhalfsize);
-		memcpy(buf, hmac_keys[0].data(), KeyGen::diffiekeyhalfsize);
-		memcpy(buf + KeyGen::diffiekeyhalfsize, aes_keys[0].data(), KeyGen::diffiekeyhalfsize);
+		for (int i = 0; i < 3; i++)
+			memcpy(buf + i * KeyGen::diffiekeyhalfsize, hmac_keys[i].data(), KeyGen::diffiekeyhalfsize);
+		for (int i = 0; i < 3; i++) {
+			memcpy(buf + (i+3) * KeyGen::diffiekeyhalfsize, aes_keys[i].data(), KeyGen::diffiekeyhalfsize);
 	}
-	DiffieKeys(std::string p, std::string g) : hmac_keys(KeyGen::createKeyhalf_server(p,g)),
-			aes_keys(KeyGen::createKeyhalf_server(p,g)) {
-		std::cerr << "hmac_key size" << hmac_keys[0].size() << std::endl;
-		std::cerr << "aes_key size" << aes_keys[0].size() << std::endl;
+	const char * pubKeys() const {
+		return buf;
+	}
+	int genKeys(const char keyex_msg[CLIENT_KEYEX_LEN], Keys &keys);
+};
+
+class ServerDiffieKeys {	
+	std::vector<std::string> hmac_keys;
+	std::vector<std::string> aes_keys;
+	char buf[SERVER_KEYEX_LEN];
+	public:
+	ServerDiffieKeys(const char buf[CLIENT_KEYEX_LEN]) {
+		//	aes_keys(KeyGen::createKeyhalf_server(p2,g2)) {
+		std::vector<std::string> temp_hmac, temp_aes;
+		for (int i = 0; i < 3; i++)
+			temp_hmac.push_back(std::string(buf + i * KeyGen::diffiekeyhalfsize, KeyGen::diffiekeyhalfsize));
+		for (int i = 0; i < 3; i++)
+			temp_aes.push_back(std::string(buf + (i+3) * KeyGen::diffiekeyhalfsize, KeyGen::diffiekeyhalfsize));
+		hmac_keys = KeyGen::createKeyhalf_server(temp_hmac[1], temp_hmac[2]);
+		aes_keys = KeyGen::createKeyhalf_server(temp_aes[1], temp_aes[2]);
 		assert(hmac_keys[0].size() == KeyGen::diffiekeyhalfsize);
 		assert(aes_keys[0].size() == KeyGen::diffiekeyhalfsize);
 		memcpy(buf, hmac_keys[0].data(), KeyGen::diffiekeyhalfsize);
@@ -64,7 +87,7 @@ class DiffieKeys {
 	const char * pubKeys() const {
 		return buf;
 	}
-	int genKeys(const char keyex_msg[KEYEX_LEN], Keys &keys);
+	int genKeys(Keys &keys);
 };
 
 namespace MsgType {
