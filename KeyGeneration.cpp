@@ -93,7 +93,7 @@ std::vector<std::string> KeyGen::createKeyhalf(){
 		}
 		keyhlf = appendzero + keyhlf;
 	}
-	res.push_back(keyhlf.get_str());
+	res.push_back(keyhlf);
 	res.push_back(tmp2.get_str());
 	res.push_back(tmp3.get_str());
 	return res;
