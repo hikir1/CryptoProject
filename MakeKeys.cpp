@@ -1,4 +1,5 @@
 #include "RSA/RSA.h"
+#include <iostream>
 
 int main(){
 	RSA clientRSA;
@@ -30,6 +31,9 @@ int main(){
 
 	clientRSA.SaveKeys("clientKeys");
 	serverRSA.SaveKeys("serverKeys");
+
+gmp_printf(":::::: client: %Zd %Zd\n", clientRSA.e, clientRSA.N);
+gmp_printf(":::::: server: %Zd %Zd\n", serverRSA.e, serverRSA.N);
 
 	mpz_clear(client_e);
 	mpz_clear(server_e);

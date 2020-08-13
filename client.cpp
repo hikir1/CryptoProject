@@ -90,9 +90,10 @@ int estab_con(int client, ssh::Keys &all_keys, RSA &my_rsa){
     perror("Error: recv failed");
     return -1;
   }
-  buf[num_bytes] = '\0';
   // RSA Decrypt
   std::string received_msg(buf, ssh::RSA_MAX);
+
+std::cerr << "'''''''''' received_msg: " << received_msg << std::endl;
 
   std::string decrypted_msg;
   #if !(NENCRYPT || NRSA)
