@@ -199,7 +199,7 @@ int main(int argc, char ** argv)
       break;
     }
 
-    unsigned long long int money = 0;
+    uint64_t money = 0;
 
     if (message[0] == act::DEPOSIT || message[0] == act::WITHDRAW) { // <<<<<<<<<<<<<<<<<<<<<<<< added this
 
@@ -214,11 +214,10 @@ int main(int argc, char ** argv)
       }
 
       try{
-        money = stoull(message.substr(3));
-
-    if (sizeof(uint64_t) < sizeof(unsigned long long) // <<<<<<< uint64_t and ull nott technically the same
-        && money > sizeof(uint64_t))
-      throw std::out_of_range("Exceeded maximum of uint64");
+        long try_money = stol(message.substr(3));
+	  if (try_money < 0)
+	  	throw std::out_of_range("stol");
+	  money = (uint64_t) try_money;
 
       }catch(const std::invalid_argument& ia){
          std::cerr << "Invalid amount" << std::endl;
@@ -226,7 +225,7 @@ int main(int argc, char ** argv)
          continue;
       }catch(const std::out_of_range& oor){
          std::cerr << "Invalid amount" << std::endl;
-         std::cerr << "Message Aborted: Amount of funds too large" << std::endl;
+         std::cerr << "Message Aborted: Amount of funds out of range" << std::endl;
          continue;
       }
 
