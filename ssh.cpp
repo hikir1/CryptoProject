@@ -3,21 +3,21 @@
 #include "hmac/hmac.h"
 #include "KeyGen.hpp"
 #include "ssh.hpp"
-#include "RSA.h"
+#include "RSA/RSA.h"
 #include "util.hpp"
 #include <cassert>
 #include <cmath>
 
 
 
-char* ssh::RSAGetCipherText(RSA myRSA, std::string message){
+std::string ssh::RSAGetCipherText(RSA myRSA, std::string message){
 	std::string input = convertToASCII(message);
-	return myRSA.RSAgetcryptotext(input).data();
+	return myRSA.RSAgetcryptotext(input);
 }
 
-char* ssh::RSAGetPlainText(RSA myRSA, std::string ciphertext){
+std::string ssh::RSAGetPlainText(RSA myRSA, std::string ciphertext){
 	output = myRSA.RSAgetcryptotext(ciphertext);
-	return convertFromASCII(output).data();
+	return convertFromASCII(output);
 }
 
 int ssh::genKeys(std::string hmac_shared, std::string aes_shared, ssh::Keys &keys) {

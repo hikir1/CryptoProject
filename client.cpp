@@ -73,7 +73,7 @@ int estab_con(int client, ssh::Keys &all_keys, RSA &my_rsa){
   std::string msg(ssh::HELLO_MSG,ssh::HELLO_LEN);
   std::string encrypted_msg;
   #if !(NENCRYPT || NRSA)
-   encrypted_msg = ssh::RSAGetCipherText(msg, my_rsa);
+   encrypted_msg = ssh::RSAGetCipherText(my_rsa, msg);
   #else
     encrypted_msg = msg;
   #endif
@@ -90,11 +90,11 @@ int estab_con(int client, ssh::Keys &all_keys, RSA &my_rsa){
   }
   buf[num_bytes] = '\0';
   // RSA Decrypt
-  std::string received_msg(buf, ssh::HELLO_LEN);
+  std::string received_msg(buf, ssh::RSA_MAX);
 
   std::string decrypted_msg;
   #if !(NENCRYPT || NRSA)
-     decrypted_msg = ssh::RSAGetCipherText(received_msg, my_rsa);
+     decrypted_msg = ssh::RSAGetPlainText(my_rsa, received_msg);
   #else
      decrypted_msg = received_msg;
     std::cout << decrypted_msg << std::endl;
@@ -106,7 +106,7 @@ int estab_con(int client, ssh::Keys &all_keys, RSA &my_rsa){
 
   char hold[ssh::SERVER_KEYEX_LEN] = {0};
 
-  ssh::ClientDiffieKeys diffieKeys;
+  ssh::ClientDiffieKeys diffieKeys(my_rsa);
   // RSA Encrypt server key parts
   if (send(client, diffieKeys.pubKeys(), ssh::CLIENT_KEYEX_LEN, 0) == -1) {
     perror("ERROR: Failed to send keys.");
