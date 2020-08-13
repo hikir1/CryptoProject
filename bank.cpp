@@ -115,6 +115,7 @@ int hello(int cd, RSA &rsa) {
 		std::cout << "Failed to send HELLO to client" << std::endl;
 		return -1;
 	}
+	std::cerr << "endl " << ctxt << std::endl;
 
 	return 0;
 }
