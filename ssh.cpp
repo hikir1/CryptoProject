@@ -11,7 +11,7 @@
 
 char* ssh::RSAGetCipherText(RSA myRSA, std::string message){
 	std::string input = convertToASCII(message);
-	return myRSA.RSAgetcryptotext(input);
+	return myRSA.RSAgetcryptotext(input).data();
 }
 
 int ssh::genKeys(std::string hmac_shared, std::string aes_shared, ssh::Keys &keys) {

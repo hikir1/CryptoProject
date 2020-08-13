@@ -24,7 +24,7 @@ std::string convertToASCII(std::string message){
     for (int i = 0; i < message.length(); i++)
     {
         char x = message.at(i);
-        res = res + char(int(x));
+        res = res + std::to_string(int(x));
     }
     return res;
 }
