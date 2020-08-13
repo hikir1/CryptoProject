@@ -194,7 +194,7 @@ int RSA::GetReceivingSize(){
 	return tmp_N.get_str().length();
 }
 
-
+/*
 int main(int argc, char ** argv){
 	RSA clientRSA;
 	RSA serverRSA;
@@ -210,7 +210,7 @@ int main(int argc, char ** argv){
 
 	//encrypt message
 
-	std::string message = "I AM NOT A HACKER";
+	std::string message("I AM NOT A HACKER",strlen("I AM NOT A HACKER") + 1);
 	//std::cout << "message: " << message <<std::endl;
 	std::string input = convertToASCII(message);
 	//std::cout << "ASCII convert: " << input <<std::endl;
@@ -235,3 +235,4 @@ int main(int argc, char ** argv){
 	//std::cout<<ctxt.length()<<std::endl<<std::endl<<msg<<std::endl;
 	return 0;
 }
+*/
