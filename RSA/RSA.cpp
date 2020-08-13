@@ -40,10 +40,8 @@ void RSA::RSAKeyGen() {
 	mpz_mul(N,p,q);
 	mpz_sub_ui(p,p,1);
 	mpz_sub_ui(q,q,1);
-	mpz_t carmichaelNum;
 	mpz_t toitent;
 	mpz_init(toitent);
-	mpz_init(carmichaelNum);
 	mpz_mul(toitent,p,q);
 	calcLCM(carmichaelNum, p , q);
 	mpz_clear(p);
@@ -63,7 +61,7 @@ void RSA::RSAKeyGen() {
 	    }
     }
     mpz_invert(new_d,e,toitent);
-	mpf_clear(d);
+	mpz_clear(toitent);
 	return;
 }
 
