@@ -71,8 +71,13 @@ int estab_con(int client, ssh::Keys all_keys, RSA &my_rsa){
   char buf[ssh::RECV_MAX];
   std::string msg(ssh::HELLO_MSG,ssh::HELLO_LEN);
   std::string encrypted_msg;
-  #ifndef NENCRYPT
+  #ifndef NENCRYPT 
+  #ifndef RSAENCRYPT
    encrypted_msg = my_rsa.RSAgetcryptotext(msg);
+   #else
+     encrypted_msg = received_msg;
+    std::cout << encrypted_msg << std::endl;
+  #endif
   #else
     encrypted_msg = msg;
   #endif
@@ -93,7 +98,12 @@ int estab_con(int client, ssh::Keys all_keys, RSA &my_rsa){
 
   std::string decrypted_msg;
   #ifndef NENCRYPT
-   decrypted_msg = my_rsa.RSAgetmessage(received_msg);
+   #ifndef RSAENCRYPT
+     decrypted_msg = my_rsa.RSAgetmessage(received_msg);
+     #else
+     decrypted_msg = received_msg;
+    std::cout << decrypted_msg << std::endl;
+   #endif
   #else
     decrypted_msg = received_msg;
     std::cout << decrypted_msg << std::endl;
@@ -111,7 +121,6 @@ int estab_con(int client, ssh::Keys all_keys, RSA &my_rsa){
     std::string cryptotext;
  */
     char hold[ssh::KEYEX_LEN];
-    ssh::
  /*
     #ifndef NENCRYPT
       mpz_t shared_key;
@@ -154,7 +163,7 @@ int estab_con(int client, ssh::Keys all_keys, RSA &my_rsa){
       return -1;
     }
 
-    diffieKeys.genKeys(hold, all_keys)
+    diffieKeys.genKeys(hold, all_keys);
   return client;
 }
 
