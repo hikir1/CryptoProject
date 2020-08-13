@@ -37,10 +37,6 @@ input:	p - public key
 desc: computes shared key ( private key randomly generated )
 */
 void KeyGen::sharedkey(mpz_t sharedSecret, mpz_t receivedkeyhalf, mpz_t p, mpz_t pkb){
-	/*remove bottom 4 lines when socket prog is added*/
-	const char * const constkey = "1234567890";
-	int err = mpz_set_str(receivedkeyhalf, constkey, 10); //err == 0 if pass
-	//generate secret keys upon receiving
 	pow(sharedSecret,receivedkeyhalf, pkb, p);
 }
 
@@ -93,7 +89,7 @@ std::vector<std::string> KeyGen::createKeyhalf(){
 		}
 		keyhlf = appendzero + keyhlf;
 	}
-	res.push_back(keyhlf.get_str());
+	res.push_back(keyhlf);
 	res.push_back(tmp2.get_str());
 	res.push_back(tmp3.get_str());
 	return res;
@@ -127,15 +123,21 @@ std::string KeyGen::getSharedKey(std::vector<std::string> res, std::string other
  	return secKey;
 }
 
-/*
+
 int main(){
 	std::vector<std::string> keys = KeyGen::createKeyhalf();
-	std::cout << keys[1].length() << std::endl;
 	std::vector<std::string> keys2 = KeyGen::createKeyhalf();
 	std::string shared = KeyGen::getSharedKey(keys,keys2[0]);
-	std::cout << shared.length() << std::endl;
+	std::string shared2 = KeyGen::getSharedKey(keys2,keys[0]);
+	if(shared == shared2){
+			std::cout << "pooped" <<std::endl;
+	}
+	else{
+		std::cout<<shared2<<std::endl<<std::endl;
+		std::cout<<shared<<std::endl;
+	}
 }
-*/
+
 /* How to use code above
 
 //initialize 3 mpz_t types

@@ -2,7 +2,7 @@
 #define KEY_GEN_H_
 
 #include <math.h>
-#include "util.hpp"
+#include "util.cpp"
 
 namespace KeyGen {
     constexpr size_t diffiekeyhalfsize = 128;
