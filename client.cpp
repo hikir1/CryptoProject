@@ -112,11 +112,11 @@ int estab_con(int client, ssh::Keys &all_keys, RSA &my_rsa){
     perror("ERROR: Failed to send keys.");
     return -1;
   }
-    //send keyhalf here
-    if ((num_bytes = recv(client, hold, ssh::KEYEX_LEN, 0)) == -1) {
-      perror("Error: recv failed");
-      return -1;
-    }
+  //send keyhalf here
+  if ((num_bytes = recv(client, hold, ssh::KEYEX_LEN, 0)) == -1) {
+    perror("Error: recv failed");
+    return -1;
+  }
   if (diffieKeys.genKeys(hold, all_keys) == -1) {
     std::cerr << "ERROR: failed to parse diffie keys" << std::endl;
     return -1;
@@ -261,23 +261,27 @@ int main(int argc, char ** argv)
       CLOSE_CLIENT
       return EXIT_FAILURE;
     }
+    std::cout << all_keys.hmac_key << std::endl;
+    std::cout << "0" << std::endl;
     if (send(client, ssh::SendMsg(msgType, u_id, money, all_keys) , ssh::TOTAL_LEN, 0) == -1) {
       perror("ERROR: Failed to send message");
-	close(client);
+	    close(client);
       return -1;
     }
-
+    std::cout << "1" << std::endl;
     char recvbuf[ssh::TOTAL_LEN] = {0};
     ssize_t recvlen;
     if ((recvlen = try_recv(client, recvbuf, ssh::TOTAL_LEN)) == -1){
       close(client);
       return -1;
     }
+    std::cout << "2" << std::endl;
     ssh::RecvMsg msg(recvbuf, recvlen, all_keys);
     if (msg.error) {
       std::cout << msg.error << std::endl;
       msg.type = ssh::MsgType::INVALID;
     }
+    std::cout << "3" << std::endl;
     switch(msg.type){
       case(ssh::MsgType::OK):{
         switch(msgType){

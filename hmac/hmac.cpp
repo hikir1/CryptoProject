@@ -11,6 +11,8 @@ std::string hmac::ipad = "";
 std::string hmac::opad = "";
 
 void hmac::generate(){
+	ipad = "";
+	opad = "";
 	for(int x = 0; x < byte_length; x++){
 		ipad = ipad + "00110110";
 		opad = opad + "01011100";
