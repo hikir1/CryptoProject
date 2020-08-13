@@ -63,7 +63,7 @@ class ClientDiffieKeys {
 	const char * pubKeys() const {
 		return buf;
 	}
-	int genKeys(const char keyex_msg[SERVER_KEYEX_LEN], Keys &keys);
+	int genKeys(const char keyex_msg[SERVER_KEYEX_LEN], RSA &rsa, Keys &keys);
 };
 
 class ServerDiffieKeys {	
