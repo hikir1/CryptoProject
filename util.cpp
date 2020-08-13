@@ -42,7 +42,7 @@ std::string convertFromASCII(std::string str)
             num = 0; 
         } 
     }
-    std:cout << res << std::endl;
+    std::cout << res << std::endl;
     return res; 
 } 
 
