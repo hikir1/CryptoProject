@@ -6,7 +6,7 @@
 #include <cassert>
 #include <cmath>
 
-static int genKeys(const std::string hmac_shared, const std::string aes_shared, ssh::Keys &keys) {
+int genKeys(std::string hmac_shared, std::string aes_shared, ssh::Keys &keys) {
 	hmac_shared = hmac_shared.substr(0, hmac::byte_length);
 	memcpy(keys.hmac_key, hmac_shared.data(), hmac_shared.size());
 	mpz_t mpz_aes_key, mpz_aes_iv;
