@@ -10,16 +10,16 @@
 
 
 
-std::string ssh::RSAGetCipherText(RSA myRSA, std::string message){
-	std::string input = convertToASCII(message);
+std::string ssh::RSAGetCipherText(RSA &myRSA, std::string message){
+	std::string input = message; //convertToASCII(message);
 	std::cout << "This is getting Encrypted: " << input <<std::endl <<std::endl;
 	myRSA.printKeys();
 	return myRSA.RSAgetcryptotext(input);
 }
 
-std::string ssh::RSAGetPlainText(RSA myRSA, std::string ciphertext){
+std::string ssh::RSAGetPlainText(RSA &myRSA, std::string ciphertext){
 	std::string output = myRSA.RSAgetmessage(ciphertext);
-	return convertFromASCII(output);
+	return output; //convertFromASCII(output);
 }
 
 int ssh::genKeys(std::string hmac_shared, std::string aes_shared, ssh::Keys &keys) {

@@ -19,7 +19,7 @@ constexpr size_t AES_BUF_LEN = MSG_LEN + aes::BLOCK_BYTES - MSG_LEN % aes::BLOCK
 // include preceding hmac
 constexpr size_t TOTAL_LEN = hmac::output_length + AES_BUF_LEN;
 
-constexpr const char * HELLO_MSG = "I AM NOT A HACKER";
+constexpr const char * HELLO_MSG = "1234567890";
 constexpr size_t HELLO_LEN = strlen(HELLO_MSG) + 1; // + 1 for null byte
 
 constexpr size_t CLIENT_PTXT_KEYEX_LEN = 6 * KeyGen::diffiekeyhalfsize;
@@ -138,8 +138,8 @@ struct SendMsg {
 	}
 };
 
-std::string RSAGetCipherText(RSA myRSA, std::string message);
-std::string RSAGetPlainText(RSA myRSA, std::string ciphertext);
+std::string RSAGetCipherText(RSA &myRSA, std::string message);
+std::string RSAGetPlainText(RSA &myRSA, std::string ciphertext);
 }
 
 #endif

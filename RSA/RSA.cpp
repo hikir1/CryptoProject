@@ -164,6 +164,7 @@ void RSA::LoadKeys(std::string filename){
         std::cerr << "Unable to open file";
         exit(1); // terminate with error
     }
+    /*
     mpz_clear(new_d);
     mpz_clear(N2);
     mpz_clear(e2);
@@ -172,6 +173,7 @@ void RSA::LoadKeys(std::string filename){
     mpz_init(N2);
     mpz_init(e2);
     mpz_init(N);
+    */
    	inFile >> x;
     mpz_set_str(new_d,x.c_str(),10);
    	inFile >> x;
@@ -206,6 +208,7 @@ void RSA::printKeys(){
 	std::cout<<"N: " << tmp4.get_str() << std::endl;
 }
 
+#if 0
 int main(int argc, char ** argv){
 	RSA clientRSA;
 	RSA serverRSA;
@@ -246,3 +249,4 @@ int main(int argc, char ** argv){
 	//std::cout<<ctxt.length()<<std::endl<<std::endl<<msg<<std::endl;
 	return 0;
 }
+#endif

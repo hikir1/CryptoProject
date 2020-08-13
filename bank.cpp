@@ -108,7 +108,8 @@ int hello(int cd, RSA &rsa) {
 		return -1;
 	}
 
-	std::string ctxt = ssh::RSAGetCipherText(rsa, ssh::HELLO_MSG);
+	std::string ctxt = ssh::RSAGetCipherText(rsa, std::string(ssh::HELLO_MSG, ssh::HELLO_LEN));
+	std::cerr << "'''''''''''' ctxt here: " << ctxt << std::endl;
 	assert(ctxt.size() == ssh::RSA_MAX);
 	if (send(cd, ctxt.data(), ssh::RSA_MAX, 0) == -1) {
 		std::cout << "Failed to send HELLO to client" << std::endl;
