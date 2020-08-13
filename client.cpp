@@ -70,21 +70,23 @@ ssize_t try_recv(int cd, char * buf, size_t buflen) {
 int estab_con(int client, ssh::Keys &all_keys, RSA &my_rsa){
   int num_bytes;
   char buf[ssh::RSA_MAX] = {0};
-  std::string msg(ssh::HELLO_MSG,ssh::HELLO_LEN);
+  std::string msg(ssh::HELLO_MSG);
   std::string encrypted_msg;
   #if !(NENCRYPT || NRSA)
    encrypted_msg = ssh::RSAGetCipherText(my_rsa, msg);
+   assert(encrypted_msg.size() == ssh::RSA_MAX);
   #else
     encrypted_msg = msg;
   #endif
+  std::cerr << "Encrypted message: " << encrypted_msg << std::endl;
   //send message
-  int fail = write( client, encrypted_msg.c_str(), ssh::RSA_MAX); 
+  int fail = write( client, encrypted_msg.data(), ssh::RSA_MAX); 
   if ( fail < msg.length() ){
     perror( "write() failed" );
     return -1;
   }
   //get message
-  if ((num_bytes = recv(client, buf, ssh::HELLO_LEN, 0)) == -1) {
+  if ((num_bytes = recv(client, buf, ssh::RSA_MAX, MSG_WAITALL)) == -1) {
     perror("Error: recv failed");
     return -1;
   }
@@ -100,7 +102,8 @@ int estab_con(int client, ssh::Keys &all_keys, RSA &my_rsa){
     std::cout << decrypted_msg << std::endl;
   #endif
   if (msg.compare(decrypted_msg) != 0){
-    fprintf(stderr, "Hacker detected\n" ); // <<<<<<<<<< changed from perror to fprintf(stderr,...)
+  std::cerr << "-----dec: " << decrypted_msg << std::endl;
+    fprintf(stderr, "Hacker detected\n" );
     return -1;
   }
 
