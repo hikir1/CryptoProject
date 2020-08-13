@@ -25,10 +25,10 @@ constexpr size_t HELLO_LEN = strlen(HELLO_MSG);
 constexpr size_t CLIENT_PTXT_KEYEX_LEN = 6 * KeyGen::diffiekeyhalfsize;
 constexpr size_t SERVER_PTXT_KEYEX_LEN = 2 * KeyGen::diffiekeyhalfsize;
 
-constexpr size_t CLIENT_KEYEX_LEN = CLIENT_PTXT_KEYEX_LEN
-		+ (CLIENT_PTXT_KEYEX_LEN % RSA_MAX > 0? RSA_MAX - CLIENT_PTXT_KEYEX_LEN % RSA_MAX: 0);
-constexpr size_t SERVER_KEYEX_LEN = SERVER_PTXT_KEYEX_LEN
-		+ (SERVER_PTXT_KEYEX_LEN % RSA_MAX >0? RSA_MAX - CLIENT_PTXT_KEYEX_LEN % RSA_MAX: 0);
+constexpr size_t CLIENT_KEYEX_LEN = CLIENT_PTXT_KEYEX_LEN;
+constexpr size_t SERVER_KEYEX_LEN = SERVER_PTXT_KEYEX_LEN;
+static_assert(CLIENT_KEYEX_LEN == 3 * RSA_MAX);
+static_assert(SERVER_KEYEX_LEN == RSA_MAX);
 
 static_assert(HELLO_LEN <= RECV_MAX);
 static_assert(CLIENT_KEYEX_LEN <= RECV_MAX);
