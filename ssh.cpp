@@ -6,13 +6,9 @@
 #include <cassert>
 #include <cmath>
 
-int ssh::DiffieKeys::genKeys(const char keyex_msg[KEYEX_LEN], ssh::Keys &keys) {
-	std::string hmac_half = std::string(keyex_msg, KeyGen::diffiekeyhalfsize);
-	std::string aes_half
-			= std::string(keyex_msg + KeyGen::diffiekeyhalfsize, KeyGen::diffiekeyhalfsize);
-	std::string hmac_shared = KeyGen::getSharedKey(this->hmac_keys, hmac_half).substr(0, hmac::byte_length);
+static int genKeys(const std::string hmac_shared, const std::string aes_shared, ssh::Keys &keys) {
+	hmac_shared = hmac_shared.substr(0, hmac::byte_length);
 	memcpy(keys.hmac_key, hmac_shared.data(), hmac_shared.size());
-	std::string aes_shared = KeyGen::getSharedKey(this->aes_keys, aes_half);
 	mpz_t mpz_aes_key, mpz_aes_iv;
 	mpz_init (mpz_aes_key);
 	mpz_init (mpz_aes_iv);
@@ -35,6 +31,23 @@ int ssh::DiffieKeys::genKeys(const char keyex_msg[KEYEX_LEN], ssh::Keys &keys) {
 	}
 	mpz_clear(mpz_aes_key);
 	mpz_clear(mpz_aes_iv);
+	return 0;
+}
+
+int ssh::ClientDiffieKeys::genKeys(const char keyex_msg[SERVER_KEYEX_LEN], ssh::Keys &keys) {
+	std::string hmac_half = std::string(keyex_msg, KeyGen::diffiekeyhalfsize);
+	std::string aes_half
+			= std::string(keyex_msg + KeyGen::diffiekeyhalfsize, KeyGen::diffiekeyhalfsize);
+	std::string hmac_shared = KeyGen::getSharedKey(this->hmac_keys, hmac_half);
+	std::string aes_shared = KeyGen::getSharedKey(this->aes_keys, aes_half);
+	if (genKeys(hmac_shared, aes_shared, keys) == -1)
+		return -1;
+	return 0;
+}
+
+int ssh::ServerDiffieKeys::genKeys(ssh::Keys &keys) {
+	if (genKeys(this->hmac_shared, this->aes_shared, keys) == -1)
+		return -1;
 	return 0;
 }
 
