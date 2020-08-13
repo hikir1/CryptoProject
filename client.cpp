@@ -171,15 +171,9 @@ int main(int argc, char ** argv)
   std::string id;
   unsigned char u_id;
   while(1){
-    int client = make_client(argv[1], argv[2]);
-    if (client == -1)
-      return EXIT_FAILURE;
-
     std::cout << "What user are you (0, 255):" << std::endl;
-
     if (!std::getline(std::cin, id)) {
       perror("Error: getline failed");
-      CLOSE_CLIENT
       return EXIT_FAILURE;
     }
 
@@ -188,19 +182,16 @@ int main(int argc, char ** argv)
       i_d = stoi(id);
       if(i_d < 0 || i_d > 255){
         std::cerr << "Unsupported ID" << std::endl;
-        CLOSE_CLIENT
         continue;
   }
 
     }catch(const std::invalid_argument& ia){ // <<<<<<<<<<<<<<<< and these catches (copied from below)
        std::cerr << "Invalid id" << std::endl;
        std::cerr << "Message Aborted: Cannot be converted" << std::endl;
-       CLOSE_CLIENT
        continue;
     }catch(const std::out_of_range& oor){
        std::cerr << "Invalid id" << std::endl;
        std::cerr << "Message Aborted: Amount of funds too large" << std::endl;
-       CLOSE_CLIENT
        continue;
     }
 
@@ -214,17 +205,14 @@ int main(int argc, char ** argv)
 
     if (!std::getline(std::cin, message)) {
       perror("Error: getline failed");
-      CLOSE_CLIENT
       return EXIT_FAILURE;
     }
     if(message.length() == 0){
       std::cout << "Message Aborted: Message was too short" << std::endl;
-      CLOSE_CLIENT
       continue;
     }
     else if(message[0] == 'q'){
       std::cout << "Bye" << std::endl;
-      CLOSE_CLIENT
       break;
     }
 
@@ -234,13 +222,11 @@ int main(int argc, char ** argv)
 
   if (message.size() < 4) { // <<<<<<<<<<<<< check for right size
         std::cout << "Message Aborted: No amount detected" << std::endl;
-        CLOSE_CLIENT
        continue;
   }
 
       if (message[2] != '$') { // <<<<<<<<<<<<< Pulled from above
         std::cout << "Message Aborted: No $ detected" << std::endl;
-        CLOSE_CLIENT
         continue;
       }
 
@@ -254,12 +240,10 @@ int main(int argc, char ** argv)
       }catch(const std::invalid_argument& ia){
          std::cerr << "Invalid amount" << std::endl;
          std::cerr << "Message Aborted: Cannot be converted" << std::endl;
-        CLOSE_CLIENT
          continue;
       }catch(const std::out_of_range& oor){
          std::cerr << "Invalid amount" << std::endl;
          std::cerr << "Message Aborted: Amount of funds too large" << std::endl;
-         CLOSE_CLIENT
          continue;
       }
 
@@ -279,12 +263,14 @@ int main(int argc, char ** argv)
       default: {
     
         std::cout << "Message Aborted: Message had improper start" << std::endl; // <<<<<<< moved from above
-        CLOSE_CLIENT
         continue;
 
       }
     }
-
+    int client = make_client(argv[1], argv[2]);
+    if (client == -1){
+      return EXIT_FAILURE;
+    }
 
     int test = estab_con(client, all_keys, my_rsa);
     if(test == -1){
