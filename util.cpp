@@ -19,14 +19,13 @@
 std::random_device rd;
 
 //convert string characters to ascii values
-std::string convertToASCII(std::string message){
-    std::string res = ""; 
-    for (int i = 0; i < message.length(); i++)
-    {
+std::string convertASCII(std::string message){
+    std::string check = ""; 
+    for (unsigned int i = 0; i < message.length(); i++){
         char x = message.at(i);
-        res = res + std::to_string(int(x));
+        check = check + std::to_string(int(x));
     }
-    return res;
+    return check;
 }
 
 //mpz_t to string

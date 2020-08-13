@@ -17,7 +17,7 @@ char* ssh::RSAGetCipherText(RSA myRSA, std::string message){
 std::string ssh::convertASCII(string letter){
 	std::string ascii = "";
     for (int x = 0; x < letter.length(); x++){
-        ascii = ascii + (int)letter[x];
+        ascii = ascii + to_string((int)letter[x]);
     }
     return ascii;
 }
