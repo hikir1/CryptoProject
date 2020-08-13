@@ -231,18 +231,21 @@ int main(int argc, char ** argv){
 	//encrypt message
 
 	std::string message = "Hello";
+	//std::cout << "message: " << message <<std::endl;
 	std::string input = convertToASCII(message);
-	//std::cout << input <<std::endl;
-	std::string ctxt = serverRSA.RSAgetcryptotext("72101108108111");
-	//std::cout <<"here"<<std::endl;
+	//std::cout << "ASCII convert: " << input <<std::endl;
+	std::string ctxt = serverRSA.RSAgetcryptotext(input);
+	//std::cout << "cipher: " << ctxt <<std::endl;
 	//decrypt message
 
-	std::string msg = clientRSA.RSAgetmessage(ctxt);	
+	std::string msg = clientRSA.RSAgetmessage(ctxt);
+	//std::cout << "unASCII's text: " << msg <<std::endl;	
 	ctxt = convertFromASCII(msg);
+	std::cout << "original message: " << ctxt <<std::endl;
 	//std::cout <<ctxt<<std::endl;
 	//std::cout <<"here"<<std::endl;
 	
-	std::cout<<ctxt.length()<<std::endl<<std::endl<<msg<<std::endl;
+	//std::cout<<ctxt.length()<<std::endl<<std::endl<<msg<<std::endl;
 	return 0;
 }
 */

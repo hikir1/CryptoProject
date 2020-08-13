@@ -20,26 +20,28 @@ std::random_device rd;
 
 //convert ascii value to string
 std::string convertFromASCII(std::string str) 
-{ 
+{   
     std::string res = "";
     int num = 0; 
     int len = str.length();
+    std::cout << "original message: " << str <<std::endl;
+    std::cout << "length: " << len <<std::endl;
     for (int i = 0; i < len; i++) { 
         //std::cout<< i <<std::endl;
         // Append the current digit 
         num = num * 10 + (str[i] - '0'); 
-  
+        //std::cout << num <<std::endl;
         // If num is within the required range 
         if (num >= 32 && num <= 122) { 
   
             // Convert num to char 
-            char ch = (char)num; 
-            res = res + ch; 
-
+            char ch = (char)num;
+            res.push_back(ch); 
             // Reset num to 0 
             num = 0; 
         } 
-    } 
+    }
+    return res; 
 } 
 
 
