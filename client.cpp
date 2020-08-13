@@ -66,7 +66,7 @@ ssize_t try_recv(int cd, char * buf, size_t buflen) {
   return len;
 }
 
-int estab_con(int client, ssh::Keys all_keys, RSA my_rsa){
+int estab_con(int client, ssh::Keys all_keys, RSA &my_rsa){
   int num_bytes;
   char buf[ssh::RECV_MAX];
   std::string msg(ssh::HELLO_MSG,ssh::HELLO_LEN);
@@ -202,11 +202,9 @@ int main(int argc, char ** argv)
     return EXIT_FAILURE;
   }
   ssh::Keys all_keys;
-  // RSA Encrypt
   RSA my_rsa;
-  #ifndef NENCRYPT
+  // RSA Encrypt
     my_rsa.LoadKeys("clientKeys");
-  #endif
   //send public keys
   //receive keys
   //make keys
@@ -242,12 +240,12 @@ int main(int argc, char ** argv)
 	}
 
     }catch(const std::invalid_argument& ia){ // <<<<<<<<<<<<<<<< and these catches (copied from below)
-       std::cerr << "Invalid arguments: " << ia.what() << std::endl;
+       std::cerr << "Invalid id" << std::endl;
        std::cerr << "Message Aborted: Cannot be converted" << std::endl;
 	 CLOSE_CLIENT
        continue;
     }catch(const std::out_of_range& oor){
-       std::cerr << "Invalid arguments: " << oor.what() << std::endl;
+       std::cerr << "Invalid id" << std::endl;
        std::cerr << "Message Aborted: Amount of funds too large" << std::endl;
 	 CLOSE_CLIENT
        continue;
@@ -336,12 +334,12 @@ int main(int argc, char ** argv)
 	    throw std::out_of_range("Exceeded maximum of uint64");
 
       }catch(const std::invalid_argument& ia){
-         std::cerr << "Invalid arguments: " << ia.what() << std::endl;
+         std::cerr << "Invalid amount" << std::endl;
          std::cerr << "Message Aborted: Cannot be converted" << std::endl;
 	   CLOSE_CLIENT
          continue;
       }catch(const std::out_of_range& oor){
-         std::cerr << "Invalid arguments: " << oor.what() << std::endl;
+         std::cerr << "Invalid amount" << std::endl;
          std::cerr << "Message Aborted: Amount of funds too large" << std::endl;
 	   CLOSE_CLIENT
          continue;
