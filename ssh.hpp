@@ -4,6 +4,8 @@
 #include "aes/aes.hpp"
 #include "hmac/hmac.h"
 #include "KeyGen.hpp"
+#include <cmath>
+#include <gmpxx.h>
 
 namespace ssh {
 
@@ -23,7 +25,7 @@ constexpr size_t KEYEX_LEN =
 		#ifdef NENCRYPT
 			1;
 		#else
-			3 * KeyGen::diffiekeyhalfsize;
+			KeyGen::diffiekeyhalfsize;
 		#endif
 
 static_assert(HELLO_LEN <= RECV_MAX);
@@ -34,6 +36,18 @@ struct Keys {
 	std::string hmac_key;
 	aes::Key aes_key;
 	aes::IV aes_iv;
+};
+
+class DiffieKeys {	
+	std::vector<std::string> keys;
+	public:
+	DiffieKeys() : keys(KeyGen::createKeyhalf()) {
+		assert(keys[0].size() == KeyGen::diffiekeyhalfsize);
+	}
+	operator const char *() {
+		return keys[0].data();
+	}
+	int genKeys(const char keyex_msg[KEYEX_LEN], Keys &keys);
 };
 
 namespace MsgType {

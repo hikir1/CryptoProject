@@ -71,8 +71,13 @@ int estab_con(int client, ssh::Keys all_keys, RSA &my_rsa){
   char buf[ssh::RECV_MAX];
   std::string msg(ssh::HELLO_MSG,ssh::HELLO_LEN);
   std::string encrypted_msg;
-  #ifndef NENCRYPT
+  #ifndef NENCRYPT 
+  #ifndef RSAENCRYPT
    encrypted_msg = my_rsa.RSAgetcryptotext(msg);
+   #else
+     encrypted_msg = received_msg;
+    std::cout << encrypted_msg << std::endl;
+  #endif
   #else
     encrypted_msg = msg;
   #endif
@@ -90,16 +95,22 @@ int estab_con(int client, ssh::Keys all_keys, RSA &my_rsa){
   buf[num_bytes] = '\0';
   // RSA Decrypt
   std::string received_msg(buf, ssh::HELLO_LEN);
+
   std::string decrypted_msg;
   #ifndef NENCRYPT
-   decrypted_msg = my_rsa.RSAgetmessage(received_msg);
+   #ifndef RSAENCRYPT
+     decrypted_msg = my_rsa.RSAgetmessage(received_msg);
+     #else
+     decrypted_msg = received_msg;
+    std::cout << decrypted_msg << std::endl;
+   #endif
   #else
     decrypted_msg = received_msg;
     std::cout << decrypted_msg << std::endl;
   #endif
   if (msg.compare(decrypted_msg) != 0){
 
-    fprintf(stderr, "Hacker detected" ); // <<<<<<<<<< changed from perror to fprintf(stderr,...)
+    fprintf(stderr, "Hacker detected\n" ); // <<<<<<<<<< changed from perror to fprintf(stderr,...)
     							//		(errno is not set; no error from libaray call)
 
     return -1;
@@ -109,7 +120,7 @@ int estab_con(int client, ssh::Keys all_keys, RSA &my_rsa){
   for(int x = 0; x < 3; x++){ // <<<<<<<<< should only be sending 1 message with 3 keys
     std::string cryptotext;
  */
-    char hold[ssh::RECV_MAX];
+    char hold[ssh::KEYEX_LEN];
  /*
     #ifndef NENCRYPT
       mpz_t shared_key;
@@ -132,13 +143,18 @@ int estab_con(int client, ssh::Keys all_keys, RSA &my_rsa){
       }
     #else
   */
-      char chook[ssh::KEYEX_LEN] = {0};
-      fail = write( client, chook, ssh::KEYEX_LEN); 
-      if ( fail < ssh::KEYEX_LEN ){
-        perror( "write() failed" );
-        return -1;
-      }
+  ssh::DiffieKeys diffieKeys;
+   char chook[ssh::KEYEX_LEN] = {0};
+  if (diffieKeys.genKeys(chook, all_keys) == -1) {
+    std::cerr << "ERROR: failed to parse diffie keys" << std::endl;
+    return -1;
+  }
 
+  // TODO: RSA Encrypt server key parts
+  if (send(client, diffieKeys, ssh::KEYEX_LEN, 0) == -1) {
+    perror("ERROR: Failed to send keys.");
+    return -1;
+  }
 /*    #endif	*/
 
     //send keyhalf here
@@ -147,36 +163,7 @@ int estab_con(int client, ssh::Keys all_keys, RSA &my_rsa){
       return -1;
     }
 
-/*    hold[num_bytes] = '\0';		*/
-
-/*
-    //receive key as char*
-    #ifndef NENCRYPT
-      mpz_set_str(other_key_half, hold, ssh::KEYEX_LEN); // this converts char* to key half
-      KeyGen::sharedkey(shared_key, other_key_half, p, pkb); //stores shared key in shared_key after this
-      if(x == 0){
-        mpz_class var(shared_key);
-        cryptotext = var.get_str();
-        all_keys.hmac_key = cryptotext;
-      }else if(x == 1){
-        broken = aes::fill_key(all_keys.aes_key, shared_key);
-        if(broken != 0){
-          perror("Error: fill_key failed");
-          return -1;
-        }
-      }else if(x == 2){
-        broken = aes::fill_iv(all_keys.aes_iv, shared_key);
-        if(broken != 0){
-          perror("Error: fill_key failed");
-          return -1;
-        }
-      }
-    #else
-      std::cout << hold << std::endl;
-    #endif
-  }
-*/
-
+    diffieKeys.genKeys(hold, all_keys);
   return client;
 }
 

@@ -3,24 +3,24 @@ a.out : hello.cpp
 
 atm : **.[ch]pp **/**.[ch]pp **/**.h
 	g++ KeyGeneration.cpp KeyEncryption.cpp client.cpp aes/**.cpp RSA/**.cpp \
-		ssh.cpp hmac/**.cpp util.cpp -D NDEBUG -D ATM -o atm.out -lgmp
+		ssh.cpp hmac/**.cpp util.cpp -D NDEBUG -D ATM -o atm.out -lgmp -lm
 
 bank : **.[ch]pp **/**.[ch]pp **/**.h
 	g++ KeyGeneration.cpp KeyEncryption.cpp bank.cpp aes/**.cpp RSA/**.cpp \
-		ssh.cpp hmac/**.cpp util.cpp -D NDEBUG -D BANK -o bank.out -lgmp
+		ssh.cpp hmac/**.cpp util.cpp -D NDEBUG -D BANK -o bank.out -lgmp -lm
 
 testatm : **.[ch]pp **/**.[ch]pp **/**.h
 	g++ KeyGeneration.cpp KeyEncryption.cpp client.cpp aes/**.cpp RSA/**.cpp \
-			ssh.cpp hmac/**.cpp util.cpp -D NDEBUG -D ATM -o atm.out -lgmp -g
+			ssh.cpp hmac/**.cpp util.cpp -D NDEBUG -D ATM -o atm.out -lgmp -lm -g
 
 testbank : **.[ch]pp **/**.[ch]pp **/**.h
 	g++ KeyGeneration.cpp KeyEncryption.cpp bank.cpp aes/**.cpp RSA/**.cpp \
-		ssh.cpp hmac/**.cpp util.cpp -D BANK -o bank.out -lgmp -g
+		ssh.cpp hmac/**.cpp util.cpp -D BANK -o bank.out -lgmp -lm -g
 
 rawatm : **.[ch]pp **/**.[ch]pp **/**.h
 	g++ KeyGeneration.cpp KeyEncryption.cpp client.cpp aes/**.cpp RSA/**.cpp \
-		ssh.cpp hmac/**.cpp util.cpp -D BANK -D NENCRYPT -o atm.out -lgmp -g
+		ssh.cpp hmac/**.cpp util.cpp -D BANK -D NENCRYPT -o atm.out -lgmp -lm -g
 
 rawbank : **.[ch]pp **/**.[ch]pp **/**.h
 	g++ KeyGeneration.cpp KeyEncryption.cpp bank.cpp aes/**.cpp RSA/**.cpp \
-		ssh.cpp hmac/**.cpp util.cpp -D BANK -D NENCRYPT -o bank.out -lgmp -g
+		ssh.cpp hmac/**.cpp util.cpp -D BANK -D NENCRYPT -o bank.out -lgmp -lm -g

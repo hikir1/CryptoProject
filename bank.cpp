@@ -130,14 +130,15 @@ int keyex(int cd, ssh::Keys &keys) {
 
 	// TODO: RSA Decrypt
 
-	// TODO: Parse client key parts
-	// TODO: gen keys
+	ssh::DiffieKeys diffieKeys;
+	if (diffieKeys.genKeys(buf, keys) == -1) {
+		std::cerr << "ERROR: failed to parse diffie keys" << std::endl;
+		return -1;
+	}
 
 	// TODO: RSA Encrypt server key parts
-	// TODO: send server key parts
 
-	char buf2[ssh::KEYEX_LEN] = {0};
-	if (send(cd, buf, ssh::KEYEX_LEN, 0) == -1) {
+	if (send(cd, diffieKeys, ssh::KEYEX_LEN, 0) == -1) {
 		perror("ERROR: Failed to send keys.");
 		return -1;
 	}
