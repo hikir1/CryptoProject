@@ -18,6 +18,16 @@
 //set static global so doesn't reinitialize on random calls
 std::random_device rd;
 
+//convert string characters to ascii values
+std::string convertASCII(std::string message){
+    std::string check = ""; 
+    for (unsigned int i = 0; i < message.length(); i++){
+        char x = message.at(i);
+        check = check + std::to_string(int(x));
+    }
+    return check;
+}
+
 //mpz_t to string
 std::string mpzt2string(mpz_t a){
     std::string res;

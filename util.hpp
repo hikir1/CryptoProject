@@ -18,6 +18,8 @@
 #include <fstream>
 #include <iomanip>
 
+std::string convertASCII(std::string message);
+
 std::string mpzt2string(mpz_t a);
 void string2mpzt(mpz_t res, std::string op);
 

@@ -176,7 +176,6 @@ void RSA::LoadKeys(std::string filename){
 	return;
 }
 
-/*
 int main(int argc, char ** argv){
 	RSA clientRSA;
 	RSA serverRSA;
@@ -212,12 +211,11 @@ int main(int argc, char ** argv){
 	clientRSA.LoadKeys("clientKeys");
 	serverRSA.LoadKeys("serverKeys");
 	//encrypt message
-	std::string ctxt = serverRSA.RSAgetcryptotext("98765418719823712987389127389128931381209381038390128309810310928309");
+	std::string ctxt = serverRSA.RSAgetcryptotext("123456789012345678901234567891234567890123456789012345678901234567890123456789012345678901234567890");
 
 	//decrypt message
 	std::string msg = clientRSA.RSAgetmessage(ctxt);
 
-	std::cout<<ctxt<<std::endl<<msg<<std::endl;
+	std::cout<<ctxt<<std::endl<<std::endl<<msg<<std::endl;
 	return 0;
 }
-*/
