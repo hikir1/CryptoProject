@@ -138,8 +138,8 @@ struct SendMsg {
 	}
 };
 
-char* RSAGetCipherText(RSA myRSA, std::string message);
-char* RSAGetPlainText(RSA myRSA, std::string ciphertext);
+std::string RSAGetCipherText(RSA myRSA, std::string message);
+std::string RSAGetPlainText(RSA myRSA, std::string ciphertext);
 }
 
 #endif
