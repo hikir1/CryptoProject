@@ -196,7 +196,6 @@ namespace {
 // ctxt needs at least BLOCK_BYTES extra space (for padding)
 void aes::cbc_encrypt(const char * ptxt, char * ctxt, size_t len,  
 		const uint32_t iv[BLOCK_SIZE], const uint32_t key[KEY_SIZE], const char * hmac_key) {
-	std::cout << "\n--hmac:::: " << std::string(hmac_key, hmac::byte_length) << std::endl;
 #ifdef NENCRYPT
 	memcpy(ctxt, ptxt, len);
 #else
