@@ -117,7 +117,7 @@ int estab_con(int client, ssh::Keys &all_keys, RSA &my_rsa){
     perror("Error: recv failed");
     return -1;
   }
-  if (clientdiffieKeys.genKeys(hold, all_keys) == -1) {
+  if (diffieKeys.genKeys(hold, all_keys) == -1) {
     std::cerr << "ERROR: failed to parse diffie keys" << std::endl;
     return -1;
   }
