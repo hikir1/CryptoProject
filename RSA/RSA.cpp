@@ -194,7 +194,18 @@ int RSA::GetReceivingSize(){
 	return tmp_N.get_str().length();
 }
 
-/*
+void RSA::printKeys(){
+	mpz_class tmp1(new_d);
+	mpz_class tmp2(N2);
+	mpz_class tmp3(e2);
+	mpz_class tmp4(N);
+
+	std::cout<<"d: " << tmp1.get_str() << std::endl;
+	std::cout<<"N2: " << tmp2.get_str() << std::endl;
+	std::cout<<"e2: " << tmp3.get_str() << std::endl;
+	std::cout<<"N: " << tmp4.get_str() << std::endl;
+}
+
 int main(int argc, char ** argv){
 	RSA clientRSA;
 	RSA serverRSA;
@@ -235,4 +246,3 @@ int main(int argc, char ** argv){
 	//std::cout<<ctxt.length()<<std::endl<<std::endl<<msg<<std::endl;
 	return 0;
 }
-*/

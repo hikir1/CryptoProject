@@ -12,6 +12,8 @@
 
 std::string ssh::RSAGetCipherText(RSA myRSA, std::string message){
 	std::string input = convertToASCII(message);
+	std::cout << "This is getting Encrypted: " << input <<std::endl <<std::endl;
+	myRSA.printKeys();
 	return myRSA.RSAgetcryptotext(input);
 }
 

@@ -19,6 +19,8 @@ class RSA
     void RSAKeyGen();
     int GetSendingSize();
     int GetReceivingSize();
+    void printKeys();
+
 
     //your public key
     mpz_t e;
@@ -28,12 +30,12 @@ class RSA
     mpz_t e2;
     mpz_t N2;    
     
+    mpz_t new_d; //integer
 
     private: 
     
     //private key (both the same key different types for operations)
     mpf_t d; //float 
-    mpz_t new_d; //integer
 
     //messages
     mpz_t m;//to send
