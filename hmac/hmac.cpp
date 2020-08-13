@@ -20,8 +20,8 @@ void hmac::generate(){
 std::string hmac::create_HMAC(std::string message, std::string c){
 	//generates an HMAC from a message and key
 	hmac::generate();
-	std::cout << message.length() << std::endl;
-	std::cout << c.length() << std::endl;
+	std::cout << message << std::endl;
+	std::cout << c << std::endl;
 	std::string refurbished = c;
 	std::string bin;
 	std::string o_key = "";

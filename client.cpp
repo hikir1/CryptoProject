@@ -67,7 +67,7 @@ ssize_t try_recv(int cd, char * buf, size_t buflen) {
   return len;
 }
 
-int estab_con(int client, ssh::Keys all_keys, RSA &my_rsa){
+int estab_con(int client, ssh::Keys &all_keys, RSA &my_rsa){
   int num_bytes;
   char buf[ssh::RECV_MAX] = {0};
   std::string msg(ssh::HELLO_MSG,ssh::HELLO_LEN);
@@ -100,10 +100,7 @@ int estab_con(int client, ssh::Keys all_keys, RSA &my_rsa){
     std::cout << decrypted_msg << std::endl;
   #endif
   if (msg.compare(decrypted_msg) != 0){
-
     fprintf(stderr, "Hacker detected\n" ); // <<<<<<<<<< changed from perror to fprintf(stderr,...)
-    							//		(errno is not set; no error from libaray call)
-
     return -1;
   }
 
@@ -120,7 +117,6 @@ int estab_con(int client, ssh::Keys all_keys, RSA &my_rsa){
       perror("Error: recv failed");
       return -1;
     }
-    char chook[ssh::KEYEX_LEN] = {0};
   if (diffieKeys.genKeys(hold, all_keys) == -1) {
     std::cerr << "ERROR: failed to parse diffie keys" << std::endl;
     return -1;
@@ -151,7 +147,7 @@ int main(int argc, char ** argv)
   ssh::Keys all_keys;
   RSA my_rsa;
   // RSA Encrypt
-    my_rsa.LoadKeys("clientKeys");
+  my_rsa.LoadKeys("clientKeys");
   //send public keys
   //receive keys
   //make keys
