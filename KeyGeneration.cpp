@@ -43,22 +43,28 @@ void KeyGen::sharedkey(mpz_t sharedSecret, mpz_t receivedkeyhalf, mpz_t p, mpz_t
 /*
 	input: sendingkeyhalf - empty initialized mpz_t 
 */
-void KeyGen::KeyExchange(mpz_t sendingkeyhalf, mpz_t p, mpz_t pkb)
+void KeyGen::KeyExchange_client(mpz_t sendingkeyhalf, mpz_t p, mpz_t g, mpz_t pkb)
 {
-	int alg;
 	//establish public keys
-	mpz_t g;
-	mpz_init(g);
+	mpz_init(sendingkeyhalf);
 	getRandPrime(p);
 	getRandPrime(g);
 	std::string priv;
 	getRandPrime(pkb);
 	sendKeyDiffieHellman(sendingkeyhalf,g,p,pkb);
-	mpz_clear(g);
 }
 
-//output vector -> Keyhalf , p , pkb
-std::vector<std::string> KeyGen::createKeyhalf(){
+void KeyGen::KeyExchange_server(mpz_t sendingkeyhalf, mpz_t p, mpz_t g, mpz_t pkb)
+{
+	mpz_init(sendingkeyhalf);
+	//establish public keys
+	std::string priv;
+	getRandPrime(pkb);
+	sendKeyDiffieHellman(sendingkeyhalf,g,p,pkb);
+}
+
+//output vector -> Keyhalf , p , g, pkb
+std::vector<std::string> KeyGen::createKeyhalf_client(){
 	std::vector<std::string> res;
 
 	mpz_t keyhalf;
@@ -66,6 +72,9 @@ std::vector<std::string> KeyGen::createKeyhalf(){
 
 	mpz_t p;
 	mpz_init(p);
+
+	mpz_t g;
+	mpz_init(g);
 
 	mpz_t pkb;
 	mpz_init(pkb);
@@ -76,10 +85,11 @@ std::vector<std::string> KeyGen::createKeyhalf(){
 	mpz_t shared_key;
 	mpz_init(shared_key);
 
-	KeyExchange(keyhalf,p,pkb); //keyhalf has proper values after this
+	KeyExchange_client(keyhalf,p,g,pkb); //keyhalf has proper values after this
 	mpz_class tmp(keyhalf);
-	mpz_class tmp2(p);
-	mpz_class tmp3(pkb);
+	mpz_class p_str(p);
+	mpz_class g_str(g);
+	mpz_class priv_key_str(pkb);
 	std::string keyhlf;
 	std::string appendzero = "0";
 	keyhlf = tmp.get_str();
@@ -90,8 +100,49 @@ std::vector<std::string> KeyGen::createKeyhalf(){
 		keyhlf = appendzero + keyhlf;
 	}
 	res.push_back(keyhlf);
-	res.push_back(tmp2.get_str());
-	res.push_back(tmp3.get_str());
+	res.push_back(p_str.get_str());
+	res.push_back(g_str.get_str());
+	res.push_back(priv_key_str.get_str());
+	return res;
+}
+
+std::vector<std::string> KeyGen::createKeyhalf_server(std::string p, std::string g){
+	std::vector<std::string> res;
+
+	mpz_t keyhalf;
+	mpz_init(keyhalf);
+
+	mpz_t pkb;
+	mpz_init(pkb);
+	
+	mpz_t pz;
+	mpz_init(pz);
+
+	mpz_t gz;
+	mpz_init(gz);
+
+	string2mpzt(pz,p);
+	string2mpzt(gz,g);
+
+	KeyExchange_server(keyhalf,pz,gz,pkb); //keyhalf has proper values after this
+	mpz_class tmp(keyhalf);
+
+	mpz_class p_str(p);
+	mpz_class g_str(g);
+	mpz_class priv_key_str(pkb);
+	std::string keyhlf;
+	std::string appendzero = "0";
+	keyhlf = tmp.get_str();
+	while(keyhlf.length() < 128){
+		while((keyhlf.length() + appendzero.length()) < 128){
+			appendzero = appendzero + "0";
+		}
+		keyhlf = appendzero + keyhlf;
+	}
+	res.push_back(keyhlf);
+	res.push_back(p_str.get_str());
+	res.push_back(g_str.get_str());
+	res.push_back(priv_key_str.get_str());
 	return res;
 }
 
@@ -110,7 +161,7 @@ std::string KeyGen::getSharedKey(std::vector<std::string> res, std::string other
 
 	string2mpzt(receivedkeyhalf,other_keyhalf);
 	string2mpzt(p,res[1]);
-	string2mpzt(pkb,res[2]);
+	string2mpzt(pkb,res[3]);
  	sharedkey(sharedSecret,receivedkeyhalf,p,pkb);
  	std::string appendzero = "0";
  	std::string secKey = mpzt2string(sharedSecret);
@@ -123,21 +174,20 @@ std::string KeyGen::getSharedKey(std::vector<std::string> res, std::string other
  	return secKey;
 }
 
-/*
-int main(){
-	std::vector<std::string> keys = KeyGen::createKeyhalf();
-	std::vector<std::string> keys2 = KeyGen::createKeyhalf();
-	std::string shared = KeyGen::getSharedKey(keys,keys2[0]);
-	std::string shared2 = KeyGen::getSharedKey(keys2,keys[0]);
+void TestKeyExchange(){
+	std::vector<std::string> keys = KeyGen::createKeyhalf_client();//generates key half to send as well as public key (p,g) and private key - client
+	std::vector<std::string> keys2 = KeyGen::createKeyhalf_server(keys[1],keys[2]); // takes input from client's public key (p,g) and generates keyhalf to send and private key - server
+	std::string shared = KeyGen::getSharedKey(keys,keys2[0]); // takes output vector from last step as input as well as received key half - client
+	std::string shared2 = KeyGen::getSharedKey(keys2,keys[0]); // takes output vector from last step as input as well as received key half - server
 	if(shared == shared2){
-			std::cout << "pooped" <<std::endl;
+			std::cout << "Keys Matched!" <<std::endl;
 	}
 	else{
 		std::cout<<shared2<<std::endl<<std::endl;
 		std::cout<<shared<<std::endl;
 	}
 }
-*/
+
 /* How to use code above
 
 //initialize 3 mpz_t types
