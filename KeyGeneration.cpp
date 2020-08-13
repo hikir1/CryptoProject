@@ -123,7 +123,7 @@ std::string KeyGen::getSharedKey(std::vector<std::string> res, std::string other
  	return secKey;
 }
 
-
+/*
 int main(){
 	std::vector<std::string> keys = KeyGen::createKeyhalf();
 	std::vector<std::string> keys2 = KeyGen::createKeyhalf();
@@ -137,7 +137,7 @@ int main(){
 		std::cout<<shared<<std::endl;
 	}
 }
-
+*/
 /* How to use code above
 
 //initialize 3 mpz_t types
