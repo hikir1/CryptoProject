@@ -10,7 +10,7 @@
 namespace ssh {
 
 constexpr size_t RECV_MAX = 1024;
-
+constexpr size_t RSA_MAX = 256;
 // after sym keys established
 constexpr size_t MSG_LEN = sizeof(char[2]) + sizeof(uint64_t); // bytes
 // include padding for aes
