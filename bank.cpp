@@ -100,6 +100,7 @@ ssize_t try_recv(int cd, char * buf, size_t buflen) {
 
 int hello(int cd, RSA &rsa) {
 	char buf[ssh::RSA_MAX] = {0};
+	#ifndef NRSA
 	if (try_recv(cd, buf, ssh::RSA_MAX) == -1)
 		return -1;
 	if (ssh::RSAGetPlainText(rsa, std::string(buf, ssh::RSA_MAX)).compare(ssh::HELLO_MSG) != 0) {
@@ -115,7 +116,21 @@ int hello(int cd, RSA &rsa) {
 		std::cout << "Failed to send HELLO to client" << std::endl;
 		return -1;
 	}
+	#else
 
+	if (try_recv(cd, buf, ssh::HELLO_LEN) == -1)
+		return -1;
+	if (strncmp(buf, ssh::HELLO_MSG, ssh::HELLO_LEN) != 0) {
+		std::cout << "Received invalid HELLO" << std::endl;
+		std::cerr << "Hello: " << ssh::RSAGetPlainText(rsa, std::string(buf, ssh::RSA_MAX)) << "|" << std::endl;
+		return -1;
+	}
+
+	if (send(cd, ssh::HELLO_MSG, ssh::HELLO_LEN, 0) == -1) {
+		std::cout << "Failed to send HELLO to client" << std::endl;
+		return -1;
+	}
+	#endif
 	return 0;
 }
 
