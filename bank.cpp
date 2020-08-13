@@ -122,10 +122,8 @@ int hello(int cd, RSA &rsa) {
 		return -1;
 	if (strncmp(buf, ssh::HELLO_MSG, ssh::HELLO_LEN) != 0) {
 		std::cout << "Received invalid HELLO" << std::endl;
-		std::cerr << "Hello: " << ssh::RSAGetPlainText(rsa, std::string(buf, ssh::RSA_MAX)) << "|" << std::endl;
 		return -1;
 	}
-
 	if (send(cd, ssh::HELLO_MSG, ssh::HELLO_LEN, 0) == -1) {
 		std::cout << "Failed to send HELLO to client" << std::endl;
 		return -1;

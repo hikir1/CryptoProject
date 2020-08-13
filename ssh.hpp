@@ -20,7 +20,7 @@ constexpr size_t AES_BUF_LEN = MSG_LEN + aes::BLOCK_BYTES - MSG_LEN % aes::BLOCK
 constexpr size_t TOTAL_LEN = hmac::output_length + AES_BUF_LEN;
 
 constexpr const char * HELLO_MSG = "1234567890";
-constexpr size_t HELLO_LEN = strlen(HELLO_MSG); // + 1 for null byte
+constexpr size_t HELLO_LEN = strlen(HELLO_MSG);
 
 constexpr size_t CLIENT_PTXT_KEYEX_LEN = 6 * KeyGen::diffiekeyhalfsize;
 constexpr size_t SERVER_PTXT_KEYEX_LEN = 2 * KeyGen::diffiekeyhalfsize;
