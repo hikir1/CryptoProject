@@ -98,21 +98,19 @@ ssize_t try_recv(int cd, char * buf, size_t buflen) {
 	return len;
 }
 
-int hello(int cd) {
-	char buf[ssh::HELLO_LEN] = {0};
-	if (try_recv(cd, buf, ssh::HELLO_LEN) == -1)
+int hello(int cd, RSA &rsa) {
+	char buf[ssh::RSA_MAX] = {0};
+	if (try_recv(cd, buf, ssh::RSA_MAX) == -1)
 		return -1;
-
-	// TODO: RSA Decrypt
-
-	if (strncmp(buf, ssh::HELLO_MSG, ssh::HELLO_LEN) != 0) {
+	if (ssh::RSAGetPlainText(rsa, buf).compare(ssh::HELLO_MSG) != 0) {
 		std::cout << "Received invalid HELLO" << std::endl;
 		return -1;
 	}
 
 	// TODO: RSA Encrypt
-
-	if (send(cd, ssh::HELLO_MSG, ssh::HELLO_LEN, 0) == -1) {
+	std::string ctxt = ssh::RSAGetCipherText(rsa, ssh::HELLO_MSG);
+	assert(ctxt.size() == ssh::RSA_MAX);
+	if (send(cd, ctxt.data(), ssh::RSA_MAX, 0) == -1) {
 		std::cout << "Failed to send HELLO to client" << std::endl;
 		return -1;
 	}
@@ -120,7 +118,7 @@ int hello(int cd) {
 	return 0;
 }
 
-int keyex(int cd, ssh::Keys &keys) {
+int keyex(int cd, RSA &rsa, ssh::Keys &keys) {
 	char buf[ssh::CLIENT_KEYEX_LEN] = {0};
 	if (try_recv(cd, buf, ssh::CLIENT_KEYEX_LEN) == -1)
 		return -1;
@@ -128,11 +126,7 @@ int keyex(int cd, ssh::Keys &keys) {
 	std::cout << "recvd keyex" << std::endl;
 	#endif
 
-	// TODO: RSA Decrypt
-
-	ssh::ServerDiffieKeys diffieKeys(buf);
-
-	// TODO: RSA Encrypt server key parts
+	ssh::ServerDiffieKeys diffieKeys(buf, rsa);
 
 	if (send(cd, diffieKeys.pubKeys(), ssh::SERVER_KEYEX_LEN, 0) == -1) {
 		perror("ERROR: Failed to send keys.");
@@ -209,9 +203,11 @@ int bank(int cd, const ssh::Keys &keys) {
 }
 
 int serve(int cd) {
+	RSA rsa;
+	rsa.LoadKeys("serverKeys");
 	ssh::Keys keys;
-	if (hello(cd) == -1 
-			|| keyex(cd, keys) == -1 
+	if (hello(cd, rsa) == -1 
+			|| keyex(cd, rsa, keys) == -1 
 			|| bank(cd, keys) == -1)
 		return -1;
 	return 0;
