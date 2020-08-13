@@ -59,7 +59,7 @@ class ClientDiffieKeys {
 		ctxt += rsa.RSAgetcryptotext(ptxt2);
 		ctxt += rsa.RSAgetcryptotext(ptxt3);
 		assert(ctxt.size() == CLIENT_KEYEX_LEN);
-		memset(buf, ctxt.data(), CLIENT_KEYEX_LEN);
+		memcpy(buf, ctxt.data(), CLIENT_KEYEX_LEN);
 	}
 	const char * pubKeys() const {
 		return buf;
@@ -94,7 +94,7 @@ class ServerDiffieKeys {
 		assert(hmac_keys[0].size() == KeyGen::diffiekeyhalfsize);
 		assert(aes_keys[0].size() == KeyGen::diffiekeyhalfsize);
 
-		std::string send_ctxt = rsa.getcryptotext(hmac_keys[0] + aes_keys[0]);
+		std::string send_ctxt = rsa.RSAgetcryptotext(hmac_keys[0] + aes_keys[0]);
 		assert(send_ctxt.size() == SERVER_KEYEX_LEN);
 		memcpy(buf, send_ctxt.data(), send_ctxt.size());
 

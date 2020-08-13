@@ -1,3 +1,6 @@
+#ifndef _RSA_H_
+#define _RSA_H_
+
 #include "../util.hpp"
 #include <fstream>
 
@@ -45,3 +48,5 @@ class RSA
   
 
 }; 
+
+#endif

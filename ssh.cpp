@@ -16,7 +16,7 @@ std::string ssh::RSAGetCipherText(RSA myRSA, std::string message){
 }
 
 std::string ssh::RSAGetPlainText(RSA myRSA, std::string ciphertext){
-	output = myRSA.RSAgetcryptotext(ciphertext);
+	std::string output = myRSA.RSAgetcryptotext(ciphertext);
 	return convertFromASCII(output);
 }
 
