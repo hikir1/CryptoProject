@@ -18,7 +18,7 @@
 
 int make_client(char * host, char * port) {
   // try to find HOST and PORT
-  int client
+  int client;
   int value;
   struct addrinfo hints = {0};
   hints.ai_family = AF_UNSPEC;
@@ -112,28 +112,7 @@ int estab_con(int client, ssh::Keys all_keys, RSA &my_rsa){
     std::string cryptotext;
  */
     char hold[ssh::KEYEX_LEN];
- /*
-    #ifndef NENCRYPT
-      mpz_t shared_key;
-      mpz_init(shared_key);
-      mpz_t keyhalf;
-      mpz_init(keyhalf);
-      mpz_t p;
-      mpz_init(p);
-      mpz_t pkb;
-      mpz_init(pkb);
-      mpz_t other_key_half;
-      mpz_init(other_key_half);
-      KeyGen::KeyExchange(keyhalf, p, pkb); //keyhalf has proper values after this
-      mpz_class ctxt(keyhalf);
-      cryptotext = ctxt.get_str();
-      fail = write( client, cryptotext.c_str(), ssh::KEYEX_LEN); 
-      if ( fail < cryptotext.length() ){
-        perror( "write() failed" );
-        return -1;
-      }
-    #else
-  */
+
   ssh::DiffieKeys diffieKeys;
    char chook[ssh::KEYEX_LEN] = {0};
   if (diffieKeys.genKeys(chook, all_keys) == -1) {
@@ -143,7 +122,7 @@ int estab_con(int client, ssh::Keys all_keys, RSA &my_rsa){
 
 std::cerr << "here1" <<std::endl;
 
-  // TODO: RSA Encrypt server key parts
+  // RSA Encrypt server key parts
   if (send(client, diffieKeys.pubKeys(), ssh::KEYEX_LEN, 0) == -1) {
     perror("ERROR: Failed to send keys.");
     return -1;
@@ -168,8 +147,6 @@ namespace act { // <<<<<<<<<<<<<<<<<<< added this for convenience and clarity
   constexpr char BALANCE = '3';
 }
 
-// <<<<<<<<<<<<<<<<<<< need to put this everywhere (might want to split main()
-		   			//				into smaller functions)
 #define CLOSE_CLIENT \
     if (close(client) == -1) { \
       perror("ERROR: Failed to close socket"); \
@@ -204,9 +181,8 @@ int main(int argc, char ** argv)
     }
     std::cout << "What user are you (0, 255):" << std::endl;
 
-    if (!std::getline(std::cin, id)) { // <<<<<<< **** BAD: std::getline() does not return NULL on error
-    								// TODO: check for exception!!!
-      perror("Error: getline failed"); // <<< std::getline is a c++ function. errno not set. dont use perror()
+    if (!std::getline(std::cin, id)) {
+      perror("Error: getline failed");
 	CLOSE_CLIENT
       return EXIT_FAILURE;
     }
@@ -241,7 +217,7 @@ int main(int argc, char ** argv)
     std::cout << "To leave please uses \"q\"" << std::endl << std::endl;
     std::cout << "Enter your transaction below:" << std::endl;
 
-    if (!std::getline(std::cin, message)) { // <<<<<<<<<<< **** getline() doesnt return NULL
+    if (!std::getline(std::cin, message)) {
       perror("Error: getline failed");
 	CLOSE_CLIENT
       return EXIT_FAILURE;
@@ -256,41 +232,6 @@ int main(int argc, char ** argv)
 	CLOSE_CLIENT
       break;
     }
-
-/* <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< no need to test this (`message` is not being sent)
-    // if length (ssh) msg_max is exceeded abort
-    if (message.length() > ssh::RECV_MAX){
-        std::cout << "Message Aborted: Message was too long" << std::endl;
-        continue;
-    }
-*/
-
-/* <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< redundant: test for this later, in switch below
-    // checks for the initial character
-    // 1 = deposit (ssh)
-    // 2 = withdraw (ssh)
-    // 3 = balance (ssh)
-    //ignore if message doesn't start with one of these 3
-    else if (message[0] != (int)ssh::MsgType::DEPOSIT && message[0] != (int)ssh::MsgType::WITHDRAW && message[0] != (int)ssh::MsgType::BALANCE){
-        std::cout << "Message Aborted: Message had improper start" << std::endl;
-        continue;
-    }
-*/
-
-/* <<<<<<<<<<<<<<<<<<<<<< not all message require $
-    // checks for $
-    else if (message[2] != '$'){
-        std::cout << "Message Aborted: No $ detected" << std::endl;
-        continue;
-    }
-*/
-
-/* <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< use message.substr()
-    std::string checker = "";
-    for(int x = 3; x < message.length(); x++){
-      checker = checker+message[x];
-    }
-*/
 
     unsigned long long int money = 0;
 
@@ -345,14 +286,7 @@ int main(int argc, char ** argv)
         std::cout << "Message Aborted: Message had improper start" << std::endl; // <<<<<<< moved from above
         CLOSE_CLIENT
         continue;
-/*	
-        #ifdef NDEBUG
-        std::cout << "Invalid message format" << std::endl;
-        #else
-        std::cout << "Unknown message class" << std::endl;
-        #endif
-*/
-        // msgType = ssh::MsgType::BAD_FORMAT; // <<<<<<<<<<<<<<<< no need for this. just dont send message.
+
       }
     }
     if (send(client, ssh::SendMsg(msgType, u_id, money, all_keys) , ssh::TOTAL_LEN, 0) == -1) {
@@ -416,7 +350,5 @@ int main(int argc, char ** argv)
 
     CLOSE_CLIENT
   }
-
-  // sleep(5); // <<<<<<<<<<<< remove this
   return EXIT_SUCCESS;
 }
