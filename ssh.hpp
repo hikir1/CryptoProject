@@ -36,7 +36,8 @@ constexpr size_t SERVER_KEYEX_LEN =
 		#endif
 
 static_assert(HELLO_LEN <= RECV_MAX);
-static_assert(KEYEX_LEN <= RECV_MAX);
+static_assert(CLIENT_KEYEX_LEN <= RECV_MAX);
+static_assert(SERVER_KEYEX_LEN <= RECV_MAX);
 static_assert(TOTAL_LEN <= RECV_MAX);
 
 struct Keys {
@@ -56,7 +57,7 @@ class ClientDiffieKeys {
 		assert(aes_keys[0].size() == KeyGen::diffiekeyhalfsize);
 		for (int i = 0; i < 3; i++)
 			memcpy(buf + i * KeyGen::diffiekeyhalfsize, hmac_keys[i].data(), KeyGen::diffiekeyhalfsize);
-		for (int i = 0; i < 3; i++) {
+		for (int i = 0; i < 3; i++)
 			memcpy(buf + (i+3) * KeyGen::diffiekeyhalfsize, aes_keys[i].data(), KeyGen::diffiekeyhalfsize);
 	}
 	const char * pubKeys() const {
@@ -72,21 +73,22 @@ class ServerDiffieKeys {
 	std::string aes_shared;
 	char buf[SERVER_KEYEX_LEN];
 	public:
-	ServerDiffieKeys(const char buf[CLIENT_KEYEX_LEN]) {
-		//	aes_keys(KeyGen::createKeyhalf_server(p2,g2)) {
+	ServerDiffieKeys(const char keyex_recv[CLIENT_KEYEX_LEN]) {
 		std::vector<std::string> temp_hmac, temp_aes;
 		for (int i = 0; i < 3; i++)
-			temp_hmac.push_back(std::string(buf + i * KeyGen::diffiekeyhalfsize, KeyGen::diffiekeyhalfsize));
+			temp_hmac.push_back(std::string(keyex_recv + i * KeyGen::diffiekeyhalfsize,
+					KeyGen::diffiekeyhalfsize));
 		for (int i = 0; i < 3; i++)
-			temp_aes.push_back(std::string(buf + (i+3) * KeyGen::diffiekeyhalfsize, KeyGen::diffiekeyhalfsize));
+			temp_aes.push_back(std::string(keyex_recv + (i+3) * KeyGen::diffiekeyhalfsize,
+					KeyGen::diffiekeyhalfsize));
 		hmac_keys = KeyGen::createKeyhalf_server(temp_hmac[1], temp_hmac[2]);
 		aes_keys = KeyGen::createKeyhalf_server(temp_aes[1], temp_aes[2]);
 		assert(hmac_keys[0].size() == KeyGen::diffiekeyhalfsize);
 		assert(aes_keys[0].size() == KeyGen::diffiekeyhalfsize);
 		memcpy(buf, hmac_keys[0].data(), KeyGen::diffiekeyhalfsize);
 		memcpy(buf + KeyGen::diffiekeyhalfsize, aes_keys[0].data(), KeyGen::diffiekeyhalfsize);
-		hmac_shared = KeyGen::getSharedKey(hmac_keys, hmac_temp[0]);
-		aes_shared = KeyGen::getSharedKey(aes_keys, aes_temp[0]);
+		hmac_shared = KeyGen::getSharedKey(hmac_keys, temp_hmac[0]);
+		aes_shared = KeyGen::getSharedKey(aes_keys, temp_aes[0]);
 	}
 	const char * pubKeys() const {
 		return buf;
