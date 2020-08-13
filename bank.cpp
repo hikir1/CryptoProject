@@ -121,28 +121,26 @@ int hello(int cd) {
 }
 
 int keyex(int cd, ssh::Keys &keys) {
-	char buf[ssh::KEYEX_LEN] = {0};
-	if (try_recv(cd, buf, ssh::KEYEX_LEN) == -1)
+	char buf[ssh::CLIENT_KEYEX_LEN] = {0};
+	if (try_recv(cd, buf, ssh::CLIENT_KEYEX_LEN) == -1)
 		return -1;
 	#ifndef NDEBUG
 	std::cout << "recvd keyex" << std::endl;
 	#endif
 
 	// TODO: RSA Decrypt
-	std::string p; //keyhalf vector received [1]
-	std::string g; //keyhalf vector received [2]
-	ssh::DiffieKeys diffieKeys(p,g);
-	if (diffieKeys.genKeys(buf, keys) == -1) {
-		std::cerr << "ERROR: failed to parse diffie keys" << std::endl;
-		return -1;
-	}
+
+	ssh::ServerDiffieKeys diffieKeys(buf);
 
 	// TODO: RSA Encrypt server key parts
 
-	if (send(cd, diffieKeys.pubKeys(), ssh::KEYEX_LEN, 0) == -1) {
+	if (send(cd, diffieKeys.pubKeys(), ssh::SERVER_KEYEX_LEN, 0) == -1) {
 		perror("ERROR: Failed to send keys.");
 		return -1;
 	}
+
+	if (diffieKeys.genKeys(keys) == -1)
+		return -1;
 	
 	return 0;
 }
