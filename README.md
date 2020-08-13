@@ -1,5 +1,9 @@
 # Hello fellas
 
+Group 11 White Hat Project
+
+Dhruv Patel, Richard Pawełkiewicz and Nathan Whitney
+
 Our code is meant to be compiled on a machine running on a Linux OS,
 specifically, Ubuntu. You can compile our code by running `make` in the unzipped
 project directory. Two executibles will be created, `bank.out` and `atm.out`.
