@@ -6,7 +6,7 @@
 #include <cassert>
 #include <cmath>
 
-int genKeys(std::string hmac_shared, std::string aes_shared, ssh::Keys &keys) {
+int ssh::genKeys(std::string hmac_shared, std::string aes_shared, ssh::Keys &keys) {
 	hmac_shared = hmac_shared.substr(0, hmac::byte_length);
 	memcpy(keys.hmac_key, hmac_shared.data(), hmac_shared.size());
 	mpz_t mpz_aes_key, mpz_aes_iv;
@@ -40,13 +40,13 @@ int ssh::ClientDiffieKeys::genKeys(const char keyex_msg[SERVER_KEYEX_LEN], ssh::
 			= std::string(keyex_msg + KeyGen::diffiekeyhalfsize, KeyGen::diffiekeyhalfsize);
 	std::string hmac_shared = KeyGen::getSharedKey(this->hmac_keys, hmac_half);
 	std::string aes_shared = KeyGen::getSharedKey(this->aes_keys, aes_half);
-	if (genKeys(hmac_shared, aes_shared, keys) == -1)
+	if (ssh::genKeys(hmac_shared, aes_shared, keys) == -1)
 		return -1;
 	return 0;
 }
 
 int ssh::ServerDiffieKeys::genKeys(ssh::Keys &keys) {
-	if (genKeys(this->hmac_shared, this->aes_shared, keys) == -1)
+	if (ssh::genKeys(this->hmac_shared, this->aes_shared, keys) == -1)
 		return -1;
 	return 0;
 }

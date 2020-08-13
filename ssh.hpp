@@ -46,6 +46,8 @@ struct Keys {
 	aes::IV aes_iv;
 };
 
+int genKeys(std::string hmac_shared, std::string aes_shared, ssh::Keys &keys);
+
 class ClientDiffieKeys {	
 	std::vector<std::string> hmac_keys;
 	std::vector<std::string> aes_keys;
