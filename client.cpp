@@ -129,19 +129,23 @@ int estab_con(int client, ssh::Keys &all_keys, RSA &my_rsa){
 
   ssh::ClientDiffieKeys diffieKeys(my_rsa);
   // RSA Encrypt server key parts
+  std::cout << "check" << std::endl;
   if (send(client, diffieKeys.pubKeys(), ssh::CLIENT_KEYEX_LEN, 0) == -1) {
     perror("ERROR: Failed to send keys.");
     return -1;
   }
+  std::cout << "check" << std::endl;
   //send keyhalf here
   if ((num_bytes = recv(client, hold, ssh::SERVER_KEYEX_LEN, 0)) == -1) {
     perror("Error: recv failed");
     return -1;
   }
+  std::cout << "check" << std::endl;
   if (diffieKeys.genKeys(hold, my_rsa, all_keys) == -1) {
     std::cerr << "ERROR: failed to parse diffie keys" << std::endl;
     return -1;
   }
+  std::cout << "check" << std::endl;
   return client;
 }
 

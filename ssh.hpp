@@ -53,11 +53,15 @@ class ClientDiffieKeys {
 		assert(hmac_keys[0].size() == KeyGen::diffiekeyhalfsize);
 		assert(aes_keys[0].size() == KeyGen::diffiekeyhalfsize);
 		std::string ptxt1 = hmac_keys[0] + hmac_keys[1];
+		std::cout << "p1 " << ptxt1 << std::endl;
 		std::string ptxt2 = hmac_keys[2] + aes_keys[0];
+		std::cout << "p2 " << ptxt2 << std::endl;
 		std::string ptxt3 = aes_keys[1] + aes_keys[2];
+		std::cout << "p3 " << ptxt3 << std::endl;
 		std::string ctxt = rsa.RSAgetcryptotext(ptxt1);
 		ctxt += rsa.RSAgetcryptotext(ptxt2);
 		ctxt += rsa.RSAgetcryptotext(ptxt3);
+		std::cout << "c1 " << ctxt << std::endl;
 		assert(ctxt.size() == CLIENT_KEYEX_LEN);
 		memcpy(buf, ctxt.data(), CLIENT_KEYEX_LEN);
 	}
@@ -76,19 +80,41 @@ class ServerDiffieKeys {
 	public:
 	ServerDiffieKeys(const char keyex_recv[CLIENT_KEYEX_LEN], RSA &rsa) {
 		std::string ctxt1 = std::string(keyex_recv, RSA_MAX);
+		std::cout << "c1 " << ctxt1 << std::endl;
 		std::string ctxt2 = std::string(keyex_recv + RSA_MAX, RSA_MAX);
+		std::cout << "c2 " << ctxt2 << std::endl;
 		std::string ctxt3 = std::string(keyex_recv + 2*RSA_MAX, RSA_MAX);
+		std::cout << "c3 " << ctxt3 << std::endl;
 		std::string ptxt1 = rsa.RSAgetmessage(ctxt1);
+		while(ptxt1.length() < RSA_MAX){
+			ptxt1 = "0" + ptxt1;
+		}
+		std::cout << "p1 " << ptxt1 << std::endl;
 		std::string ptxt2 = rsa.RSAgetmessage(ctxt2);
+		while(ptxt2.length() < RSA_MAX){
+			ptxt2 = "0" + ptxt2;
+		}
+		std::cout << "p2 " << ptxt2 << std::endl;
 		std::string ptxt3 = rsa.RSAgetmessage(ctxt3);
+		while(ptxt3.length() < RSA_MAX){
+			ptxt3 = "0" + ptxt3;
+		}
+		std::cout << "p3 " << ptxt3 << std::endl;
 		std::vector<std::string> temp_hmac, temp_aes;
+		std::cout << "1" << std::endl;
 		temp_hmac.push_back(ptxt1.substr(0, KeyGen::diffiekeyhalfsize));
+		std::cout << "1" << std::endl;
 		temp_hmac.push_back(ptxt1.substr(KeyGen::diffiekeyhalfsize));
+		std::cout << "1" << std::endl;
 		temp_hmac.push_back(ptxt2.substr(0, KeyGen::diffiekeyhalfsize));
+		std::cout << "1" << std::endl;
 		temp_aes.push_back(ptxt2.substr(KeyGen::diffiekeyhalfsize));
+		std::cout << "1" << std::endl;
 		temp_aes.push_back(ptxt3.substr(0, KeyGen::diffiekeyhalfsize));
+		std::cout << "1" << std::endl;
 		temp_aes.push_back(ptxt3.substr(KeyGen::diffiekeyhalfsize));
-		
+		std::cout << "temp_hmac " << temp_hmac[0] << std::endl;
+		std::cout << "temp_hmac " << temp_hmac[1] << std::endl; 
 		hmac_keys = KeyGen::createKeyhalf_server(temp_hmac[1], temp_hmac[2]);
 		aes_keys = KeyGen::createKeyhalf_server(temp_aes[1], temp_aes[2]);
 		assert(hmac_keys[0].size() == KeyGen::diffiekeyhalfsize);
@@ -99,6 +125,11 @@ class ServerDiffieKeys {
 		memcpy(buf, send_ctxt.data(), send_ctxt.size());
 
 		hmac_shared = KeyGen::getSharedKey(hmac_keys, temp_hmac[0]);
+		std::cout << "Half " << temp_hmac[0] << std::endl;
+		for(int x = 0; x < hmac_keys.size(); x++){
+			std::cout << x << " " << hmac_keys[x] << std::endl;
+		}
+		std::cout << "SHARED SERVER " << hmac_shared << std::endl;
 		aes_shared = KeyGen::getSharedKey(aes_keys, temp_aes[0]);
 	}
 	const char * pubKeys() const {

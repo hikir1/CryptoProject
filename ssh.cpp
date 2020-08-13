@@ -57,6 +57,11 @@ int ssh::ClientDiffieKeys::genKeys(const char keyex_msg[SERVER_KEYEX_LEN], RSA &
 	std::string aes_half = ptxt.substr(KeyGen::diffiekeyhalfsize);
 
 	std::string hmac_shared = KeyGen::getSharedKey(this->hmac_keys, hmac_half);
+	std::cout << "Half " << hmac_half << std::endl;
+	for(int x = 0; x < this->hmac_keys.size(); x++){
+		std::cout << x << " " << this->hmac_keys[x] << std::endl;
+	}
+	std::cout << "SHARED CLIENT " << hmac_shared << std::endl;
 	std::string aes_shared = KeyGen::getSharedKey(this->aes_keys, aes_half);
 	if (ssh::genKeys(hmac_shared, aes_shared, keys) == -1)
 		return -1;
@@ -76,6 +81,7 @@ ssh::RecvMsg::RecvMsg(const char msg[TOTAL_LEN], size_t recvlen, const Keys &key
 	}
 	std::string mac = std::string(msg, hmac::output_length);
 	const char * ctxt = msg + hmac::output_length;
+	std::cout << "MAC " << mac << std::endl;
 	char ptxt[AES_BUF_LEN];
 	aes::cbc_decrypt(ctxt, ptxt, AES_BUF_LEN, keys.aes_iv, keys.aes_key);
 	#ifndef NENCRYPT
@@ -112,6 +118,9 @@ ssh::SendMsg::SendMsg(MsgType::Type type, unsigned char uid, uint64_t amt, const
 	char * ctxt = msg + hmac::output_length;
 	aes::cbc_encrypt(ptxt, ctxt, AES_BUF_LEN, keys.aes_iv, keys.aes_key, keys.hmac_key);
 	std::string mac = hmac::create_HMAC(std::string(ptxt, AES_BUF_LEN), keys.hmac_key);
+	std::cout << std::endl;
+	std::cout << "MAC " << mac << std::endl;
+	std::cout << std::endl;
 	assert(mac.size() == hmac::output_length);
 	memcpy(msg, mac.data(), hmac::output_length);
 }
