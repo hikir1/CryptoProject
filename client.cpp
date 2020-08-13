@@ -78,6 +78,7 @@ int estab_con(int client, ssh::Keys &all_keys, RSA &my_rsa){
   #else
     encrypted_msg = msg;
   #endif
+  std::cerr << "Encrypted message: " << encrypted_msg << std::endl;
   //send message
   int fail = write( client, encrypted_msg.data(), ssh::RSA_MAX); 
   if ( fail < msg.length() ){
@@ -101,6 +102,7 @@ int estab_con(int client, ssh::Keys &all_keys, RSA &my_rsa){
     std::cout << decrypted_msg << std::endl;
   #endif
   if (msg.compare(decrypted_msg) != 0){
+  std::cerr << "-----dec: " << decrypted_msg << std::endl;
     fprintf(stderr, "Hacker detected\n" );
     return -1;
   }

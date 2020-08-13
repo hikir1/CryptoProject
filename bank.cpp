@@ -102,6 +102,7 @@ int hello(int cd, RSA &rsa) {
 	char buf[ssh::RSA_MAX] = {0};
 	if (try_recv(cd, buf, ssh::RSA_MAX) == -1)
 		return -1;
+	std::cerr << "Encrypted message: " << std::string(buf, ssh::RSA_MAX) << std::endl;
 	if (ssh::RSAGetPlainText(rsa, std::string(buf, ssh::RSA_MAX)).compare(ssh::HELLO_MSG) != 0) {
 		std::cout << "Received invalid HELLO" << std::endl;
 		std::cerr << "Hello: " << ssh::RSAGetPlainText(rsa, std::string(buf, ssh::RSA_MAX)) << "|" << std::endl;
