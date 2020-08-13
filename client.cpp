@@ -182,7 +182,7 @@ int main(int argc, char ** argv)
 
     std::cout << "For depositing funds please use the format \"" << act::DEPOSIT << " $amount\"" << std::endl;
     std::cout << "For withdrawing funds please use the format \"" << act::WITHDRAW << " $amount\"" << std::endl;
-    std::cout << "To deplay your balance please use the format \"" << act::BALANCE << "\"" << std::endl;
+    std::cout << "To display your balance please use the format \"" << act::BALANCE << "\"" << std::endl;
     std::cout << "To leave please uses \"q\"" << std::endl << std::endl;
     std::cout << "Enter your transaction below:" << std::endl;
 
