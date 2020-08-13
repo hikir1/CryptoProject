@@ -27,7 +27,7 @@ std::string mpzt2string(mpz_t a){
 }
 
 //string to mpz_t
-void stringt2mpzt(mpz_t res, std::string op){
+void string2mpzt(mpz_t res, std::string op){
     const char* str = op.c_str();
     mpz_set_str(res,str,10);
 }

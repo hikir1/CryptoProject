@@ -10,8 +10,8 @@ namespace KeyGen {
     void sendKeyDiffieHellman(mpz_t sendingkeyhalf, mpz_t g, mpz_t p);
     void sharedkey(mpz_t sharedSecret, mpz_t receivedkeyhalf, mpz_t p, mpz_t pkb);
     void KeyExchange(mpz_t sendingkeyhalf, mpz_t p, mpz_t pkb);
-    mpz_t p;
-    mpz_t pkb;
+    std::string getSharedKey(std::vector<std::string> res, std::string other_keyhalf);
+	std::vector<std::string> createKeyhalf();
 }; 
 
 #endif

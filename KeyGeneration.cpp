@@ -61,8 +61,10 @@ void KeyGen::KeyExchange(mpz_t sendingkeyhalf, mpz_t p, mpz_t pkb)
 	mpz_clear(g);
 }
 
+//output vector -> Keyhalf , p , pkb
+std::vector<std::string> KeyGen::createKeyhalf(){
+	std::vector<std::string> res;
 
-std::string KeyGen::createKeyhalf(){
 	mpz_t keyhalf;
 	mpz_init(keyhalf);
 
@@ -79,7 +81,36 @@ std::string KeyGen::createKeyhalf(){
 	mpz_init(shared_key);
 
 	KeyExchange(keyhalf,p,pkb); //keyhalf has proper values after this
+	mpz_class tmp(keyhalf);
+	mpz_class tmp2(p);
+	mpz_class tmp3(pkb);
+	res.push_back(tmp.get_str());
+	res.push_back(tmp2.get_str());
+	res.push_back(tmp3.get_str());
+	return res;
 }
+
+//input vector result from createKeyHalf, keyhald received from other party
+//output string with sharedSecret
+std::string KeyGen::getSharedKey(std::vector<std::string> res, std::string other_keyhalf){
+	mpz_t sharedSecret;
+	mpz_t receivedkeyhalf;
+	mpz_t p;
+	mpz_t pkb;
+
+	mpz_init(sharedSecret);
+	mpz_init(receivedkeyhalf);
+	mpz_init(p);
+	mpz_init(pkb);
+
+	string2mpzt(receivedkeyhalf,other_keyhalf);
+	string2mpzt(p,res[1]);
+	string2mpzt(pkb,res[2]);
+
+ 	sharedkey(sharedSecret,receivedkeyhalf,p,pkb);
+ 	return mpzt2string(sharedSecret);
+}
+
 /* How to use code above
 
 //initialize 3 mpz_t types
