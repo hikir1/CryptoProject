@@ -68,6 +68,8 @@ class ClientDiffieKeys {
 class ServerDiffieKeys {	
 	std::vector<std::string> hmac_keys;
 	std::vector<std::string> aes_keys;
+	std::string hmac_shared;
+	std::string aes_shared;
 	char buf[SERVER_KEYEX_LEN];
 	public:
 	ServerDiffieKeys(const char buf[CLIENT_KEYEX_LEN]) {
@@ -83,6 +85,8 @@ class ServerDiffieKeys {
 		assert(aes_keys[0].size() == KeyGen::diffiekeyhalfsize);
 		memcpy(buf, hmac_keys[0].data(), KeyGen::diffiekeyhalfsize);
 		memcpy(buf + KeyGen::diffiekeyhalfsize, aes_keys[0].data(), KeyGen::diffiekeyhalfsize);
+		hmac_shared = KeyGen::getSharedKey(hmac_keys, hmac_temp[0]);
+		aes_shared = KeyGen::getSharedKey(aes_keys, aes_temp[0]);
 	}
 	const char * pubKeys() const {
 		return buf;
