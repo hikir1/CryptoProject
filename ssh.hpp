@@ -130,7 +130,6 @@ struct SendMsg {
 };
 
 char * RSAGetCipherText(RSA myRSA, std::string message);
-std::string convertASCII(string letter);
 
 }
 
