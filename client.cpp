@@ -73,7 +73,7 @@ int estab_con(int client, ssh::Keys &all_keys, RSA &my_rsa){
   std::string msg(ssh::HELLO_MSG,ssh::HELLO_LEN);
   std::string encrypted_msg;
   #if !(NENCRYPT || NRSA)
-   encrypted_msg = my_rsa.RSAgetcryptotext(msg);
+   encrypted_msg = ssh::RSAGetCipherText(msg, my_rsa);
   #else
     encrypted_msg = msg;
   #endif
@@ -166,7 +166,7 @@ int main(int argc, char ** argv)
       if(i_d < 0 || i_d > 255){
         std::cerr << "Unsupported ID" << std::endl;
         continue;
-  }
+    }
 
     }catch(const std::invalid_argument& ia){ // <<<<<<<<<<<<<<<< and these catches (copied from below)
        std::cerr << "Invalid id" << std::endl;
@@ -199,14 +199,14 @@ int main(int argc, char ** argv)
       break;
     }
 
-    unsigned long long int money = 0;
+    uint64_t money = 0;
 
     if (message[0] == act::DEPOSIT || message[0] == act::WITHDRAW) { // <<<<<<<<<<<<<<<<<<<<<<<< added this
 
-  if (message.size() < 4) { // <<<<<<<<<<<<< check for right size
-        std::cout << "Message Aborted: No amount detected" << std::endl;
-       continue;
-  }
+    if (message.size() < 4) { // <<<<<<<<<<<<< check for right size
+          std::cout << "Message Aborted: No amount detected" << std::endl;
+         continue;
+    }
 
       if (message[2] != '$') { // <<<<<<<<<<<<< Pulled from above
         std::cout << "Message Aborted: No $ detected" << std::endl;
@@ -214,11 +214,10 @@ int main(int argc, char ** argv)
       }
 
       try{
-        money = stoull(message.substr(3));
-
-    if (sizeof(uint64_t) < sizeof(unsigned long long) // <<<<<<< uint64_t and ull nott technically the same
-        && money > sizeof(uint64_t))
-      throw std::out_of_range("Exceeded maximum of uint64");
+        long try_money = stol(message.substr(3));
+	  if (try_money < 0)
+	  	throw std::out_of_range("stol");
+	  money = (uint64_t) try_money;
 
       }catch(const std::invalid_argument& ia){
          std::cerr << "Invalid amount" << std::endl;
@@ -226,7 +225,7 @@ int main(int argc, char ** argv)
          continue;
       }catch(const std::out_of_range& oor){
          std::cerr << "Invalid amount" << std::endl;
-         std::cerr << "Message Aborted: Amount of funds too large" << std::endl;
+         std::cerr << "Message Aborted: Amount of funds out of range" << std::endl;
          continue;
       }
 
@@ -260,13 +259,11 @@ int main(int argc, char ** argv)
       CLOSE_CLIENT
       return EXIT_FAILURE;
     }
-    std::cout << all_keys.hmac_key << std::endl;
     if (send(client, ssh::SendMsg(msgType, u_id, money, all_keys) , ssh::TOTAL_LEN, 0) == -1) {
       perror("ERROR: Failed to send message");
 	    close(client);
       return -1;
     }
-    std::cout << "1" << std::endl;
     char recvbuf[ssh::TOTAL_LEN] = {0};
     ssize_t recvlen;
     if ((recvlen = try_recv(client, recvbuf, ssh::TOTAL_LEN)) == -1){
@@ -319,6 +316,7 @@ int main(int argc, char ** argv)
         std::cout << "The message was invalid" << std::endl;
       }break;
     }
+    std::cout << std::endl << std::endl;
 
     CLOSE_CLIENT
   }
