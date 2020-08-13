@@ -18,7 +18,8 @@
 
 int make_client(char * host, char * port) {
   // try to find HOST and PORT
-  int client, value;
+  int client
+  int value;
   struct addrinfo hints = {0};
   hints.ai_family = AF_UNSPEC;
   //set to TCP
