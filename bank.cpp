@@ -144,7 +144,8 @@ int keyex(int cd, RSA &rsa, ssh::Keys &keys) {
 	#endif
 
 	ssh::ServerDiffieKeys diffieKeys(buf, rsa);
-
+	std::string check(buf, 768);
+	std::cerr << check << std::endl;
 	if (send(cd, diffieKeys.pubKeys(), ssh::SERVER_KEYEX_LEN, 0) == -1) {
 		perror("ERROR: Failed to send keys.");
 		return -1;

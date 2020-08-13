@@ -95,7 +95,6 @@ int estab_con(int client, ssh::Keys &all_keys, RSA &my_rsa){
 
   std::string decrypted_msg;
   #if !(NENCRYPT || NRSA)
-     decrypted_msg = ssh::RSAGetPlainText(my_rsa, received_msg);
      //get message
     if ((num_bytes = recv(client, buf, ssh::RSA_MAX, MSG_WAITALL)) == -1) {
       perror("Error: recv failed");
@@ -105,6 +104,7 @@ int estab_con(int client, ssh::Keys &all_keys, RSA &my_rsa){
     std::string received_msg(buf, ssh::RSA_MAX);
 
   std::cerr << "'''''''''' received_msg: " << received_msg << std::endl;
+   decrypted_msg = ssh::RSAGetPlainText(my_rsa, received_msg);
   #else
     //get message
     if ((num_bytes = recv(client, buf, ssh::HELLO_LEN, MSG_WAITALL)) == -1) {
