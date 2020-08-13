@@ -18,8 +18,33 @@
 //set static global so doesn't reinitialize on random calls
 std::random_device rd;
 
+//convert ascii value to string
+std::string convertFromASCII(std::string str) 
+{ 
+    std::string res = "";
+    int num = 0; 
+    int len = str.length();
+    for (int i = 0; i < len; i++) { 
+  
+        // Append the current digit 
+        num = num * 10 + (str[i] - '0'); 
+  
+        // If num is within the required range 
+        if (num >= 32 && num <= 122) { 
+  
+            // Convert num to char 
+            char ch = (char)num; 
+            res = res + ch; 
+  
+            // Reset num to 0 
+            num = 0; 
+        } 
+    } 
+} 
+
+
 //convert string characters to ascii values
-std::string convertASCII(std::string message){
+std::string convertToASCII(std::string message){
     std::string check = ""; 
     for (unsigned int i = 0; i < message.length(); i++){
         char x = message.at(i);

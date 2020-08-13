@@ -15,6 +15,11 @@ char* ssh::RSAGetCipherText(RSA myRSA, std::string message){
 	return myRSA.RSAgetcryptotext(input).data();
 }
 
+char* ssh::RSAGetPlainText(RSA myRSA, std::string ciphertext){
+	output = myRSA.RSAgetcryptotext(ciphertext);
+	return convertFromASCII(output).data();
+}
+
 int ssh::genKeys(std::string hmac_shared, std::string aes_shared, ssh::Keys &keys) {
 	hmac_shared = hmac_shared.substr(0, hmac::byte_length);
 	memcpy(keys.hmac_key, hmac_shared.data(), hmac_shared.size());
