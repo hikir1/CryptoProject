@@ -98,6 +98,13 @@ std::string RSA::RSAgetcryptotext(std::string message){
 	//convert c to string
 	mpz_class ctxt(c);
 	std::string cryptotext = ctxt.get_str();
+	std::string appendzero = "0";
+	while(cryptotext.length() < 256){
+		while((cryptotext.length() + appendzero.length()) < 256){
+			appendzero = appendzero + "0";
+		}
+		cryptotext = appendzero + cryptotext;
+	}
 	return cryptotext;
 }
 
@@ -176,6 +183,17 @@ void RSA::LoadKeys(std::string filename){
 	return;
 }
 
+int RSA::GetSendingSize(){
+	mpz_class tmp_N2(N2);
+	return tmp_N2.get_str().length();
+}
+
+int RSA::GetReceivingSize(){
+	mpz_class tmp_N(N);
+	return tmp_N.get_str().length();
+}
+
+/*
 int main(int argc, char ** argv){
 	RSA clientRSA;
 	RSA serverRSA;
@@ -203,19 +221,20 @@ int main(int argc, char ** argv){
 	
 	clientRSA.SetKeys(serv_e.get_str(),serv_N.get_str());
 	serverRSA.SetKeys(c_e.get_str(),c_N.get_str());
-	std::cout<< "Server N: " <<serv_N.get_str() <<std::endl;
-	std::cout<< "Client N: " <<c_N.get_str() <<std::endl;
+	std::cout<< "Server N: " <<serv_N.get_str().length() <<std::endl;
+	std::cout<< "Client N: " <<c_N.get_str().length() <<std::endl<<std::endl;
 
 	clientRSA.SaveKeys("clientKeys");
 	serverRSA.SaveKeys("serverKeys");
 	clientRSA.LoadKeys("clientKeys");
 	serverRSA.LoadKeys("serverKeys");
 	//encrypt message
-	std::string ctxt = serverRSA.RSAgetcryptotext("123456789012345678901234567891234567890123456789012345678901234567890123456789012345678901234567890");
+	std::string ctxt = serverRSA.RSAgetcryptotext("0123456789012345678901234567891234567890123456789012345678901234567890123456789012345678901234567890");
 
 	//decrypt message
 	std::string msg = clientRSA.RSAgetmessage(ctxt);
 
-	std::cout<<ctxt<<std::endl<<std::endl<<msg<<std::endl;
+	std::cout<<ctxt.length()<<std::endl<<std::endl<<msg<<std::endl;
 	return 0;
 }
+*/

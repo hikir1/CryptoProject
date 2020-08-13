@@ -129,7 +129,7 @@ struct SendMsg {
 	}
 };
 
-RSAGetCipherText(RSA myRSA, std::string message);
+char* RSAGetCipherText(RSA myRSA, std::string message);
 
 }
 
