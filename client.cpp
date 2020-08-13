@@ -260,6 +260,7 @@ int main(int argc, char ** argv)
       CLOSE_CLIENT
       return EXIT_FAILURE;
     }
+    std::cout << all_keys.hmac_key << std::endl;
     if (send(client, ssh::SendMsg(msgType, u_id, money, all_keys) , ssh::TOTAL_LEN, 0) == -1) {
       perror("ERROR: Failed to send message");
 	    close(client);
