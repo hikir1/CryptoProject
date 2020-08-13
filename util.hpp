@@ -18,6 +18,9 @@
 #include <fstream>
 #include <iomanip>
 
+std::string mpzt2string(mpz_t a);
+void string2mpzt(mpz_t res, std::string op);
+
 //set static global so doesn't reinitialize on random calls
 extern std::random_device rd;
 
