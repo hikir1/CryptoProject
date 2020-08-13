@@ -84,6 +84,15 @@ std::vector<std::string> KeyGen::createKeyhalf(){
 	mpz_class tmp(keyhalf);
 	mpz_class tmp2(p);
 	mpz_class tmp3(pkb);
+	std::string keyhlf;
+	std::string appendzero = "0";
+	keyhlf = tmp.get_str();
+	while(keyhlf.length() < 128){
+		while((keyhlf.length() + appendzero.length()) < 128){
+			appendzero = appendzero + "0";
+		}
+		keyhlf = appendzero + keyhlf;
+	}
 	res.push_back(tmp.get_str());
 	res.push_back(tmp2.get_str());
 	res.push_back(tmp3.get_str());
@@ -106,11 +115,27 @@ std::string KeyGen::getSharedKey(std::vector<std::string> res, std::string other
 	string2mpzt(receivedkeyhalf,other_keyhalf);
 	string2mpzt(p,res[1]);
 	string2mpzt(pkb,res[2]);
-
  	sharedkey(sharedSecret,receivedkeyhalf,p,pkb);
- 	return mpzt2string(sharedSecret);
+ 	std::string appendzero = "0";
+ 	std::string secKey = mpzt2string(sharedSecret);
+	while(secKey.length() < 128){
+		while((secKey.length() + appendzero.length()) < 128){
+			appendzero = appendzero + "0";
+		}
+		secKey = appendzero + secKey;
+	}
+ 	return secKey;
 }
 
+/*
+int main(){
+	std::vector<std::string> keys = KeyGen::createKeyhalf();
+	std::cout << keys[1].length() << std::endl;
+	std::vector<std::string> keys2 = KeyGen::createKeyhalf();
+	std::string shared = KeyGen::getSharedKey(keys,keys2[0]);
+	std::cout << shared.length() << std::endl;
+}
+*/
 /* How to use code above
 
 //initialize 3 mpz_t types
