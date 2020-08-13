@@ -135,6 +135,8 @@ int keyex(int cd, ssh::Keys &keys) {
 		std::cerr << "ERROR: failed to parse diffie keys" << std::endl;
 		return -1;
 	}
+	std::cout << "0 " << keys.aes_key << std::endl;
+	std::cout << "0 " << keys.hmac_key << std::endl;
 
 	// TODO: RSA Encrypt server key parts
 

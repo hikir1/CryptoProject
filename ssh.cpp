@@ -71,11 +71,16 @@ ssh::SendMsg::SendMsg(MsgType::Type type, unsigned char uid, uint64_t amt, const
 	char ptxt[AES_BUF_LEN] = {0};
 	ptxt[0] = (char) type;
 	ptxt[1] = (char) uid;
+	std::string save(all_keys.hmac_key, 64);
 	constexpr uint64_t MASK = (1 << 8) - 1;
 	for (int i = 0; i < sizeof(uint64_t)/sizeof(char); i++)
 		ptxt[i + 2] = (char)((amt >> (56 - i * 8)) & MASK);
 	char * ctxt = msg + hmac::output_length;
 	aes::cbc_encrypt(ptxt, ctxt, AES_BUF_LEN, keys.aes_iv, keys.aes_key, keys.hmac_key);
+	keys.hmac_key = save.c_str();
+	std::string hello(keys.hmac_key, 64);
+	std::cout << "1 " << hello << std::endl;
+	std::cout << "1 " << keys.hmac_key << std::endl;
 	std::string mac = hmac::create_HMAC(std::string(ptxt, AES_BUF_LEN), keys.hmac_key);
 	assert(mac.size() == hmac::output_length);
 	memcpy(msg, mac.data(), hmac::output_length);

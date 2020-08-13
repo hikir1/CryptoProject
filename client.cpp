@@ -260,13 +260,14 @@ int main(int argc, char ** argv)
       CLOSE_CLIENT
       return EXIT_FAILURE;
     }
-    std::cout << all_keys.hmac_key << std::endl;
+    std::string hello(all_keys.hmac_key, 64);
+    std::cout << "0 " << hello << std::endl;
+    std::cout << "0 " << all_keys.aes_key << std::endl;
     if (send(client, ssh::SendMsg(msgType, u_id, money, all_keys) , ssh::TOTAL_LEN, 0) == -1) {
       perror("ERROR: Failed to send message");
 	    close(client);
       return -1;
     }
-    std::cout << "1" << std::endl;
     char recvbuf[ssh::TOTAL_LEN] = {0};
     ssize_t recvlen;
     if ((recvlen = try_recv(client, recvbuf, ssh::TOTAL_LEN)) == -1){
