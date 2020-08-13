@@ -20,6 +20,8 @@ void hmac::generate(){
 std::string hmac::create_HMAC(std::string message, std::string c){
 	//generates an HMAC from a message and key
 	hmac::generate();
+	std::cout << message << std::endl;
+	std::cout << c << std::endl;
 	std::string refurbished = c;
 	std::string bin;
 	std::string o_key = "";
@@ -43,5 +45,6 @@ std::string hmac::create_HMAC(std::string message, std::string c){
 	i_key = i_key + hmac_util::convert_binary(message);
 	i_key = hmac_util::Hex_to_Bin(SHA1::run_sha(i_key));
 	o_key = o_key + i_key;
+	std::cout << SHA1::run_sha(o_key) << std::endl;
 	return SHA1::run_sha(o_key);
 }

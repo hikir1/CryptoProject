@@ -10,7 +10,7 @@ int ssh::DiffieKeys::genKeys(const char keyex_msg[KEYEX_LEN], ssh::Keys &keys) {
 	std::string hmac_half = std::string(keyex_msg, KeyGen::diffiekeyhalfsize);
 	std::string aes_half
 			= std::string(keyex_msg + KeyGen::diffiekeyhalfsize, KeyGen::diffiekeyhalfsize);
-	keys.hmac_key = KeyGen::getSharedKey(this->hmac_keys, hmac_half);
+	keys.hmac_key = KeyGen::getSharedKey(this->hmac_keys, hmac_half).substr(0, hmac::byte_length);
 	std::string aes_shared = KeyGen::getSharedKey(this->aes_keys, aes_half);
 	mpz_t mpz_aes_key, mpz_aes_iv;
 	mpz_init (mpz_aes_key);
@@ -77,7 +77,7 @@ ssh::SendMsg::SendMsg(MsgType::Type type, unsigned char uid, uint64_t amt, const
 	aes::cbc_encrypt(ptxt, ctxt, AES_BUF_LEN, keys.aes_iv, keys.aes_key);
 	std::string mac = hmac::create_HMAC(std::string(ptxt, AES_BUF_LEN), keys.hmac_key);
 	assert(mac.size() == hmac::output_length);
-	memcpy(msg, mac.c_str(), hmac::output_length);
+	memcpy(msg, mac.data(), hmac::output_length);
 }
 
 #ifdef TEST_SSH

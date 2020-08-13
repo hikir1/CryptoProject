@@ -60,16 +60,16 @@ ssize_t try_recv(int cd, char * buf, size_t buflen) {
     return -1;
   }
   if (len == 0) {
-    std::cout << "Client closed connection early." << std::endl;
+    std::cout << "Server closed connection early." << std::endl;
     return -1;
   }
   std::cout << "recvd len: " << len << std::endl;
   return len;
 }
 
-int estab_con(int client, ssh::Keys all_keys, RSA &my_rsa){
+int estab_con(int client, ssh::Keys &all_keys, RSA &my_rsa){
   int num_bytes;
-  char buf[ssh::RECV_MAX];
+  char buf[ssh::RECV_MAX] = {0};
   std::string msg(ssh::HELLO_MSG,ssh::HELLO_LEN);
   std::string encrypted_msg;
   #if !(NENCRYPT || NRSA)
@@ -100,44 +100,28 @@ int estab_con(int client, ssh::Keys all_keys, RSA &my_rsa){
     std::cout << decrypted_msg << std::endl;
   #endif
   if (msg.compare(decrypted_msg) != 0){
-
     fprintf(stderr, "Hacker detected\n" ); // <<<<<<<<<< changed from perror to fprintf(stderr,...)
-    							//		(errno is not set; no error from libaray call)
-
     return -1;
   }
-/*
-  int broken = 0;
-  for(int x = 0; x < 3; x++){ // <<<<<<<<< should only be sending 1 message with 3 keys
-    std::string cryptotext;
- */
-    char hold[ssh::KEYEX_LEN];
+
+  char hold[ssh::KEYEX_LEN] = {0};
 
   ssh::DiffieKeys diffieKeys;
-   char chook[ssh::KEYEX_LEN] = {0};
-  if (diffieKeys.genKeys(chook, all_keys) == -1) {
-    std::cerr << "ERROR: failed to parse diffie keys" << std::endl;
-    return -1;
-  }
-
-std::cerr << "here1" <<std::endl;
-
   // RSA Encrypt server key parts
   if (send(client, diffieKeys.pubKeys(), ssh::KEYEX_LEN, 0) == -1) {
     perror("ERROR: Failed to send keys.");
     return -1;
   }
-
-std::cerr << "here2" << std::endl;
-/*    #endif	*/
-
     //send keyhalf here
     if ((num_bytes = recv(client, hold, ssh::KEYEX_LEN, 0)) == -1) {
       perror("Error: recv failed");
       return -1;
     }
+  if (diffieKeys.genKeys(hold, all_keys) == -1) {
+    std::cerr << "ERROR: failed to parse diffie keys" << std::endl;
+    return -1;
+  }
 
-    diffieKeys.genKeys(hold, all_keys);
   return client;
 }
 
@@ -163,7 +147,7 @@ int main(int argc, char ** argv)
   ssh::Keys all_keys;
   RSA my_rsa;
   // RSA Encrypt
-    my_rsa.LoadKeys("clientKeys");
+  my_rsa.LoadKeys("clientKeys");
   //send public keys
   //receive keys
   //make keys
@@ -283,7 +267,7 @@ int main(int argc, char ** argv)
       return -1;
     }
 
-    char recvbuf[ssh::TOTAL_LEN];
+    char recvbuf[ssh::TOTAL_LEN] = {0};
     ssize_t recvlen;
     if ((recvlen = try_recv(client, recvbuf, ssh::TOTAL_LEN)) == -1){
       close(client);

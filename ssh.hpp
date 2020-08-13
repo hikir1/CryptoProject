@@ -45,6 +45,8 @@ class DiffieKeys {
 	public:
 	DiffieKeys() : hmac_keys(KeyGen::createKeyhalf()),
 			aes_keys(KeyGen::createKeyhalf()) {
+		std::cerr << "hmac_key size" << hmac_keys[0].size() << std::endl;
+		std::cerr << "aes_key size" << aes_keys[0].size() << std::endl;
 		assert(hmac_keys[0].size() == KeyGen::diffiekeyhalfsize);
 		assert(aes_keys[0].size() == KeyGen::diffiekeyhalfsize);
 		memcpy(buf, hmac_keys[0].data(), KeyGen::diffiekeyhalfsize);
