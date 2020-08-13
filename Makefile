@@ -19,17 +19,17 @@ testbank : **.[ch]pp **/**.[ch]pp **/**.h
 
 rawatm : **.[ch]pp **/**.[ch]pp **/**.h
 	g++ KeyGeneration.cpp KeyEncryption.cpp client.cpp aes/**.cpp RSA/**.cpp \
-		ssh.cpp hmac/**.cpp util.cpp -D BANK -D NENCRYPT -o atm.out -lgmp -lm -g
+		ssh.cpp hmac/**.cpp util.cpp -D BANK -D NENCRYPT=1 -o atm.out -lgmp -lm -g
 
 rawbank : **.[ch]pp **/**.[ch]pp **/**.h
 	g++ KeyGeneration.cpp KeyEncryption.cpp bank.cpp aes/**.cpp RSA/**.cpp \
-		ssh.cpp hmac/**.cpp util.cpp -D BANK -D NENCRYPT -o bank.out -lgmp -lm -g
+		ssh.cpp hmac/**.cpp util.cpp -D BANK -D NENCRYPT=1 -o bank.out -lgmp -lm -g
 
 dhatm : **.[ch]pp **/**.[ch]pp **/**.h
 	g++ KeyGeneration.cpp KeyEncryption.cpp client.cpp aes/**.cpp RSA/**.cpp \
-		ssh.cpp hmac/**.cpp util.cpp -D BANK -D RSAENCRYPT -D NENCRYPT -o atm.out -lgmp -lm -g
+		ssh.cpp hmac/**.cpp util.cpp -D BANK -D NRSA=1 -o atm.out -lgmp -lm -g
 
 dhbank : **.[ch]pp **/**.[ch]pp **/**.h
 	g++ KeyGeneration.cpp KeyEncryption.cpp bank.cpp aes/**.cpp RSA/**.cpp \
-		ssh.cpp hmac/**.cpp util.cpp -D BANK -D NRSA -D NENCRYPT -o bank.out -lgmp -lm -g
+		ssh.cpp hmac/**.cpp util.cpp -D BANK -D NRSA=1 -o bank.out -lgmp -lm -g
 

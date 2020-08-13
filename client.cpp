@@ -71,13 +71,8 @@ int estab_con(int client, ssh::Keys all_keys, RSA &my_rsa){
   char buf[ssh::RECV_MAX];
   std::string msg(ssh::HELLO_MSG,ssh::HELLO_LEN);
   std::string encrypted_msg;
-  #ifndef NENCRYPT 
-  #ifndef RSAENCRYPT
+  #if !(NENCRYPT || NRSA)
    encrypted_msg = my_rsa.RSAgetcryptotext(msg);
-   #else
-     encrypted_msg = received_msg;
-    std::cout << encrypted_msg << std::endl;
-  #endif
   #else
     encrypted_msg = msg;
   #endif
@@ -97,15 +92,10 @@ int estab_con(int client, ssh::Keys all_keys, RSA &my_rsa){
   std::string received_msg(buf, ssh::HELLO_LEN);
 
   std::string decrypted_msg;
-  #ifndef NENCRYPT
-   #ifndef RSAENCRYPT
+  #if !(NENCRYPT || NRSA)
      decrypted_msg = my_rsa.RSAgetmessage(received_msg);
-     #else
-     decrypted_msg = received_msg;
-    std::cout << decrypted_msg << std::endl;
-   #endif
   #else
-    decrypted_msg = received_msg;
+     decrypted_msg = received_msg;
     std::cout << decrypted_msg << std::endl;
   #endif
   if (msg.compare(decrypted_msg) != 0){
