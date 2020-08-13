@@ -52,6 +52,15 @@ class DiffieKeys {
 		memcpy(buf, hmac_keys[0].data(), KeyGen::diffiekeyhalfsize);
 		memcpy(buf + KeyGen::diffiekeyhalfsize, aes_keys[0].data(), KeyGen::diffiekeyhalfsize);
 	}
+	DiffieKeys(std::string p, std::string g) : hmac_keys(KeyGen::createKeyhalf_server(p,g)),
+			aes_keys(KeyGen::createKeyhalf_server(p,g)) {
+		std::cerr << "hmac_key size" << hmac_keys[0].size() << std::endl;
+		std::cerr << "aes_key size" << aes_keys[0].size() << std::endl;
+		assert(hmac_keys[0].size() == KeyGen::diffiekeyhalfsize);
+		assert(aes_keys[0].size() == KeyGen::diffiekeyhalfsize);
+		memcpy(buf, hmac_keys[0].data(), KeyGen::diffiekeyhalfsize);
+		memcpy(buf + KeyGen::diffiekeyhalfsize, aes_keys[0].data(), KeyGen::diffiekeyhalfsize);
+	}
 	const char * pubKeys() const {
 		return buf;
 	}

@@ -129,8 +129,9 @@ int keyex(int cd, ssh::Keys &keys) {
 	#endif
 
 	// TODO: RSA Decrypt
-
-	ssh::DiffieKeys diffieKeys;
+	std::string p; //keyhalf vector received [1]
+	std::string g; //keyhalf vector received [2]
+	ssh::DiffieKeys diffieKeys(p,g);
 	if (diffieKeys.genKeys(buf, keys) == -1) {
 		std::cerr << "ERROR: failed to parse diffie keys" << std::endl;
 		return -1;
