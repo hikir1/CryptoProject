@@ -116,6 +116,7 @@ int hello(int cd, RSA &rsa) {
 		std::cout << "Failed to send HELLO to client" << std::endl;
 		return -1;
 	}
+
 	#else
 
 	if (try_recv(cd, buf, ssh::HELLO_LEN) == -1)

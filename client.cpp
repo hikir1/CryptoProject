@@ -76,6 +76,9 @@ int estab_con(int client, ssh::Keys &all_keys, RSA &my_rsa){
    encrypted_msg = ssh::RSAGetCipherText(my_rsa, msg);
    assert(encrypted_msg.size() == ssh::RSA_MAX);
   #else
+   while(msg.length() < ssh::RSA_MAX){
+    msg = "0" + msg;
+   }
     encrypted_msg = msg;
   #endif
   std::cerr << "Encrypted message: " << encrypted_msg << std::endl;
@@ -102,6 +105,7 @@ std::cerr << "'''''''''' received_msg: " << received_msg << std::endl;
      decrypted_msg = received_msg;
     std::cout << decrypted_msg << std::endl;
   #endif
+  std::cerr << " received_msg decrypt: " << decrypted_msg << std::endl;
   if (msg.compare(decrypted_msg) != 0){
   std::cerr << "-----dec: " << decrypted_msg << std::endl;
     fprintf(stderr, "Hacker detected\n" );
