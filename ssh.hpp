@@ -42,6 +42,7 @@ class DiffieKeys {
 	std::vector<std::string> keys;
 	public:
 	DiffieKeys() : keys(KeyGen::createKeyhalf()) {
+		std::cerr << "Key size: " << keys[0].size() << std::endl;
 		assert(keys[0].size() == KeyGen::diffiekeyhalfsize);
 	}
 	operator const char *() {

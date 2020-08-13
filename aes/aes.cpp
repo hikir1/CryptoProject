@@ -246,8 +246,9 @@ int aes::fill_key(Key aes_key, const mpz_t mpz_key) {
 		perror("ERROR: failed to export MPZ");
 		return -1;
 	}
+	std::cerr << "count: " << count << std::endl;
 	if (count < sizeof(Key)) {
-		perror("ERROR: aes key is too small :(");
+		std::cerr << "ERROR: aes key is too small" << std::endl;
 		free(bytes);
 		return -1;
 	}
@@ -264,7 +265,7 @@ int aes::fill_iv(IV aes_iv, const mpz_t mpz_iv) {
 		return -1;
 	}
 	if (count < sizeof(IV)) {
-		perror("ERROR: aes key is too small :(");
+		std::cerr << "ERROR: aes key is too small" << std::endl;
 		free(bytes);
 		return -1;
 	}
