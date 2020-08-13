@@ -43,7 +43,6 @@ void RSA::RSAKeyGen() {
 	mpz_t toitent;
 	mpz_init(toitent);
 	mpz_mul(toitent,p,q);
-	calcLCM(carmichaelNum, p , q);
 	mpz_clear(p);
 	mpz_clear(q);
     mpz_set_ui(e,65537);
