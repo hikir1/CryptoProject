@@ -81,6 +81,10 @@ ssh::RecvMsg::RecvMsg(const char msg[TOTAL_LEN], size_t recvlen, const Keys &key
 	#ifndef NENCRYPT
 	if (hmac::create_HMAC(std::string(ptxt, AES_BUF_LEN), keys.hmac_key).compare(mac) != 0) {
 		error = "Corrupt message: Macs do not match";
+		std::cerr << "hmac1: " << hmac::create_HMAC(std::string(ptxt, AES_BUF_LEN), keys.hmac_key) << std::endl;
+		std::cerr << "hmac2: " << mac << std::endl;
+		std::cerr << "ptxt: " << (unsigned int) ptxt[0] << " " << (unsigned int) ptxt[1]
+				<< " " << (unsigned int) ptxt[2];
 		return;
 	}
 	#endif

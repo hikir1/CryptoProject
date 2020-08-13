@@ -85,6 +85,9 @@ void RSA::RSADecrypt(std::string cryptotext) {
 
 //returns decrypted message
 std::string RSA::RSAgetmessage(std::string cryptotext){
+#ifdef NRSA
+return cryptotext;
+#endif
 	RSADecrypt(cryptotext);
 	//convert m2 to string
 	mpz_class msg(m2);
@@ -94,6 +97,9 @@ std::string RSA::RSAgetmessage(std::string cryptotext){
 
 //returns encrypted message
 std::string RSA::RSAgetcryptotext(std::string message){
+#ifdef NRSA
+return message;
+#endif
 	RSAEncrypt(message);
 	//convert c to string
 	mpz_class ctxt(c);
