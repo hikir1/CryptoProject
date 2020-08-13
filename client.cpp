@@ -69,7 +69,7 @@ ssize_t try_recv(int cd, char * buf, size_t buflen) {
 
 int estab_con(int client, ssh::Keys &all_keys, RSA &my_rsa){
   int num_bytes;
-  char buf[ssh::RECV_MAX] = {0};
+  char buf[ssh::RSA_MAX] = {0};
   std::string msg(ssh::HELLO_MSG,ssh::HELLO_LEN);
   std::string encrypted_msg;
   #if !(NENCRYPT || NRSA)
@@ -78,7 +78,7 @@ int estab_con(int client, ssh::Keys &all_keys, RSA &my_rsa){
     encrypted_msg = msg;
   #endif
   //send message
-  int fail = write( client, encrypted_msg.c_str(), ssh::HELLO_LEN); 
+  int fail = write( client, encrypted_msg.c_str(), ssh::RSA_MAX); 
   if ( fail < msg.length() ){
     perror( "write() failed" );
     return -1;
@@ -94,7 +94,7 @@ int estab_con(int client, ssh::Keys &all_keys, RSA &my_rsa){
 
   std::string decrypted_msg;
   #if !(NENCRYPT || NRSA)
-     decrypted_msg = my_rsa.RSAgetmessage(received_msg);
+     decrypted_msg = ssh::RSAGetCipherText(received_msg, my_rsa);
   #else
      decrypted_msg = received_msg;
     std::cout << decrypted_msg << std::endl;
