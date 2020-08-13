@@ -102,12 +102,12 @@ int hello(int cd, RSA &rsa) {
 	char buf[ssh::RSA_MAX] = {0};
 	if (try_recv(cd, buf, ssh::RSA_MAX) == -1)
 		return -1;
-	if (ssh::RSAGetPlainText(rsa, buf).compare(ssh::HELLO_MSG) != 0) {
+	if (ssh::RSAGetPlainText(rsa, std::string(buf, ssh::RSA_MAX)).compare(ssh::HELLO_MSG) != 0) {
 		std::cout << "Received invalid HELLO" << std::endl;
+		std::cerr << "Hello: " << ssh::RSAGetPlainText(rsa, std::string(buf, ssh::RSA_MAX)) << "|" << std::endl;
 		return -1;
 	}
 
-	// TODO: RSA Encrypt
 	std::string ctxt = ssh::RSAGetCipherText(rsa, ssh::HELLO_MSG);
 	assert(ctxt.size() == ssh::RSA_MAX);
 	if (send(cd, ctxt.data(), ssh::RSA_MAX, 0) == -1) {
