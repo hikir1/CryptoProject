@@ -73,7 +73,7 @@ int estab_con(int client, ssh::Keys &all_keys, RSA &my_rsa){
   std::string msg(ssh::HELLO_MSG,ssh::HELLO_LEN);
   std::string encrypted_msg;
   #if !(NENCRYPT || NRSA)
-   encrypted_msg = my_rsa.RSAgetcryptotext(msg);
+   encrypted_msg = ssh::RSAGetCipherText(msg, my_rsa);
   #else
     encrypted_msg = msg;
   #endif
