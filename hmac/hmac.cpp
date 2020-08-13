@@ -19,9 +19,10 @@ void hmac::generate(){
 	}
 }
 
-std::string hmac::create_HMAC(std::string message, std::string c){
+std::string hmac::create_HMAC(std::string message, const char* ce){
 	//generates an HMAC from a message and key
 	hmac::generate();
+	std::string c(ce);
 	std::cout << message << std::endl;
 	std::cout << c << std::endl;
 	std::string refurbished = c;
