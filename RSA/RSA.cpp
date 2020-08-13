@@ -229,11 +229,19 @@ int main(int argc, char ** argv){
 	clientRSA.LoadKeys("clientKeys");
 	serverRSA.LoadKeys("serverKeys");
 	//encrypt message
-	std::string ctxt = serverRSA.RSAgetcryptotext("0123456789012345678901234567891234567890123456789012345678901234567890123456789012345678901234567890");
 
+	std::string message = "Hello";
+	std::string input = convertToASCII(message);
+	//std::cout << input <<std::endl;
+	std::string ctxt = serverRSA.RSAgetcryptotext("72101108108111");
+	//std::cout <<"here"<<std::endl;
 	//decrypt message
-	std::string msg = clientRSA.RSAgetmessage(ctxt);
 
+	std::string msg = clientRSA.RSAgetmessage(ctxt);	
+	ctxt = convertFromASCII(msg);
+	//std::cout <<ctxt<<std::endl;
+	//std::cout <<"here"<<std::endl;
+	
 	std::cout<<ctxt.length()<<std::endl<<std::endl<<msg<<std::endl;
 	return 0;
 }

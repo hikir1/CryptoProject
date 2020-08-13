@@ -25,7 +25,7 @@ std::string convertFromASCII(std::string str)
     int num = 0; 
     int len = str.length();
     for (int i = 0; i < len; i++) { 
-  
+        //std::cout<< i <<std::endl;
         // Append the current digit 
         num = num * 10 + (str[i] - '0'); 
   
@@ -35,7 +35,7 @@ std::string convertFromASCII(std::string str)
             // Convert num to char 
             char ch = (char)num; 
             res = res + ch; 
-  
+
             // Reset num to 0 
             num = 0; 
         } 
