@@ -191,19 +191,21 @@ namespace {
 }
 
 #include <cstring>
+#include "../hmac/hmac.h"
 
 // ctxt needs at least BLOCK_BYTES extra space (for padding)
 void aes::cbc_encrypt(const char * ptxt, char * ctxt, size_t len,  
-		const uint32_t iv[BLOCK_SIZE], const uint32_t key[KEY_SIZE]) {
+		const uint32_t iv[BLOCK_SIZE], const uint32_t key[KEY_SIZE], const char * hmac_key) {
+	std::cout << "\n--hmac:::: " << std::string(hmac_key, hmac::byte_length) << std::endl;
 #ifdef NENCRYPT
 	memcpy(ctxt, ptxt, len);
 #else
 	subkey_t subkeys[NUM_ROUNDS + 1];
+	static_assert(sizeof(subkeys) % 4 == 0);
+	static_assert(sizeof(uint32_t[BLOCK_SIZE]) == sizeof(uint8_t[BLOCK_BYTES]));
 	expandKey(key, (uint32_t *)subkeys);
 	memcpy(ctxt, ptxt, len);
-	int padding_size = BLOCK_BYTES - len % BLOCK_BYTES;
-	memset(ctxt + len, '\0', padding_size); // padding
-	len += padding_size;
+	assert(len % BLOCK_BYTES == 0);
 	State * blocks = (State *) ctxt;
 	State * prev = (State *) iv;
 	for (; len > 0; len -= BLOCK_BYTES) {
@@ -237,6 +239,7 @@ void aes::cbc_decrypt(const char * ctxt, char * ptxt, size_t len,
 #endif
 }
 
+#ifndef TEST_AES
 #include <gmpxx.h>
 
 int aes::fill_key(Key aes_key, const mpz_t mpz_key) {
@@ -246,7 +249,6 @@ int aes::fill_key(Key aes_key, const mpz_t mpz_key) {
 		perror("ERROR: failed to export MPZ");
 		return -1;
 	}
-	std::cerr << "count: " << count << std::endl;
 	if (count < sizeof(Key)) {
 		std::cerr << "ERROR: aes key is too small" << std::endl;
 		free(bytes);
@@ -273,6 +275,7 @@ int aes::fill_iv(IV aes_iv, const mpz_t mpz_iv) {
 	free(bytes);
 	return 0;
 }
+#endif
 
 #ifdef TEST_AES
 #include <iostream>

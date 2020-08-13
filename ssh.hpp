@@ -33,7 +33,7 @@ static_assert(KEYEX_LEN <= RECV_MAX);
 static_assert(TOTAL_LEN <= RECV_MAX);
 
 struct Keys {
-	std::string hmac_key;
+	char hmac_key[hmac::byte_length];
 	aes::Key aes_key;
 	aes::IV aes_iv;
 };

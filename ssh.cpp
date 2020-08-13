@@ -10,7 +10,8 @@ int ssh::DiffieKeys::genKeys(const char keyex_msg[KEYEX_LEN], ssh::Keys &keys) {
 	std::string hmac_half = std::string(keyex_msg, KeyGen::diffiekeyhalfsize);
 	std::string aes_half
 			= std::string(keyex_msg + KeyGen::diffiekeyhalfsize, KeyGen::diffiekeyhalfsize);
-	keys.hmac_key = KeyGen::getSharedKey(this->hmac_keys, hmac_half).substr(0, hmac::byte_length);
+	std::string hmac_shared = KeyGen::getSharedKey(this->hmac_keys, hmac_half).substr(0, hmac::byte_length);
+	memcpy(keys.hmac_key, hmac_shared.data(), hmac_shared.size());
 	std::string aes_shared = KeyGen::getSharedKey(this->aes_keys, aes_half);
 	mpz_t mpz_aes_key, mpz_aes_iv;
 	mpz_init (mpz_aes_key);
@@ -70,19 +71,14 @@ ssh::SendMsg::SendMsg(MsgType::Type type, unsigned char uid, uint64_t amt, const
 	char ptxt[AES_BUF_LEN] = {0};
 	ptxt[0] = (char) type;
 	ptxt[1] = (char) uid;
-	std::cout << "a1" << std::endl;
 	constexpr uint64_t MASK = (1 << 8) - 1;
 	for (int i = 0; i < sizeof(uint64_t)/sizeof(char); i++)
 		ptxt[i + 2] = (char)((amt >> (56 - i * 8)) & MASK);
-	std::cout << "a2" << std::endl;
 	char * ctxt = msg + hmac::output_length;
-	aes::cbc_encrypt(ptxt, ctxt, AES_BUF_LEN, keys.aes_iv, keys.aes_key);
-	std::cout << std::string(ptxt, AES_BUF_LEN) << std::endl;
-	std::cout << keys.aes_key << std::endl;
-	std::cout << keys.hmac_key << std::endl;
-	std::cout << "a4" << std::endl;
+	std::cout << "\nhmac:::: " << std::string(keys.hmac_key, hmac::byte_length) << std::endl;
+	aes::cbc_encrypt(ptxt, ctxt, AES_BUF_LEN, keys.aes_iv, keys.aes_key, keys.hmac_key);
+	std::cout << "\nhmac:::: " << std::string(keys.hmac_key, hmac::byte_length) << std::endl;
 	std::string mac = hmac::create_HMAC(std::string(ptxt, AES_BUF_LEN), keys.hmac_key);
-	std::cout << "a3" << std::endl;
 	assert(mac.size() == hmac::output_length);
 	memcpy(msg, mac.data(), hmac::output_length);
 }

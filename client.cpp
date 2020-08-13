@@ -121,7 +121,6 @@ int estab_con(int client, ssh::Keys &all_keys, RSA &my_rsa){
     std::cerr << "ERROR: failed to parse diffie keys" << std::endl;
     return -1;
   }
-
   return client;
 }
 
@@ -262,7 +261,6 @@ int main(int argc, char ** argv)
       return EXIT_FAILURE;
     }
     std::cout << all_keys.hmac_key << std::endl;
-    std::cout << "0" << std::endl;
     if (send(client, ssh::SendMsg(msgType, u_id, money, all_keys) , ssh::TOTAL_LEN, 0) == -1) {
       perror("ERROR: Failed to send message");
 	    close(client);
@@ -275,13 +273,11 @@ int main(int argc, char ** argv)
       close(client);
       return -1;
     }
-    std::cout << "2" << std::endl;
     ssh::RecvMsg msg(recvbuf, recvlen, all_keys);
     if (msg.error) {
       std::cout << msg.error << std::endl;
       msg.type = ssh::MsgType::INVALID;
     }
-    std::cout << "3" << std::endl;
     switch(msg.type){
       case(ssh::MsgType::OK):{
         switch(msgType){
