@@ -33,3 +33,5 @@ dhbank : **.[ch]pp **/**.[ch]pp **/**.h
 	g++ KeyGeneration.cpp KeyEncryption.cpp bank.cpp aes/**.cpp RSA/**.cpp \
 		ssh.cpp hmac/**.cpp util.cpp -D BANK -D NRSA=1 -o bank.out -lgmp -lm -g
 
+mkkeys : MakeKeys.cpp RSA/RSA.cpp RSA/RSA.h util.[ch]pp
+	g++ MakeKeys.cpp RSA/RSA.cpp util.cpp -o MakeKeys.out -lgmp

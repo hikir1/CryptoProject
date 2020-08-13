@@ -1,4 +1,4 @@
-#include "../util.hpp"
+#include "../util.cpp"
 #include <fstream>
 
 class RSA 
@@ -23,6 +23,7 @@ class RSA
     mpz_t e2;
     mpz_t N2;    
     
+
     private: 
     
     //private key (both the same key different types for operations)

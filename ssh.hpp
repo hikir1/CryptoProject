@@ -129,6 +129,8 @@ struct SendMsg {
 	}
 };
 
+RSAGetCipherText(RSA myRSA, std::string message);
+
 }
 
 #endif
