@@ -13,10 +13,13 @@ int ssh::DiffieKeys::genKeys(const char keyex_msg[KEYEX_LEN], ssh::Keys &keys) {
 	constexpr size_t half_rem = (KeyGen::diffiekeysize - hmac::byte_length) / 2;
 	static_assert(pow(KeyGen::base, half_rem) > pow(8, sizeof(aes::Key)));
 	static_assert(pow(KeyGen::base, half_rem) > pow(8, sizeof(aes::IV)));
-	if (mpz_set_str(aes_iv, shared.substr(hmac::byte_length + half_rem).c_str(), KeyGen::base) == -1
+	if (mpz_set_str(aes_key, shared.substr(hmac::byte_length, half_rem).c_str(), KeyGen::base) == -1
+			|| mpz_set_str(aes_iv, shared.substr(hmac::byte_length + half_rem).c_str(), KeyGen::base) == -1
 			|| aes::fill_key(keys.aes_key, aes_key)
 			|| aes::fill_key(keys.aes_iv, aes_iv))
 		return -1;
+	mpz_clear(aes_key);
+	mpz_clear(aes_iv);
 	return 0;
 }
 
