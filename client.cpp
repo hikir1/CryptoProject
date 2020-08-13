@@ -171,12 +171,7 @@ int main(int argc, char ** argv)
   std::string id;
   unsigned char u_id;
   while(1){
-    int client = make_client(argv[1], argv[2]);
-    if (client == -1)
-      return EXIT_FAILURE;
-
     std::cout << "What user are you (0, 255):" << std::endl;
-
     if (!std::getline(std::cin, id)) {
       perror("Error: getline failed");
       CLOSE_CLIENT
@@ -284,7 +279,10 @@ int main(int argc, char ** argv)
 
       }
     }
-
+    int client = make_client(argv[1], argv[2]);
+    if (client == -1){
+      return EXIT_FAILURE;
+    }
 
     int test = estab_con(client, all_keys, my_rsa);
     if(test == -1){
