@@ -167,6 +167,7 @@ void RSA::LoadKeys(std::string filename){
     mpz_clear(new_d);
     mpz_clear(N2);
     mpz_clear(e2);
+    mpz_clear(N);
     mpz_init(new_d);
     mpz_init(N2);
     mpz_init(e2);
@@ -193,49 +194,28 @@ int RSA::GetReceivingSize(){
 	return tmp_N.get_str().length();
 }
 
-/*
+
 int main(int argc, char ** argv){
 	RSA clientRSA;
 	RSA serverRSA;
 
-	clientRSA.RSAKeyGen();
-	serverRSA.RSAKeyGen();
-	
-	mpz_t client_e;
-	mpz_t server_e;
-	mpz_t client_N;
-	mpz_t server_N;
-	
-	mpz_init(client_e);
-	mpz_init(server_e);
-	mpz_init(client_N);
-	mpz_init(server_N);
-
-	clientRSA.getPublicKeys(client_e,client_N);
-	serverRSA.getPublicKeys(server_e,server_N);
-
-	mpz_class c_e(client_e);
-	mpz_class serv_e(server_e);
-	mpz_class c_N(client_N);
-	mpz_class serv_N(server_N);
-	
-	clientRSA.SetKeys(serv_e.get_str(),serv_N.get_str());
-	serverRSA.SetKeys(c_e.get_str(),c_N.get_str());
-	std::cout<< "Server N: " <<serv_N.get_str().length() <<std::endl;
-	std::cout<< "Client N: " <<c_N.get_str().length() <<std::endl<<std::endl;
-
-	clientRSA.SaveKeys("clientKeys");
-	serverRSA.SaveKeys("serverKeys");
+	//clientRSA.RSAKeyGen();
+	//serverRSA.RSAKeyGen();
 	clientRSA.LoadKeys("clientKeys");
 	serverRSA.LoadKeys("serverKeys");
+	
+
+	//clientRSA.SaveKeys("clientKeys");
+	//serverRSA.SaveKeys("serverKeys");
+
 	//encrypt message
 
-	std::string message = "Hello";
+	std::string message = "I AM NOT A HACKER";
 	//std::cout << "message: " << message <<std::endl;
 	std::string input = convertToASCII(message);
 	//std::cout << "ASCII convert: " << input <<std::endl;
 	std::string ctxt = serverRSA.RSAgetcryptotext(input);
-	//std::cout << "cipher: " << ctxt <<std::endl;
+	std::cout << "cipher: " << ctxt <<std::endl;
 	//decrypt message
 
 	std::string msg = clientRSA.RSAgetmessage(ctxt);
@@ -244,6 +224,7 @@ int main(int argc, char ** argv){
 	std::cout << "original message: " << ctxt <<std::endl;
 	input = convertToASCII(ctxt);
 	ctxt = clientRSA.RSAgetcryptotext(input);
+	std::cout << "cipher 2x: " << ctxt <<std::endl;
 	msg = serverRSA.RSAgetmessage(ctxt);
 	std::string orig_msg = convertFromASCII(msg);
 	std::cout << "Orginal message 2x: " << orig_msg <<std::endl;
@@ -254,4 +235,3 @@ int main(int argc, char ** argv){
 	//std::cout<<ctxt.length()<<std::endl<<std::endl<<msg<<std::endl;
 	return 0;
 }
-*/
