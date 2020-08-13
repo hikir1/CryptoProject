@@ -3,6 +3,22 @@
 #include "hmac/hmac.h"
 #include "KeyGen.hpp"
 #include "ssh.hpp"
+#include <cassert>
+#include <cmath>
+
+int ssh::DiffieKeys::genKeys(const char keyex_msg[KEYEX_LEN], ssh::Keys &keys) {
+	std::string shared = KeyGen::getSharedKey(this->keys, std::string(keyex_msg, KEYEX_LEN));
+	keys.hmac_key = shared.substr(0, hmac::byte_length);
+	mpz_t aes_key, aes_iv;
+	constexpr size_t half_rem = (KeyGen::diffiekeysize - hmac::byte_length) / 2;
+	static_assert(pow(KeyGen::base, half_rem) > pow(8, sizeof(aes::Key)));
+	static_assert(pow(KeyGen::base, half_rem) > pow(8, sizeof(aes::IV)));
+	if (mpz_set_str(aes_iv, shared.substr(hmac::byte_length + half_rem).c_str(), KeyGen::base) == -1
+			|| aes::fill_key(keys.aes_key, aes_key)
+			|| aes::fill_key(keys.aes_iv, aes_iv))
+		return -1;
+	return 0;
+}
 
 ssh::RecvMsg::RecvMsg(const char msg[TOTAL_LEN], size_t recvlen, const Keys &keys) {
 	if (recvlen != TOTAL_LEN) {

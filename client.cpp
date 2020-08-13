@@ -99,7 +99,7 @@ int estab_con(int client, ssh::Keys all_keys, RSA &my_rsa){
   #endif
   if (msg.compare(decrypted_msg) != 0){
 
-    fprintf(stderr, "Hacker detected" ); // <<<<<<<<<< changed from perror to fprintf(stderr,...)
+    fprintf(stderr, "Hacker detected\n" ); // <<<<<<<<<< changed from perror to fprintf(stderr,...)
     							//		(errno is not set; no error from libaray call)
 
     return -1;
