@@ -172,7 +172,7 @@ int bank(int cd, const ssh::Keys &keys) {
 	switch (msg.type) {
 	case ssh::MsgType::DEPOSIT: {
 		if (msg.amt > UINT64_MAX - safe[msg.uid]) {
-			std::cout << "Client attempted to deposit more than maximum." << std::endl;
+			std::cerr << "Client attempted to deposit more than maximum." << std::endl;
 			msgType = ssh::MsgType::TOO_MUCH_BANK;
 			break;
 		}
