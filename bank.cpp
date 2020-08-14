@@ -92,6 +92,10 @@ ssize_t try_recv(int cd, char * buf, size_t buflen) {
 		std::cout << "Client closed connection early." << std::endl;
 		return -1;
 	}
+	if (len < buflen) {
+		std::cerr << "Invalid message length." << std::endl;
+		return -1;
+	}
 	#ifndef NDEBUG
 	std::cout << "recvd len: " << len << std::endl;
 	#endif
@@ -108,11 +112,12 @@ int hello(int cd, RSA &rsa) {
 		std::cerr << "Hello: " << ssh::RSAGetPlainText(rsa, std::string(buf, ssh::RSA_MAX)) << "|" << std::endl;
 		return -1;
 	}
+	std::cerr << "Hello: " << ssh::RSAGetPlainText(rsa, std::string(buf, ssh::RSA_MAX)) << "|" << std::endl;
 
 	std::string ctxt = ssh::RSAGetCipherText(rsa, std::string(ssh::HELLO_MSG, ssh::HELLO_LEN));
 	std::cerr << "'''''''''''' ctxt here: " << ctxt << std::endl;
 	assert(ctxt.size() == ssh::RSA_MAX);
-	if (send(cd, ctxt.data(), ssh::RSA_MAX, 0) == -1) {
+	if (send(cd, ctxt.data(), ssh::RSA_MAX, 0) != ssh::RSA_MAX) {
 		std::cout << "Failed to send HELLO to client" << std::endl;
 		return -1;
 	}
@@ -125,7 +130,7 @@ int hello(int cd, RSA &rsa) {
 		std::cout << "Received invalid HELLO" << std::endl;
 		return -1;
 	}
-	if (send(cd, ssh::HELLO_MSG, ssh::HELLO_LEN, 0) == -1) {
+	if (send(cd, ssh::HELLO_MSG, ssh::HELLO_LEN, 0) != ssh::HELLO_LEN) {
 		std::cout << "Failed to send HELLO to client" << std::endl;
 		return -1;
 	}
@@ -144,7 +149,7 @@ int keyex(int cd, RSA &rsa, ssh::Keys &keys) {
 	ssh::ServerDiffieKeys diffieKeys(buf, rsa);
 	std::string check(buf, 768);
 	std::cerr << check << std::endl;
-	if (send(cd, diffieKeys.pubKeys(), ssh::SERVER_KEYEX_LEN, 0) == -1) {
+	if (send(cd, diffieKeys.pubKeys(), ssh::SERVER_KEYEX_LEN, 0) != ssh::SERVER_KEYEX_LEN) {
 		perror("ERROR: Failed to send keys.");
 		return -1;
 	}
@@ -210,7 +215,7 @@ int bank(int cd, const ssh::Keys &keys) {
 	}
 	}
 
-	if (send(cd, ssh::SendMsg(msgType, msg.uid, msgAmt, keys) , ssh::TOTAL_LEN, 0) == -1) {
+	if (send(cd, ssh::SendMsg(msgType, msg.uid, msgAmt, keys) , ssh::TOTAL_LEN, 0) != ssh::TOTAL_LEN) {
 		perror("ERROR: Failed to send message");
 		return -1;
 	}

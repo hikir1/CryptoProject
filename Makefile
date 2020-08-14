@@ -1,9 +1,9 @@
 both : **.[ch]pp **/**.[ch]pp **/**.h
 	g++ KeyGeneration.cpp KeyEncryption.cpp client.cpp aes/**.cpp RSA/**.cpp \
-		ssh.cpp hmac/**.cpp util.cpp -D NDEBUG -D ATM -o atm.out -lgmp -lm \
+		ssh.cpp hmac/**.cpp util.cpp -D NDEBUG -D NRSA -D ATM -o atm.out -lgmp -lm \
 	&& g++ KeyGeneration.cpp KeyEncryption.cpp bank.cpp aes/**.cpp RSA/**.cpp \
-		ssh.cpp hmac/**.cpp util.cpp -D NDEBUG -D BANK -o bank.out -lgmp -lm \
-	&& Hey, it compiles!
+		ssh.cpp hmac/**.cpp util.cpp -D NDEBUG -D NRSA -D BANK -o bank.out -lgmp -lm \
+	&& echo Hey, it compiles!
 
 hello : hello.cpp
 	g++ hello.cpp -D NDEBUG

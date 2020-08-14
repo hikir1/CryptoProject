@@ -63,12 +63,16 @@ ssize_t try_recv(int cd, char * buf, size_t buflen) {
     std::cout << "Server closed connection early." << std::endl;
     return -1;
   }
+  if (len < buflen) {
+  	std::cerr << "Invalid message length" << std::endl;
+	std::cerr << "Expected " << buflen << " but received " << len << std::endl;
+	return -1;
+  }
   std::cout << "recvd len: " << len << std::endl;
   return len;
 }
 
 int estab_con(int client, ssh::Keys &all_keys, RSA &my_rsa){
-  int num_bytes;
   char buf[ssh::RSA_MAX] = {0};
   std::string msg(ssh::HELLO_MSG);
   std::string encrypted_msg;
@@ -77,17 +81,15 @@ int estab_con(int client, ssh::Keys &all_keys, RSA &my_rsa){
    assert(encrypted_msg.size() == ssh::RSA_MAX);
    std::cerr << "Encrypted message: " << encrypted_msg << std::endl;
     //send message
-    int fail = write( client, encrypted_msg.data(), ssh::RSA_MAX); 
-    if ( fail < msg.length() ){
-      perror( "write() failed" );
-      return -1;
+    if (send(client, encrypted_msg.data(), ssh::RSA_MAX, 0) == -1) {
+    	std::cerr << "Unable to send RSA_MAX len" << std::endl;
+	return -1;
     }
   #else
     encrypted_msg = msg;std::cerr << "Encrypted message: " << encrypted_msg << std::endl;
     //send message
-    int fail = write( client, encrypted_msg.data(), ssh::HELLO_LEN); 
-    if ( fail < msg.length() ){
-      perror( "write() failed" );
+    if (send( client, encrypted_msg.data(), ssh::HELLO_LEN, 0) < ssh::HELLO_LEN) {
+    	std::cerr << "Unable to sned HELLO_LEN len" << std::endl;
       return -1;
     }
   #endif
@@ -96,10 +98,8 @@ int estab_con(int client, ssh::Keys &all_keys, RSA &my_rsa){
   std::string decrypted_msg;
   #if !(NENCRYPT || NRSA)
      //get message
-    if ((num_bytes = recv(client, buf, ssh::RSA_MAX, MSG_WAITALL)) == -1) {
-      perror("Error: recv failed");
+    if (try_recv(client, buf, ssh::RSA_MAX) == -1)
       return -1;
-    }
     // RSA Decrypt
     std::string received_msg(buf, ssh::RSA_MAX);
 
@@ -107,10 +107,8 @@ int estab_con(int client, ssh::Keys &all_keys, RSA &my_rsa){
    decrypted_msg = ssh::RSAGetPlainText(my_rsa, received_msg);
   #else
     //get message
-    if ((num_bytes = recv(client, buf, ssh::HELLO_LEN, MSG_WAITALL)) == -1) {
-      perror("Error: recv failed");
+    if (try_recv(client, buf, ssh::HELLO_LEN) == -1)
       return -1;
-    }
     // RSA Decrypt
     std::string received_msg(buf, ssh::HELLO_LEN);
 
@@ -129,15 +127,13 @@ int estab_con(int client, ssh::Keys &all_keys, RSA &my_rsa){
 
   ssh::ClientDiffieKeys diffieKeys(my_rsa);
   // RSA Encrypt server key parts
-  if (send(client, diffieKeys.pubKeys(), ssh::CLIENT_KEYEX_LEN, 0) == -1) {
+  if (send(client, diffieKeys.pubKeys(), ssh::CLIENT_KEYEX_LEN, 0) < ssh::CLIENT_KEYEX_LEN) {
     perror("ERROR: Failed to send keys.");
     return -1;
   }
   //send keyhalf here
-  if ((num_bytes = recv(client, hold, ssh::SERVER_KEYEX_LEN, 0)) == -1) {
-    perror("Error: recv failed");
+  if (try_recv(client, hold, ssh::SERVER_KEYEX_LEN) == -1)
     return -1;
-  }
   if (diffieKeys.genKeys(hold, my_rsa, all_keys) == -1) {
     std::cerr << "ERROR: failed to parse diffie keys" << std::endl;
     return -1;
@@ -280,18 +276,17 @@ int main(int argc, char ** argv)
       CLOSE_CLIENT
       return EXIT_FAILURE;
     }
-    if (send(client, ssh::SendMsg(msgType, u_id, money, all_keys) , ssh::TOTAL_LEN, 0) == -1) {
+    if (send(client, ssh::SendMsg(msgType, u_id, money, all_keys) , ssh::TOTAL_LEN, 0) < ssh::TOTAL_LEN) {
       perror("ERROR: Failed to send message");
 	    close(client);
       return -1;
     }
     char recvbuf[ssh::TOTAL_LEN] = {0};
-    ssize_t recvlen;
-    if ((recvlen = try_recv(client, recvbuf, ssh::TOTAL_LEN)) == -1){
+    if (try_recv(client, recvbuf, ssh::TOTAL_LEN) == -1){
       close(client);
       return -1;
     }
-    ssh::RecvMsg msg(recvbuf, recvlen, all_keys);
+    ssh::RecvMsg msg(recvbuf, ssh::TOTAL_LEN, all_keys);
     if (msg.error) {
       std::cout << msg.error << std::endl;
       msg.type = ssh::MsgType::INVALID;
