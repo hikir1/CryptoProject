@@ -140,13 +140,10 @@ int keyex(int cd, RSA &rsa, ssh::Keys &keys) {
 	char buf[ssh::CLIENT_KEYEX_LEN] = {0};
 	if (try_recv(cd, buf, ssh::CLIENT_KEYEX_LEN) == -1)
 		return -1;
-	#ifndef NDEBUG
 	std::cout << "recvd keyex" << std::endl;
-	#endif
 
 	ssh::ServerDiffieKeys diffieKeys(buf, rsa);
 	std::string check(buf, 768);
-	std::cerr << check << std::endl;
 	if (send(cd, diffieKeys.pubKeys(), ssh::SERVER_KEYEX_LEN, 0) != ssh::SERVER_KEYEX_LEN) {
 		perror("ERROR: Failed to send keys.");
 		return -1;
@@ -180,9 +177,7 @@ int bank(int cd, const ssh::Keys &keys) {
 			break;
 		}
 		msgAmt = safe[msg.uid] += msg.amt;
-		#ifndef NDEBUG
 		std::cout << "New Balance for " << (int)msg.uid << " is " << safe[msg.uid] << std::endl;
-		#endif
 	} break;
 	case ssh::MsgType::WITHDRAW: {
 		if (msg.amt > safe[msg.uid]) {
@@ -191,24 +186,17 @@ int bank(int cd, const ssh::Keys &keys) {
 			break;
 		}
 		msgAmt = safe[msg.uid] -= msg.amt;
-		#ifndef NDEBUG
 		std::cout << "New Balance for " << (int)msg.uid << " is " << safe[msg.uid] << std::endl;
-		#endif
 	} break;
 	case ssh::MsgType::BALANCE: {
 		msgAmt = safe[msg.uid];
-		#ifndef NDEBUG
 		std::cout << "Current balance for " << (int)msg.uid << " is " << msgAmt << std::endl;
-		#endif
 	} break;
 	default: {
-		#ifndef NDEBUG
 		if (msg.error)
 			std::cout << msg.error << std::endl;
 		else
-		#else
 		std::cout << "Invalid message format" << std::endl;
-		#endif
 		msgType = ssh::MsgType::BAD_FORMAT;
 	}
 	}
