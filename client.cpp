@@ -63,7 +63,6 @@ ssize_t try_recv(int cd, char * buf, size_t buflen) {
     std::cout << "Server closed connection early." << std::endl;
     return -1;
   }
-  std::cout << "recvd len: " << len << std::endl;
   return len;
 }
 
@@ -75,7 +74,6 @@ int estab_con(int client, ssh::Keys &all_keys, RSA &my_rsa){
   #if !(NENCRYPT || NRSA)
    encrypted_msg = ssh::RSAGetCipherText(my_rsa, msg);
    assert(encrypted_msg.size() == ssh::RSA_MAX);
-   std::cerr << "Encrypted message: " << encrypted_msg << std::endl;
     //send message
     int fail = write( client, encrypted_msg.data(), ssh::RSA_MAX); 
     if ( fail < msg.length() ){
@@ -83,7 +81,6 @@ int estab_con(int client, ssh::Keys &all_keys, RSA &my_rsa){
       return -1;
     }
   #else
-    encrypted_msg = msg;std::cerr << "Encrypted message: " << encrypted_msg << std::endl;
     //send message
     int fail = write( client, encrypted_msg.data(), ssh::HELLO_LEN); 
     if ( fail < msg.length() ){
@@ -102,8 +99,6 @@ int estab_con(int client, ssh::Keys &all_keys, RSA &my_rsa){
     }
     // RSA Decrypt
     std::string received_msg(buf, ssh::RSA_MAX);
-
-  std::cerr << "'''''''''' received_msg: " << received_msg << std::endl;
    decrypted_msg = ssh::RSAGetPlainText(my_rsa, received_msg);
   #else
     //get message
@@ -113,14 +108,9 @@ int estab_con(int client, ssh::Keys &all_keys, RSA &my_rsa){
     }
     // RSA Decrypt
     std::string received_msg(buf, ssh::HELLO_LEN);
-
-  std::cerr << "'''''''''' received_msg: " << received_msg << std::endl;
-     decrypted_msg = received_msg;
-    std::cout << decrypted_msg << std::endl;
+    decrypted_msg = received_msg;
   #endif
-  std::cerr << " received_msg decrypt: " << decrypted_msg << std::endl;
   if (msg.compare(decrypted_msg) != 0){
-  std::cerr << "-----dec: " << decrypted_msg << std::endl;
     fprintf(stderr, "Hacker detected\n" );
     return -1;
   }

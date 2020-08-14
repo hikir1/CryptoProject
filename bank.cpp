@@ -110,7 +110,6 @@ int hello(int cd, RSA &rsa) {
 	}
 
 	std::string ctxt = ssh::RSAGetCipherText(rsa, std::string(ssh::HELLO_MSG, ssh::HELLO_LEN));
-	std::cerr << "'''''''''''' ctxt here: " << ctxt << std::endl;
 	assert(ctxt.size() == ssh::RSA_MAX);
 	if (send(cd, ctxt.data(), ssh::RSA_MAX, 0) == -1) {
 		std::cout << "Failed to send HELLO to client" << std::endl;
@@ -145,7 +144,6 @@ int keyex(int cd, RSA &rsa, ssh::Keys &keys) {
 
 	ssh::ServerDiffieKeys diffieKeys(buf, rsa);
 	std::string check(buf, 768);
-	std::cerr << check << std::endl;
 	if (send(cd, diffieKeys.pubKeys(), ssh::SERVER_KEYEX_LEN, 0) == -1) {
 		perror("ERROR: Failed to send keys.");
 		return -1;
