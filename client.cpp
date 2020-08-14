@@ -78,14 +78,13 @@ int estab_con(int client, ssh::Keys &all_keys, RSA &my_rsa){
   #if !(NENCRYPT || NRSA)
    encrypted_msg = ssh::RSAGetCipherText(my_rsa, msg);
    assert(encrypted_msg.size() == ssh::RSA_MAX);
-   std::cerr << "Encrypted message: " << encrypted_msg << std::endl;
     //send message
     if (send(client, encrypted_msg.data(), ssh::RSA_MAX, 0) == -1) {
     	std::cerr << "Unable to send RSA_MAX len" << std::endl;
 	return -1;
     }
   #else
-    encrypted_msg = msg;std::cerr << "Encrypted message: " << encrypted_msg << std::endl;
+    encrypted_msg = msg;
     //send message
     if (send( client, encrypted_msg.data(), ssh::HELLO_LEN, 0) < ssh::HELLO_LEN) {
     	std::cerr << "Unable to sned HELLO_LEN len" << std::endl;
