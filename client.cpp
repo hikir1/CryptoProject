@@ -68,7 +68,6 @@ ssize_t try_recv(int cd, char * buf, size_t buflen) {
 	std::cerr << "Expected " << buflen << " but received " << len << std::endl;
 	return -1;
   }
-  std::cout << "recvd len: " << len << std::endl;
   return len;
 }
 
@@ -102,8 +101,6 @@ int estab_con(int client, ssh::Keys &all_keys, RSA &my_rsa){
       return -1;
     // RSA Decrypt
     std::string received_msg(buf, ssh::RSA_MAX);
-
-  std::cerr << "'''''''''' received_msg: " << received_msg << std::endl;
    decrypted_msg = ssh::RSAGetPlainText(my_rsa, received_msg);
   #else
     //get message
@@ -112,13 +109,9 @@ int estab_con(int client, ssh::Keys &all_keys, RSA &my_rsa){
     // RSA Decrypt
     std::string received_msg(buf, ssh::HELLO_LEN);
 
-  std::cerr << "'''''''''' received_msg: " << received_msg << std::endl;
      decrypted_msg = received_msg;
-    std::cout << decrypted_msg << std::endl;
   #endif
-  std::cerr << " received_msg decrypt: " << decrypted_msg << std::endl;
   if (msg.compare(decrypted_msg) != 0){
-  std::cerr << "-----dec: " << decrypted_msg << std::endl;
     fprintf(stderr, "Hacker detected\n" );
     return -1;
   }

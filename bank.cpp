@@ -115,7 +115,6 @@ int hello(int cd, RSA &rsa) {
 	std::cerr << "Hello: " << ssh::RSAGetPlainText(rsa, std::string(buf, ssh::RSA_MAX)) << "|" << std::endl;
 
 	std::string ctxt = ssh::RSAGetCipherText(rsa, std::string(ssh::HELLO_MSG, ssh::HELLO_LEN));
-	std::cerr << "'''''''''''' ctxt here: " << ctxt << std::endl;
 	assert(ctxt.size() == ssh::RSA_MAX);
 	if (send(cd, ctxt.data(), ssh::RSA_MAX, 0) != ssh::RSA_MAX) {
 		std::cout << "Failed to send HELLO to client" << std::endl;
@@ -148,7 +147,6 @@ int keyex(int cd, RSA &rsa, ssh::Keys &keys) {
 
 	ssh::ServerDiffieKeys diffieKeys(buf, rsa);
 	std::string check(buf, 768);
-	std::cerr << check << std::endl;
 	if (send(cd, diffieKeys.pubKeys(), ssh::SERVER_KEYEX_LEN, 0) != ssh::SERVER_KEYEX_LEN) {
 		perror("ERROR: Failed to send keys.");
 		return -1;
@@ -177,7 +175,7 @@ int bank(int cd, const ssh::Keys &keys) {
 	switch (msg.type) {
 	case ssh::MsgType::DEPOSIT: {
 		if (msg.amt > UINT64_MAX - safe[msg.uid]) {
-			std::cout << "Client attempted to deposit more than maximum." << std::endl;
+			std::cerr << "Client attempted to deposit more than maximum." << std::endl;
 			msgType = ssh::MsgType::TOO_MUCH_BANK;
 			break;
 		}
