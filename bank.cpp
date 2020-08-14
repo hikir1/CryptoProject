@@ -112,7 +112,6 @@ int hello(int cd, RSA &rsa) {
 		std::cerr << "Hello: " << ssh::RSAGetPlainText(rsa, std::string(buf, ssh::RSA_MAX)) << "|" << std::endl;
 		return -1;
 	}
-	std::cerr << "Hello: " << ssh::RSAGetPlainText(rsa, std::string(buf, ssh::RSA_MAX)) << "|" << std::endl;
 
 	std::string ctxt = ssh::RSAGetCipherText(rsa, std::string(ssh::HELLO_MSG, ssh::HELLO_LEN));
 	assert(ctxt.size() == ssh::RSA_MAX);
